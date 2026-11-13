@@ -34,6 +34,10 @@ geraeusche/
 modelle/
 *.pyc
 *.pyo
+__pycache__/
+
+# Lokale Sicherung, nicht das Repo
+sicherung/
 
 # Sonstiges
 *.log

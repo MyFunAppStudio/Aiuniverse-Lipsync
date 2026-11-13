@@ -7,58 +7,58 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:#0A0C12;color:#ECF1F8;font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding-bottom:96px}
+body{margin:0;background:#161210;color:#F6EDE4;font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding-bottom:96px}
 h1,h2,.zahl{font-family:"Space Grotesk",sans-serif}
-.kopf{padding:16px 16px 12px;background:linear-gradient(180deg,#141821,#0A0C12);border-bottom:1px solid #202636;position:sticky;top:0;z-index:5}
+.kopf{padding:16px 16px 12px;background:linear-gradient(180deg,#261C16,#161210);border-bottom:1px solid #3E2E26;position:sticky;top:0;z-index:5}
 .zeile{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.punkt{width:9px;height:9px;border-radius:50%;background:#3DDC84;box-shadow:0 0 10px rgba(61,220,132,.8);flex:none}
-.punkt.aus{background:#454F6B;box-shadow:none}
+.punkt{width:9px;height:9px;border-radius:50%;background:#C6E07A;box-shadow:0 0 10px rgba(198,224,122,.8);flex:none}
+.punkt.aus{background:#6A5648;box-shadow:none}
 .kname{font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.unter{font-size:11px;color:#76849E;margin-top:1px}
-.knopf{background:#1E2434;border:1px solid #39435C;color:#D2DAE8;border-radius:10px;padding:11px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;min-height:44px}
-.knopf:active{background:#2A3245;border-color:#4C5873}
+.unter{font-size:11px;color:#C4A898;margin-top:1px}
+.knopf{background:#2E221C;border:1px solid #6A5244;color:#F0E2D4;border-radius:10px;padding:11px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;min-height:44px}
+.knopf:active{background:#3E2C22;border-color:#7A6252}
 .knopf:disabled{opacity:.45}
-.or{background:#24D3E8;border:none;color:#04161B;font-weight:700;font-family:"Space Grotesk",sans-serif;letter-spacing:.03em}
+.or{background:#E39B45;border:none;color:#1C1208;font-weight:700;font-family:"Space Grotesk",sans-serif;letter-spacing:.03em}
 .rot{color:#FF7A7A}
 .stand:not(:empty){margin-top:12px}
 .fehlt{display:block;width:100%;text-align:left;background:#2A1B14;border:1px solid #6B3E1E;
  border-radius:10px;padding:9px 11px;color:#E8B98A;font:inherit;font-size:11.5px;line-height:1.45;cursor:pointer}
 .fehlt b{color:#F5C78F}
-.gruen{color:#3DDC84}.grau{color:#66748E}
+.gruen{color:#C6E07A}.grau{color:#A88878}
 .reiter{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:12px 16px 0}
-.reiter button{background:#12151E;border:1px solid #23293B;border-radius:12px;padding:11px 4px;color:#9EA9BF;font:inherit;font-size:10.5px;font-weight:600;cursor:pointer;line-height:1.3}
-.reiter button.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;box-shadow:0 6px 16px rgba(36,211,232,.32)}
-.erkl{display:flex;gap:9px;margin:11px 16px 0;padding:11px 12px;background:rgba(36,211,232,.07);border:1px solid rgba(36,211,232,.25);border-radius:12px;font-size:11.5px;line-height:1.5;color:#C0C9DA}
-.erkl i{width:7px;height:7px;border-radius:50%;background:#24D3E8;margin-top:5px;flex:none}
+.reiter button{background:#1E1612;border:1px solid #3E3028;border-radius:12px;padding:11px 4px;color:#D4C0B0;font:inherit;font-size:10.5px;font-weight:600;cursor:pointer;line-height:1.3}
+.reiter button.an{background:#E39B45;border-color:#E39B45;color:#1C1208;box-shadow:0 6px 16px rgba(227,155,69,.34)}
+.erkl{display:flex;gap:9px;margin:11px 16px 0;padding:11px 12px;background:rgba(227,155,69,.10);border:1px solid rgba(227,155,69,.34);border-radius:12px;font-size:11.5px;line-height:1.5;color:#EADCCE}
+.erkl i{width:7px;height:7px;border-radius:50%;background:#E39B45;margin-top:5px;flex:none}
 /* Unten steht die feste Leiste mit VIDEO ERZEUGEN, bei einem laufenden
    Bau zusaetzlich die Statuszeile. Ohne Abstand verschwindet die letzte
    Karte dahinter - genau das ist bei den fertigen Videos passiert. */
 .inhalt{padding:12px 16px calc(150px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
-.karte{background:linear-gradient(180deg,#171B26,#11141C);border:1px solid #242B3E;border-radius:16px;padding:4px 13px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.karte{background:linear-gradient(180deg,#2A1E18,#1A1410);border:1px solid #463428;border-radius:16px;padding:4px 13px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
 .karte.p{padding:13px}
-.kt{font-family:"Space Grotesk",sans-serif;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:#8593AC;margin:0 0 9px}
-.r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #202636}
+.kt{font-family:"Space Grotesk",sans-serif;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:#C8B0A0;margin:0 0 9px}
+.r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #3E2E26}
 .r:last-child{border-bottom:none}
-.rw{border-bottom:1px solid #202636}
+.rw{border-bottom:1px solid #3E2E26}
 .rw:last-child{border-bottom:none}
 .rw>.r{border-bottom:none}
-.frag{flex:0 0 auto;width:18px;height:18px;line-height:16px;padding:0;border-radius:50%;background:#1B1F2C;border:1px solid #2A3147;color:#8593AC;font:inherit;font-size:11px;cursor:pointer;vertical-align:middle}
-.frag.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;font-weight:600}
-.erk{font-size:11.5px;line-height:1.55;color:#A3B3CA;background:#131824;border-left:2px solid #24D3E8;border-radius:0 7px 7px 0;padding:9px 11px;margin:0 0 11px}
+.frag{flex:0 0 auto;width:18px;height:18px;line-height:16px;padding:0;border-radius:50%;background:#2A201A;border:1px solid #4E3A2E;color:#C8B0A0;font:inherit;font-size:11px;cursor:pointer;vertical-align:middle}
+.frag.an{background:#E39B45;border-color:#E39B45;color:#1C1208;font-weight:600}
+.erk{font-size:11.5px;line-height:1.55;color:#D8C4B4;background:#221812;border-left:2px solid #E39B45;border-radius:0 7px 7px 0;padding:9px 11px;margin:0 0 11px}
 .szf{margin:9px 0}
 .szf .szh{display:block;margin-bottom:4px}
 .szf textarea{min-height:52px}
-.dz{border-top:1px solid #202636;padding:10px 0}
+.dz{border-top:1px solid #3E2E26;padding:10px 0}
 .dz:first-of-type{border-top:none}
-.dznr{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#6C7A94;margin-bottom:5px}
-.dzz{font-size:12px;line-height:1.5;color:#C0C9DA;margin:3px 0;padding-left:9px;border-left:2px solid #2A3147}
-.dzz span{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#6C7A94}
-.dzz.av{border-left-color:#24D3E8}.dzz.bi{border-left-color:#3DDC84}.dzz.be{border-left-color:#E8B98A}
-.erk b{color:#D7E0EE}.erk i{color:#9FD9E4;font-style:italic}
-.r label,.r .lb{font-size:12.5px;color:#C0C9DA}
+.dznr{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#B09080;margin-bottom:5px}
+.dzz{font-size:12px;line-height:1.5;color:#EADCCE;margin:3px 0;padding-left:9px;border-left:2px solid #4E3A2E}
+.dzz span{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#B09080}
+.dzz.av{border-left-color:#E39B45}.dzz.bi{border-left-color:#C6E07A}.dzz.be{border-left-color:#E8B98A}
+.erk b{color:#F8EEE4}.erk i{color:#F0C48A;font-style:italic}
+.r label,.r .lb{font-size:12.5px;color:#EADCCE}
 .r .lb{display:flex;align-items:center;gap:6px}
-.r .hint{font-size:10.5px;color:#76849E;margin-top:2px}
-input[type=text],input[type=number],select,textarea{background:#0D1017;border:1px solid #2A3147;border-radius:9px;color:#ECF1F8;padding:8px 9px;font:inherit;font-size:12.5px}
+.r .hint{font-size:10.5px;color:#C4A898;margin-top:2px}
+input[type=text],input[type=number],select,textarea{background:#120E0C;border:1px solid #4E3A2E;border-radius:9px;color:#F6EDE4;padding:8px 9px;font:inherit;font-size:12.5px}
 input[type=text],input[type=number]{text-align:right;width:92px}
 input.breit{text-align:left;width:100%}
 /* Ein select ist so breit wie sein laengster Eintrag, wenn man es laesst.
@@ -71,135 +71,135 @@ select{width:auto;max-width:100%;min-width:0}
    die Seite aufgeblasen, obwohl das Feld selbst schon schrumpfen durfte. */
 .szz>div{min-width:0}
 textarea{width:100%;text-align:left;resize:vertical;min-height:92px;line-height:1.55;font-size:12px}
-.sch{width:46px;height:26px;border-radius:999px;background:#272E42;position:relative;flex:none;border:none;cursor:pointer;padding:0}
-.sch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#66748E;transition:.15s}
-.sch.an{background:#24D3E8}.sch.an i{left:23px;background:#04161B}
+.sch{width:46px;height:26px;border-radius:999px;background:#3A2C24;position:relative;flex:none;border:none;cursor:pointer;padding:0}
+.sch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#A88878;transition:.15s}
+.sch.an{background:#E39B45}.sch.an i{left:23px;background:#1C1208}
 .pills{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;max-width:62%;justify-content:flex-end}
-.pills button{background:#1B1F2C;border:1px solid #2A3147;color:#8593AC;border-radius:8px;padding:6px 10px;font:inherit;font-size:11px;cursor:pointer}
-.pills button.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;font-weight:600}
-.liste .e{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1D222F}
+.pills button{background:#2A201A;border:1px solid #4E3A2E;color:#C8B0A0;border-radius:8px;padding:6px 10px;font:inherit;font-size:11px;cursor:pointer}
+.pills button.an{background:#E39B45;border-color:#E39B45;color:#1C1208;font-weight:600}
+.liste .e{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #32261E}
 .liste .e:last-child{border-bottom:none}
 .e .tx{flex:1;min-width:0}
 .e .ti{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.e .me{font-size:10.5px;color:#76849E;margin-top:2px}
-.ik{width:34px;height:34px;border-radius:9px;background:#1B1F2C;border:1px solid #2A3147;color:#E6E6EA;font-size:14px;cursor:pointer;flex:none}
-.leer{color:#66748E;font-size:12px;padding:12px 0;text-align:center}
-.leiste{position:fixed;left:0;right:0;bottom:0;padding:11px 16px calc(14px + env(safe-area-inset-bottom));background:#0A0C12;border-top:1px solid #202636;display:flex;flex-wrap:wrap;align-items:center;gap:11px;z-index:6}
-.lauf{flex:0 0 100%;display:none;align-items:center;gap:9px;padding:8px 11px;margin:-2px 0 2px;background:#141821;border:1px solid #2A2A33;border-radius:11px;font-size:12.5px;color:#D2D2DA}
+.e .me{font-size:10.5px;color:#C4A898;margin-top:2px}
+.ik{width:34px;height:34px;border-radius:9px;background:#2A201A;border:1px solid #4E3A2E;color:#F3E6D8;font-size:14px;cursor:pointer;flex:none}
+.leer{color:#A88878;font-size:12px;padding:12px 0;text-align:center}
+.leiste{position:fixed;left:0;right:0;bottom:0;padding:11px 16px calc(14px + env(safe-area-inset-bottom));background:#161210;border-top:1px solid #3E2E26;display:flex;flex-wrap:wrap;align-items:center;gap:11px;z-index:6}
+.lauf{flex:0 0 100%;display:none;align-items:center;gap:9px;padding:8px 11px;margin:-2px 0 2px;background:#261C16;border:1px solid #463428;border-radius:11px;font-size:12.5px;color:#EADCCE}
 .lauf.an{display:flex}
-.lauf .pk{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:#E8711A;animation:pul 1.3s ease-in-out infinite}
+.lauf .pk{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:#E39B45;animation:pul 1.3s ease-in-out infinite}
 .lauf .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lauf .zt{flex:0 0 auto;color:#919DB4;font-variant-numeric:tabular-nums}
+.lauf .zt{flex:0 0 auto;color:#C0A898;font-variant-numeric:tabular-nums}
 @keyframes pul{0%,100%{opacity:1}50%{opacity:.25}}
 .leiste .pr{flex:none}
-.leiste .pr .t{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#6C7A94}
+.leiste .pr .t{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#B09080}
 .leiste .pr .w{font-size:19px;font-weight:700;font-family:"Space Grotesk",sans-serif}
 .gen{flex:1;border-radius:14px;padding:16px 10px;font-size:15px}
-.dim{position:fixed;inset:0;background:rgba(5,6,10,.78);z-index:20;display:flex;align-items:flex-end;padding:16px}
-.dlg{background:linear-gradient(180deg,#1D1D24,#11141C);border:1px solid #313A54;border-radius:22px;padding:20px;width:100%;box-shadow:0 28px 60px rgba(0,0,0,.8)}
+.dim{position:fixed;inset:0;background:rgba(18,10,6,.82);z-index:20;display:flex;align-items:flex-end;padding:16px}
+.dlg{background:linear-gradient(180deg,#2C2018,#1A1410);border:1px solid #6A5244;border-radius:22px;padding:20px;width:100%;box-shadow:0 28px 60px rgba(0,0,0,.8)}
 .dlg h2{margin:0 0 4px;font-size:18px}
-.dlg p{margin:0 0 14px;font-size:12.5px;color:#8593AC;line-height:1.5}
+.dlg p{margin:0 0 14px;font-size:12.5px;color:#C8B0A0;line-height:1.5}
 .dlg .zw{display:flex;gap:10px}
 .dlg .zw button{flex:1;border-radius:14px;padding:15px 8px;font-size:14px}
-.log{font:11px/1.6 ui-monospace,monospace;color:#919DB4;white-space:pre-wrap;word-break:break-word;max-height:170px;overflow:auto}
-.hinw{font-size:10.5px;color:#66748E;padding:4px 0 10px}
+.log{font:11px/1.6 ui-monospace,monospace;color:#C0A898;white-space:pre-wrap;word-break:break-word;max-height:170px;overflow:auto}
+.hinw{font-size:10.5px;color:#A88878;padding:4px 0 10px}
 .kind{padding-left:16px}
-.szn{background:#12151E;border:2px solid #2E3850;border-radius:14px;padding:12px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.szn{background:#1E1612;border:2px solid #5A4436;border-radius:14px;padding:12px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .szn+.szn{margin-top:0}
 .szn .kopf{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:static;top:auto;z-index:auto;padding:0;background:none;border-bottom:0}
-.szn .nr{font-size:11px;color:#9FB0C8;letter-spacing:.08em;flex:1;font-weight:600}
-.szn .bildchen{width:100%;height:132px;object-fit:cover;border-radius:9px;background:#0A0C12;display:block}
+.szn .nr{font-size:11px;color:#E0CDB8;letter-spacing:.08em;flex:1;font-weight:600}
+.szn .bildchen{width:100%;height:132px;object-fit:cover;border-radius:9px;background:#161210;display:block}
 .szn textarea{width:100%;min-height:58px;margin-top:8px}
 .szz{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
-.szh{font-size:10.5px;color:#76849E}
-.hak{display:flex;align-items:center;gap:6px;font-size:12px;color:#9EA9BF;cursor:pointer}
-.hak input{width:17px;height:17px;accent-color:#24D3E8}
+.szh{font-size:10.5px;color:#C4A898}
+.hak{display:flex;align-items:center;gap:6px;font-size:12px;color:#D4C0B0;cursor:pointer}
+.hak input{width:17px;height:17px;accent-color:#E39B45}
 .hak.aus{opacity:.45}
 .szn select,.szn input[type=text]{font-size:12px}
 .raster{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.zl{background:#12151E;border:1px solid #202636;border-radius:9px;padding:7px 9px}
-.zt{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#6C7A94}
+.zl{background:#1E1612;border:1px solid #3E2E26;border-radius:9px;padding:7px 9px}
+.zt{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#B09080}
 .zw{font-size:12px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.me.warn{color:#24D3E8}
+.me.warn{color:#E39B45}
 .suchf{margin:12px 16px 0;position:relative}
-.suchf input[type=text]{width:100%;box-sizing:border-box;text-align:left;background:#12151E;border:1px solid #23293B;border-radius:12px;padding:11px 13px;color:#ECF1F8;font:inherit;font-size:13.5px}
-.suchf input::placeholder{color:#6B6B78}
+.suchf input[type=text]{width:100%;box-sizing:border-box;text-align:left;background:#1E1612;border:1px solid #3E3028;border-radius:12px;padding:11px 13px;color:#F6EDE4;font:inherit;font-size:13.5px}
+.suchf input::placeholder{color:#8C7468}
 .sucherg:empty{display:none}
-.sucherg{position:absolute;left:0;right:0;top:46px;z-index:40;background:#17171D;border:1px solid #2E2E38;border-radius:12px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.6)}
-.sucherg div{padding:11px 13px;border-bottom:1px solid #1F2432;font-size:13px;cursor:pointer}
+.sucherg{position:absolute;left:0;right:0;top:46px;z-index:40;background:#2A1E18;border:1px solid #463428;border-radius:12px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.sucherg div{padding:11px 13px;border-bottom:1px solid #32261E;font-size:13px;cursor:pointer}
 .sucherg div:last-child{border-bottom:none}
-.sucherg div:active{background:#1F2432}
-.sucherg b{color:#24D3E8;font-weight:600}
-.sucherg span{display:block;color:#7E7E8B;font-size:11px;margin-top:2px}
+.sucherg div:active{background:#32261E}
+.sucherg b{color:#E39B45;font-weight:600}
+.sucherg span{display:block;color:#A88878;font-size:11px;margin-top:2px}
 .treffer{animation:blitz 2s ease-out}
-@keyframes blitz{0%,55%{background:rgba(36,211,232,.22)}100%{background:transparent}}
-.spaeter{margin:0 0 4px;padding:10px 12px;background:#12151E;border:1px dashed #313A54;border-radius:11px;font-size:11.5px;line-height:1.5;color:#8A8A96}
+@keyframes blitz{0%,55%{background:rgba(227,155,69,.28)}100%{background:transparent}}
+.spaeter{margin:0 0 4px;padding:10px 12px;background:#1E1612;border:1px dashed #6A5244;border-radius:11px;font-size:11.5px;line-height:1.5;color:#B09888}
 input[type=range]{-webkit-appearance:none;appearance:none;height:16px;border-radius:8px;
- outline:none;border:1px solid #2A3147;margin:0;cursor:pointer}
+ outline:none;border:1px solid #4E3A2E;margin:0;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
- border-radius:50%;background:#fff;border:2px solid #0A0C12;box-shadow:0 1px 4px rgba(0,0,0,.7)}
+ border-radius:50%;background:#fff;border:2px solid #161210;box-shadow:0 1px 4px rgba(0,0,0,.7)}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;
- border:2px solid #0A0C12}
+ border:2px solid #161210}
 
 /* Minus/Plus statt Schieberegler */
 .stufen{display:flex;align-items:center;gap:4px}
-.stufen .stuf{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid #2A3147;
-  background:#1B1F2C;color:#ECF1F8;font-size:19px;font-weight:700;line-height:1;cursor:pointer}
-.stufen .stuf:active{background:#24D3E8;color:#04161B;border-color:#24D3E8}
-.stufwert{min-width:52px;text-align:center;font-size:14px;font-weight:700;color:#ECF1F8;
+.stufen .stuf{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid #4E3A2E;
+  background:#2A201A;color:#F6EDE4;font-size:19px;font-weight:700;line-height:1;cursor:pointer}
+.stufen .stuf:active{background:#E39B45;color:#1C1208;border-color:#E39B45}
+.stufwert{min-width:52px;text-align:center;font-size:14px;font-weight:700;color:#F6EDE4;
   font-variant-numeric:tabular-nums}
-.stufwert i{font-style:normal;color:#8593AC;font-size:11px;margin-left:2px}
+.stufwert i{font-style:normal;color:#C8B0A0;font-size:11px;margin-left:2px}
 
 /* Farbfelder statt Farbregler */
 .farbfeld{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:214px}
 .farbfeld .fb{width:30px;height:30px;flex:none;border-radius:8px;cursor:pointer;
-  border:2px solid #2A3147;padding:0}
-.farbfeld .fb.an{border-color:#ECF1F8;box-shadow:0 0 0 2px #24D3E8}
+  border:2px solid #4E3A2E;padding:0}
+.farbfeld .fb.an{border-color:#F6EDE4;box-shadow:0 0 0 2px #E39B45}
 
 /* Eingeklappte Abschnitte in den Einstellungen */
-details.falt{background:linear-gradient(180deg,#171B26,#11141C);border:1px solid #242B3E;
+details.falt{background:linear-gradient(180deg,#2A1E18,#1A1410);border:1px solid #463428;
   border-radius:16px;margin:0 0 11px;overflow:hidden}
 details.falt>summary{list-style:none;cursor:pointer;padding:15px 15px;font-family:"Space Grotesk",sans-serif;
-  font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#C0C9DA;
+  font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#EADCCE;
   display:flex;align-items:center;justify-content:space-between}
 details.falt>summary::-webkit-details-marker{display:none}
-details.falt>summary::after{content:"▾";color:#6C7A94;font-size:15px;transition:transform .15s}
+details.falt>summary::after{content:"▾";color:#B09080;font-size:15px;transition:transform .15s}
 details.falt[open]>summary::after{transform:rotate(180deg)}
-details.falt[open]>summary{color:#24D3E8;border-bottom:1px solid #202636}
+details.falt[open]>summary{color:#E39B45;border-bottom:1px solid #3E2E26}
 details.falt .faltin{padding:12px 0 2px}
 details.falt .faltin>.karte{box-shadow:none;border-radius:0;border-left:0;border-right:0;
-  background:transparent;border-color:#1F2432}
+  background:transparent;border-color:#32261E}
 details.falt .faltin>.karte:last-child{border-bottom:0}
 
 /* Zweitrangiges je Szene, eingeklappt */
-details.mehr{margin:9px 0 2px;border-top:1px solid #202636;padding-top:4px}
-details.mehr>summary{list-style:none;cursor:pointer;font-size:12px;color:#8593AC;
+details.mehr{margin:9px 0 2px;border-top:1px solid #3E2E26;padding-top:4px}
+details.mehr>summary{list-style:none;cursor:pointer;font-size:12px;color:#C8B0A0;
   padding:7px 0;display:flex;align-items:center;gap:6px}
 details.mehr>summary::-webkit-details-marker{display:none}
-details.mehr>summary::before{content:"▸";color:#6C7A94;font-size:12px}
+details.mehr>summary::before{content:"▸";color:#B09080;font-size:12px}
 details.mehr[open]>summary::before{content:"▾"}
-details.mehr[open]>summary{color:#24D3E8}
+details.mehr[open]>summary{color:#E39B45}
 
 /* Ein Avatar, der fuer dieses Video angehakt ist */
-.karte.mit{border-color:#24D3E8}
+.karte.mit{border-color:#E39B45}
 
 /* Der Dreifachschalter je Szene */
 .schalt{display:flex;gap:6px;margin:10px 0 2px}
-.schalt .st{flex:1;padding:10px 6px;border-radius:9px;border:1px solid #2A3147;
-  background:#171B26;color:#8593AC;font-size:11.5px;font-weight:600;
+.schalt .st{flex:1;padding:10px 6px;border-radius:9px;border:1px solid #4E3A2E;
+  background:#2A1E18;color:#C8B0A0;font-size:11.5px;font-weight:600;
   line-height:1.3;cursor:pointer;text-align:center}
-.schalt .st.an{border-color:#24D3E8;color:#ECF1F8;background:rgba(36,211,232,0.12)}
+.schalt .st.an{border-color:#E39B45;color:#F6EDE4;background:rgba(227,155,69,.16)}
 /* Der Verlauf: die letzten Fassungen, antippbar */
 .verl{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
 .verl img,.verl video{width:46px;height:62px;object-fit:cover;border-radius:6px;
-  background:#0A0C12;cursor:pointer;border:1px solid #2A3147;display:block}
-.verl img:hover,.verl video:hover{border-color:#24D3E8}
+  background:#161210;cursor:pointer;border:1px solid #4E3A2E;display:block}
+.verl img:hover,.verl video:hover{border-color:#E39B45}
 
 /* Wer in der Szene im Bild steht */
 .wer{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px}
-.wer .wn{padding:7px 13px;border-radius:999px;border:1px solid #2A3147;
-  background:#171B26;color:#8593AC;font-size:12.5px;font-weight:600;cursor:pointer}
-.wer .wn.an{border-color:#24D3E8;color:#ECF1F8;background:rgba(36,211,232,0.12)}
+.wer .wn{padding:7px 13px;border-radius:999px;border:1px solid #4E3A2E;
+  background:#2A1E18;color:#C8B0A0;font-size:12.5px;font-weight:600;cursor:pointer}
+.wer .wn.an{border-color:#E39B45;color:#F6EDE4;background:rgba(227,155,69,.16)}
 </style>
 </head>
 <body>
@@ -798,7 +798,7 @@ function tThemen(){
   var gew=(S.einst.geschichte_thema||"").trim().toLowerCase();
   (S.themen.offen||[]).forEach(function(t,i){
     var an=(t.trim().toLowerCase()===gew);
-    o+='<div class="e"'+(an?' style="border-color:#24D3E8"':'')+'>'
+    o+='<div class="e"'+(an?' style="border-color:#E39B45"':'')+'>'
      +'<div class="tx" onclick="themaWaehlen(\''+h(t).replace(/'/g,"")+'\')">'
      +'<div class="ti">'+(an?'▸ ':'')+(i+1)+'. '+h(t)+'</div>'
      +'<div class="me">'+(an?'ist gewählt — Schreiben nimmt dieses':'antippen zum Auswählen')+'</div></div>'
@@ -826,7 +826,7 @@ function tFiguren(){
 }
 function tFigurenAlt(){
   return '<div class="karte p"><h2 class="kt">Charaktere &amp; Bilder</h2>'
-   +'<p style="font-size:12.5px;color:#919DB4;line-height:1.55;margin:0">Feste Figuren mit fest zugeordneter Stimme, frei erfundene aus dem Stimmenvorrat, '
+   +'<p style="font-size:12.5px;color:#C0A898;line-height:1.55;margin:0">Feste Figuren mit fest zugeordneter Stimme, frei erfundene aus dem Stimmenvorrat, '
    +'Gespräche zwischen zwei Figuren und eigene Bilder zum Hochladen. Das ist der nächste Schritt — '
    +'der Motor dafür muss zuerst gebaut werden.</p></div>';
 }
@@ -983,7 +983,7 @@ function p70Karte(){
    +'<button class="knopf" style="padding:5px 12px" onclick="p70Zu()">ausblenden</button></div>'
    +'<div style="display:flex;gap:11px;align-items:flex-start">'
    +'<div id="p70b" onclick="p70Gross()" style="position:relative;width:128px;height:228px;flex:none;'
-   +'border-radius:10px;overflow:hidden;border:1px solid #2A3147;cursor:pointer;background-color:#12151E;'
+   +'border-radius:10px;overflow:hidden;border:1px solid #4E3A2E;cursor:pointer;background-color:#1E1612;'
    +'background-position:center;background-size:cover;background-repeat:no-repeat'
    +(P70.bild?';background-image:url(\''+P70.bild+'\')':'')+'">'
    +p70Zonen()
@@ -1337,7 +1337,7 @@ function tTechnik(){
      +'<div class="liste">';
     if(!liste.length)o+='<div class="leer">nichts eingetragen</div>';
     liste.forEach(function(e,i){
-      o+='<div class="e"><button class="ik" style="'+(e.aktiv?"background:#24D3E8;border-color:#24D3E8;color:#04161B":"")+'" '
+      o+='<div class="e"><button class="ik" style="'+(e.aktiv?"background:#E39B45;border-color:#E39B45;color:#1C1208":"")+'" '
         +'onclick="modellAktiv(\''+s+'\','+i+')" title="aktiv schalten">'+(e.aktiv?"●":"○")+'</button>'
         +'<div class="tx" onclick="modellBearbeiten(\''+s+'\','+i+')"><div class="ti">'+h(e.name||"ohne Namen")+'</div>'
         +'<div class="me">'+h(e.url||"keine Adresse")+(e.preis!==""&&e.preis!=null?" · "+h(e.preis)+" € "+(EINHEIT[s]||""):"")
@@ -1548,7 +1548,7 @@ function schalterZeile(s,d){
    +'<b>Kamerafahrt</b>: Standbild, das langsam wandert. <b>Standbild</b>: es steht. '
    +'Die zwei sind gratis.</div>';
   if(s.eigener_clip)
-    o+='<div class="szh" style="margin-top:5px;color:#24D3E8">'
+    o+='<div class="szh" style="margin-top:5px;color:#E39B45">'
      +'Eigener Clip hochgeladen — Bild und Videomodell werden übersprungen.</div>';
   return o;
 }
@@ -1644,7 +1644,7 @@ function clipKarte(){
      +'<br>Die Szene kommt von Kling oder MiniMax. Danach werden die Münder '
      +'auf die Stimmen gesetzt: links spricht, wer im Text zuerst drankommt, rechts der zweite.</div>';
   if(!d.bereit){
-    o+='<div class="hinw" style="padding:0;color:#24D3E8">'+h(d.grund||"noch nicht eingerichtet")+'</div>';
+    o+='<div class="hinw" style="padding:0;color:#E39B45">'+h(d.grund||"noch nicht eingerichtet")+'</div>';
     o+='<div class="hinw" style="padding:0;margin-top:9px">Das Referenzmodell trägst du unter '
      +'<b>KI &amp; Technik</b> bei <b>Referenzclip</b> ein:<br>'
      +'Adresse <b>fal-ai/kling-video/o3/standard/reference-to-video</b><br>'
@@ -2277,8 +2277,8 @@ function tAbspannBib(){
     o+='<div class="szz" style="display:flex;align-items:center;gap:8px;margin-top:10px">'
      /* Immer nur ein Standbild laden - nie das ganze Video. */
      +'<img alt="" loading="lazy" src="/abspann_bild/'+encodeURIComponent(e.datei)+'?k='+S.kanal+'" '
-      +'style="width:46px;height:62px;object-fit:cover;border-radius:6px;background:#0A0C12;flex:0 0 46px'
-      +(dran?';outline:2px solid #24D3E8;outline-offset:-2px':'')+'">'
+      +'style="width:46px;height:62px;object-fit:cover;border-radius:6px;background:#161210;flex:0 0 46px'
+      +(dran?';outline:2px solid #E39B45;outline-offset:-2px':'')+'">'
      +'<div style="flex:1;min-width:0">'
      +'<input type="text" class="breit" value="'+h(e.name)+'" '
      +'onchange="abSetz({aktion:\'name\',id:\''+h(e.id)+'\',wert:this.value})">'
@@ -2397,7 +2397,7 @@ function tDarsteller(){
    +'Den Namen braucht das Modell nur, damit deine Regieanweisung „Mara zeigt nach oben" '
    +'bei der richtigen Figur ankommt.</div>'
    +'<div class="szz"><span class="szh">Für dieses Video dabei</span>'
-   +'<span style="font-weight:700;font-size:15px;color:'+(anzahl?'#24D3E8':'#8593AC')+'">'
+   +'<span style="font-weight:700;font-size:15px;color:'+(anzahl?'#E39B45':'#C8B0A0')+'">'
    +anzahl+' von '+max+'</span></div>';
 
   if(d.bereit){
@@ -2427,9 +2427,9 @@ function tDarsteller(){
        +'<img alt="" src="/darsteller/'+encodeURIComponent(b.datei)+'?k='+S.kanal+'" '
        +'title="'+(bi===0?'Frontalbild':'antippen: zum Frontalbild machen')+'" '
        +'onclick="dsBildVor(\''+h(f.id)+'\',\''+h(b.datei)+'\')" '
-       +'style="width:66px;height:88px;object-fit:cover;border-radius:8px;background:#0A0C12;'
-       +'display:block;cursor:pointer;'+(bi===0?'outline:2px solid #24D3E8;outline-offset:-2px':'')+'">'
-       +(bi===0?'<div style="position:absolute;left:0;right:0;bottom:0;background:#24D3E8;color:#04161B;'
+       +'style="width:66px;height:88px;object-fit:cover;border-radius:8px;background:#161210;'
+       +'display:block;cursor:pointer;'+(bi===0?'outline:2px solid #E39B45;outline-offset:-2px':'')+'">'
+       +(bi===0?'<div style="position:absolute;left:0;right:0;bottom:0;background:#E39B45;color:#1C1208;'
                +'font-size:9.5px;font-weight:700;text-align:center;padding:2px 0;'
                +'border-radius:0 0 8px 8px;pointer-events:none">FRONTAL</div>':'')
        +'<button class="ik rot" title="Bild löschen" '
@@ -2662,7 +2662,7 @@ function tGeschichte(){
   o+='<div class="karte p"><h2 class="kt">Wie es aussehen soll</h2>'
    +reihe("Stil",wahl("geschichte_stil",S.einst.geschichte_stil||"",
       (g.stile||[["","ohne Vorgabe"]])))
-   +'<div style="padding:11px 0 4px;border-top:1px solid #202636">'
+   +'<div style="padding:11px 0 4px;border-top:1px solid #3E2E26">'
    +'<div class="lb" style="margin-bottom:6px">Stil-Anker</div>'
    +'<textarea id="anker" style="min-height:74px" placeholder="gleiche Figur wie auf der Vorlage, gleiche Koerperform und Kopfgroesse, ganzer Koerper im Bild, weiches Studiolicht, keine Schrift auf der Kleidung"'
    +' onchange="p86Feld(\'stil_zusatz\',\'Stil-Anker\',\'anker\',this.value)">'+h(S.einst.stil_zusatz||"")+'</textarea>'
