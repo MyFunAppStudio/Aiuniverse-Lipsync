@@ -114,7 +114,7 @@ def zerlege(text, hoechstens=40):
     return _in_den_clip(raus, hoechstens)
 
 
-_CLIP_ECKIG = re.compile(r"\[[^\[\]]*\]")
+_CLIP_ECKIG = re.compile(r"\[([^\[\]]*)\]")
 _CLIP_NAME = re.compile(r"^([^:]{1,24}):\s*")
 
 
