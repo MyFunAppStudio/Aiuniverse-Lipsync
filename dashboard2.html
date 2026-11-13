@@ -1605,6 +1605,7 @@ function clipZeile(s){
     o+='<div class="szz p62" style="display:block;border:2px solid #37D67A;'
      +'border-radius:12px;padding:9px">'
      +'<div class="szh" style="color:#37D67A;margin-bottom:6px">● Clip fertig</div>'
+     +(txt?'<div class="szh" style="margin-bottom:6px">'+h(txt)+'</div>':'')
      +'<video src="/eigen/'+encodeURIComponent(clip)+'?k='+S.kanal+'" controls playsinline muted '
      +'style="width:100%;max-height:300px;border-radius:9px;background:#000;display:block"></video>'
      +'<div style="display:flex;gap:7px;margin-top:7px">'
