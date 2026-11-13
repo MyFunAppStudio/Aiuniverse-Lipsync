@@ -1758,7 +1758,10 @@ def _r5_lauf(k, sids):
                 e["nummer"] = nr + 1
                 e["rest"] = list(sids[nr + 1:])
             try:
-                _r5_einen(k, sid)
+                if ( _R5_LAEUFT.get(k) or {}).get("nur_mund"):
+                    _r5_nur_mund(k, sid)
+                else:
+                    _r5_einen(k, sid)
             except Exception as f:
                 print("[Referenz] Szene %s ging schief: %s" % (sid, f))
                 try:
@@ -1805,7 +1808,8 @@ def r5_clip_start(k, b):
             return {"ok": False, "fehler": "Es laeuft schon ein Clip."}
         _R5_LAEUFT[k] = {"sid": sids[0], "rest": sids[1:], "stop": False,
                          "text": "faengt an", "start": _r5_time.time(),
-                         "gesamt": len(sids)}
+                         "gesamt": len(sids),
+                         "nur_mund": bool(b.get("nur_mund"))}
     t = _r5_threading.Thread(target=_r5_lauf, args=(k, sids), daemon=True)
     t.start()
     return {"ok": True, "anzahl": len(sids)}
@@ -3088,6 +3092,36 @@ def _r5_einen(k, sid):
                            "Szene bewegt, Muender nicht gesetzt: %s" % (hinweis or "unbekannt"))
     print("[Lippen] %s" % hinweis)
     return ok, name
+
+
+def _r5_nur_mund(k, sid):
+    """Setzt nur die Muender neu. Der Kling-Clip wird nicht noch einmal bezahlt."""
+    s = szenen.r3_szene(k, sid) or {}
+    name = s.get("clip") or ""
+    alt = (s.get("clip_alt") or [None])[0]
+    if "_lippen" in name and alt:
+        szenen.r6_zurueck(k, sid, "clip", alt)
+
+    def melden(t):
+        if not t:
+            return
+        szenen.r3_stand_setzen(k, sid, "laeuft", t)
+        with _R5_SPERRE:
+            if k in _R5_LAEUFT:
+                _R5_LAEUFT[k]["text"] = t
+
+    try:
+        import lippen
+        geschafft, hinweis = lippen.nachziehen(k, sid, melden)
+    except Exception as e:
+        geschafft, hinweis = False, str(e)[:200]
+        print("[Lippen] Nachzug ging nicht: %s" % hinweis)
+    if geschafft:
+        szenen.r3_stand_setzen(k, sid, "fertig", hinweis or "lippensynchron")
+        return True, hinweis or ""
+    szenen.r3_stand_setzen(k, sid, "fertig",
+                           "Muender nicht gesetzt: %s" % (hinweis or "unbekannt"))
+    return False, hinweis
 
 
 # ---------- Start. Muss die letzte Zeile der Datei bleiben ----------

@@ -1613,6 +1613,8 @@ function clipZeile(s){
      +' onclick="clipNeu(\''+s.id+'\','+(s.clip_dauer||0)+',true)">Clip neu machen</button>'
      +'<button class="knopf" onclick="clipWeg(\''+s.id+'\')">Verwerfen</button>'
      +'</div>'
+     +'<button class="knopf" style="width:100%;margin-top:7px"'+(laeuft?' disabled':'')
+     +' onclick="nurMuender(\''+s.id+'\')">Nur Münder neu</button>'
      +versionen(s,"clip")
      +'<div class="szh" style="margin-top:4px">Dieser Clip wird ins Video übernommen. '
      +'Das Standbild wird dann nicht mehr gebraucht.</div></div>';
@@ -1750,6 +1752,17 @@ function clipAbfrage(s,sek,preis,schon){
   if(schon)o+='<div style="margin-top:10px">Der jetzige Clip geht nicht verloren — '
     +'er rutscht in den Verlauf.</div>';
   return o;
+}
+function nurMuender(id){
+  frage("Nur die Münder neu?",
+    "Der vorhandene Clip bleibt. Es wird nicht noch einmal animiert. "
+    +"Nur die Münder werden neu gesetzt.",
+    "Münder neu",function(){
+      api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{sid:id,nur_mund:true}).then(function(r){
+        if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+        ladeClips();
+      });
+    });
 }
 function clipNeu(id,sek,schon){
   var js=((R6.stand||{}).je_sekunde)||0;

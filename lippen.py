@@ -358,8 +358,8 @@ def mund_maske(form, box, weich=31):
     h, w = form[:2]
     maske = np.zeros((h, w), dtype=np.uint8)
     x, y, fw, fh = box[:4]
-    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.74))
-    rx, ry = max(4, int(fw * 0.46)), max(4, int(fh * 0.22))
+    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.68))
+    rx, ry = max(4, int(fw * 0.26)), max(3, int(fh * 0.11))
     cv2.ellipse(maske, (cx, cy), (rx, ry), 0, 0, 360, 255, -1)
     k = int(max(fw, fh) * 0.16)
     k = max(7, k)
@@ -782,22 +782,30 @@ def nachziehen(k, sid, melden=None):
 
         aktuell = bilder
         geschafft = []
+        gruende = []
         for n, spur in zuordnung:
             kopf, rechtecke = kopf_clip(aktuell, spur, fps, os.path.join(arbeit, _dateiname(n)),
                                         breite, hoehe)
             if not kopf:
-                sag("%s: Kopfclip ging nicht" % n)
+                gruende.append("%s: Kopfclip ging nicht" % n)
+                sag(gruende[-1])
                 continue
             ziel = os.path.join(arbeit, "sync_%s.mp4" % _dateiname(n))
             sag("%s: Mund wird gesetzt" % n)
             sync = _fal_clip(kanal, kopf, spuren_ton[n], ziel, sag)
             if not sync:
-                sag("%s: Lippenmodell hat nichts geliefert" % n)
+                sag("%s: noch einmal" % n)
+                time.sleep(8)
+                sync = _fal_clip(kanal, kopf, spuren_ton[n], ziel, sag)
+            if not sync:
+                gruende.append("%s: Lippenmodell hat nichts geliefert" % n)
+                sag(gruende[-1])
                 continue
             aktiv = aktive_rahmen(_zeiten_fuer(wann, n), fps, len(aktuell))
             neu = zurueck(aktuell, sync, spur, rechtecke, aktiv, os.path.join(arbeit, "zurueck_" + _dateiname(n)))
             if not neu:
-                sag("%s: Mund liess sich nicht zuruecklegen" % n)
+                gruende.append("%s: Mund liess sich nicht zuruecklegen" % n)
+                sag(gruende[-1])
                 continue
             aktuell = neu
             geschafft.append(n)
@@ -814,9 +822,8 @@ def nachziehen(k, sid, melden=None):
         if not gesetzt.get("ok"):
             return False, gesetzt.get("fehler") or "Clip nicht angenommen"
         if len(geschafft) < len(zuordnung):
-            offen = [n for n, _s in zuordnung if n not in geschafft]
-            return True, "lippensynchron (%s), ohne Mund: %s" % (
-                ", ".join(geschafft), ", ".join(offen))
+            return True, "lippensynchron (%s). %s" % (
+                ", ".join(geschafft), " ".join(gruende))
         return True, "lippensynchron, " + " und ".join(
             "%s %s" % (n, sp["seite"]) for n, sp in zuordnung)
     finally:
