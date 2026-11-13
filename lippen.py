@@ -562,145 +562,6 @@ def _warten(basis, key, start, ziel, sag):
     return animation._laden(url, ziel)
 
 
-KLING_LIPPEN = "fal-ai/kling-video/lipsync/audio-to-video"
-
-
-def _kling_mass(video, ziel):
-    """Kling nimmt nur 2 bis 10 Sekunden und Kanten zwischen 720 und 1920."""
-    info = masse(video)
-    if not info:
-        return None
-    b, h, _fps, dauer = info
-    skala = 1.0
-    if max(b, h) > 1920:
-        skala = 1920.0 / max(b, h)
-    if min(b, h) * skala < 720:
-        skala = 720.0 / min(b, h)
-    if max(b, h) * skala > 1920:
-        skala = 1920.0 / max(b, h)
-    nb = max(720, int(b * skala) // 2 * 2)
-    nh = max(720, int(h * skala) // 2 * 2)
-    vf = "scale=%d:%d" % (nb, nh)
-    t = min(9.8, max(2.0, float(dauer)))
-    r = _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
-               "-t", "%.2f" % t, "-vf", vf, "-an",
-               "-c:v", "libx264", "-pix_fmt", "yuv420p", str(ziel)])
-    if r.returncode != 0 or not os.path.exists(ziel):
-        return None
-    return str(ziel)
-
-
-def _kling_clip(kanal, video, audio, ziel, sag):
-    """Der ganze Clip plus eine Stimme. Kling bewegt den Mund selbst."""
-    import animation
-    import schluessel
-    e = _eintrag(kanal)
-    key = (e.get("key") or "").strip() or schluessel.fuer(kanal, e)
-    if not key:
-        sag("kein fal-Schluessel fuer Kling-Lippen")
-        return None
-    sag("lade Clip und Stimme hoch")
-    vurl = animation.m18_hochladen(video, key)
-    aurl = animation.m18_hochladen(audio, key)
-    if not vurl or not aurl or str(vurl).startswith("data:"):
-        sag("Hochladen zu fal ging nicht")
-        return None
-    basis = animation._basis_url(KLING_LIPPEN)
-    try:
-        start = animation._hole(basis, key,
-                                {"video_url": vurl, "audio_url": aurl}, zeit=120)
-    except urllib.error.HTTPError as f:
-        roh = ""
-        try:
-            roh = f.read().decode("utf-8", "replace")[:240]
-        except Exception:
-            pass
-        sag("Kling-Lippen lehnt ab (%s). %s" % (f.code, roh))
-        return None
-    except Exception as f:
-        sag("keine Verbindung zu Kling-Lippen: %s" % str(f)[:140])
-        return None
-    return _warten(basis, key, start, ziel, sag)
-
-
-def _sicht_anteil(spur, aktiv):
-    """Wie viel der Sprechzeit ein Gesicht wirklich im Bild ist."""
-    if not aktiv:
-        return 0.0
-    da = 0
-    gesehen = spur.get("gesehen") or []
-    for i in aktiv:
-        if i < len(gesehen) and gesehen[i] is not None:
-            da += 1
-    return da / float(len(aktiv))
-
-
-def gesicht_maske(form, box):
-    """Weiche Maske ueber das ganze Gesicht, nicht nur ein Lippenpunkt."""
-    import cv2
-    import numpy as np
-    h, w = form[:2]
-    maske = np.zeros((h, w), dtype=np.uint8)
-    x, y, fw, fh = box[:4]
-    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.52))
-    rx, ry = max(8, int(fw * 0.55)), max(8, int(fh * 0.62))
-    cv2.ellipse(maske, (cx, cy), (rx, ry), 0, 0, 360, 255, -1)
-    k = max(5, int(min(rx, ry) * 0.22))
-    if k % 2 == 0:
-        k += 1
-    return cv2.GaussianBlur(maske, (k, k), 0)
-
-
-def mischen_kopf(orig, sync_bild, rect, box):
-    """Setzt den von Kling gesprochenen Kopf weich zurueck."""
-    import numpy as np
-    voll = orig.copy()
-    lege(voll, sync_bild, rect)
-    maske = gesicht_maske(orig.shape, box)
-    alpha = (maske.astype("float32") / 255.0)[:, :, None]
-    return (orig.astype("float32") * (1.0 - alpha)
-            + voll.astype("float32") * alpha).astype(orig.dtype)
-
-
-def kopf_zurueck(dateien, sync_video, spur, rechtecke, aktiv, ordner):
-    """Der Kopfclip von Kling ersetzt das Gesicht, nur waehrend die Person redet."""
-    import cv2
-    sync_ordner = os.path.join(ordner, "sync")
-    os.makedirs(sync_ordner, exist_ok=True)
-    rahmen_holen(sync_video, sync_ordner)
-    syncs = sorted(glob.glob(os.path.join(sync_ordner, "*.jpg")))
-    if not syncs:
-        return None
-    raus_ordner = os.path.join(ordner, "fertig")
-    os.makedirs(raus_ordner, exist_ok=True)
-    n, ns = len(dateien), len(syncs)
-    geschrieben, geaendert = [], 0
-    for i, pfad in enumerate(dateien):
-        orig = cv2.imread(pfad)
-        if orig is None:
-            continue
-        ziel = os.path.join(raus_ordner, "%05d.jpg" % i)
-        gesehen = spur["gesehen"][i] if i < len(spur["gesehen"]) else None
-        rect = rechtecke[i] if i < len(rechtecke) else None
-        if i not in aktiv or gesehen is None or rect is None:
-            cv2.imwrite(ziel, orig, [cv2.IMWRITE_JPEG_QUALITY, 92])
-            geschrieben.append(ziel)
-            continue
-        j = min(ns - 1, int(round(i * (ns - 1) / float(max(1, n - 1)))))
-        kopf = cv2.imread(syncs[j])
-        if kopf is None:
-            cv2.imwrite(ziel, orig, [cv2.IMWRITE_JPEG_QUALITY, 92])
-        else:
-            neu = mischen_kopf(orig, kopf, rect, gesehen)
-            if _mund_anders(orig, neu, gesehen):
-                geaendert += 1
-            cv2.imwrite(ziel, neu, [cv2.IMWRITE_JPEG_QUALITY, 92])
-        geschrieben.append(ziel)
-    if geaendert < 3:
-        return None
-    return geschrieben
-
-
 def _kanal(k):
     if isinstance(k, dict):
         k.setdefault("_key", k.get("id") or "")
@@ -940,37 +801,25 @@ def nachziehen(k, sid, melden=None):
         geschafft = []
         gruende = []
         for n, spur in zuordnung:
-            aktiv = aktive_rahmen(_zeiten_fuer(wann, n), fps, len(aktuell))
-            if _sicht_anteil(spur, aktiv) < 0.5:
-                gruende.append("%s ist beim Sprechen nicht im Bild" % n)
-                sag(gruende[-1])
-                continue
-            kopf, rechtecke = kopf_clip(
-                aktuell, spur, fps, os.path.join(arbeit, _dateiname(n)),
-                breite, hoehe)
+            kopf, rechtecke = kopf_clip(aktuell, spur, fps, os.path.join(arbeit, _dateiname(n)),
+                                        breite, hoehe)
             if not kopf:
                 gruende.append("%s: Kopfclip ging nicht" % n)
                 sag(gruende[-1])
                 continue
-            klingkopf = _kling_mass(kopf, os.path.join(arbeit, "mass_%s.mp4" % _dateiname(n)))
-            if not klingkopf:
-                gruende.append("%s: Kopf passt nicht zu Kling" % n)
-                sag(gruende[-1])
-                continue
-            ton = auf_laenge(spuren_ton[n], masse(klingkopf)[3],
-                             os.path.join(arbeit, "ton_%s.mp3" % _dateiname(n)))
-            if not ton:
-                gruende.append("%s: Stimme passt nicht zur Laenge" % n)
-                continue
-            ziel = os.path.join(arbeit, "kling_%s.mp4" % _dateiname(n))
-            sag("%s: ein Gesicht, eine Stimme" % n)
-            sync = _kling_clip(kanal, klingkopf, ton, ziel, sag)
+            ziel = os.path.join(arbeit, "sync_%s.mp4" % _dateiname(n))
+            sag("%s: Mund wird gesetzt" % n)
+            sync = _fal_clip(kanal, kopf, spuren_ton[n], ziel, sag)
             if not sync:
-                gruende.append("%s: Kling-Lippen hat nichts geliefert" % n)
+                sag("%s: noch einmal" % n)
+                time.sleep(8)
+                sync = _fal_clip(kanal, kopf, spuren_ton[n], ziel, sag)
+            if not sync:
+                gruende.append("%s: Lippenmodell hat nichts geliefert" % n)
                 sag(gruende[-1])
                 continue
-            neu = kopf_zurueck(aktuell, sync, spur, rechtecke, aktiv,
-                               os.path.join(arbeit, "zurueck_" + _dateiname(n)))
+            aktiv = aktive_rahmen(_zeiten_fuer(wann, n), fps, len(aktuell))
+            neu = zurueck(aktuell, sync, spur, rechtecke, aktiv, os.path.join(arbeit, "zurueck_" + _dateiname(n)))
             if not neu:
                 gruende.append("%s: Mund hat sich nicht bewegt" % n)
                 sag(gruende[-1])
@@ -979,7 +828,7 @@ def nachziehen(k, sid, melden=None):
             geschafft.append(n)
 
         if not geschafft:
-            return False, "; ".join(gruende) or "kein Mund gesetzt"
+            return False, "kein Mund gesetzt"
         endname = "clip_%s_%s_lippen.mp4" % (
             __import__("re").sub(r"[^A-Za-z0-9]+", "", str(sid))[:12],
             time.strftime("%H%M%S"))
@@ -992,7 +841,7 @@ def nachziehen(k, sid, melden=None):
         if len(geschafft) < len(zuordnung):
             return True, "lippensynchron (%s). %s" % (
                 ", ".join(geschafft), " ".join(gruende))
-        return True, "Kling-Lippen, " + " und ".join(
+        return True, "lippensynchron, " + " und ".join(
             "%s %s" % (n, sp["seite"]) for n, sp in zuordnung)
     finally:
         shutil.rmtree(arbeit, ignore_errors=True)
