@@ -465,3 +465,24 @@ def aus_paket(paket):
             teile.append("[IM BILD: %s]" % (wer or "niemand"))
         zeilen.append("(%s)" % " ".join(teile))
     return "\n\n".join(zeilen)
+
+
+# ---------- Nachtrag: gleicher Knopf, anderer Text ----------
+# Bleibt das Thema im Feld stehen, soll der naechste Druck nicht
+# dieselbe Fassung noch einmal liefern.
+
+_neu_vorschlag_alt = vorschlag
+
+
+def vorschlag(kanal, thema="", bisher=""):
+    alt = " ".join(str(bisher or "").split())
+    if alt and isinstance(kanal, dict):
+        kanal = dict(kanal)
+        kanal["prompt"] = (kanal.get("prompt") or "") + (
+            "\n\nNEUER VERSUCH:\n"
+            "Zu diesem Thema liegt schon eine Fassung vor. Schreibe eine andere. "
+            "Anderer erster Satz, andere Szenen, andere Formulierungen. "
+            "Dieselbe Fassung noch einmal ist falsch.\n"
+            "Die alte Fassung, nicht wiederholen:\n" + alt[:1200]
+        )
+    return _neu_vorschlag_alt(kanal, thema)

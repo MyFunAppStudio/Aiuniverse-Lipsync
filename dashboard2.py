@@ -1091,7 +1091,8 @@ class Griff(BaseHTTPRequestHandler):
             d = dict(einstellungen.laden().get(k) or {})
             d.setdefault("id", k)
             d.setdefault("name", k)
-            return self.sende(geschichte.vorschlag(d, b.get("thema") or ""))
+            return self.sende(geschichte.vorschlag(
+                d, b.get("thema") or "", b.get("bisher") or ""))
 
         if w == "/api/darsteller":
             return self.sende(darsteller_schreiben(k, b))

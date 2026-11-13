@@ -24,6 +24,7 @@ def _claude_anfrage(prompt, max_tokens=20000, kanal=None):
         daten = json.dumps({
             "model": modell,
             "max_tokens": max_tokens,
+            "temperature": 1,
             "messages": [{"role": "user", "content": prompt}]
         }).encode()
         anfrage = urllib.request.Request(

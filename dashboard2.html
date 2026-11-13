@@ -2809,8 +2809,9 @@ function textSchreiben(){
 function textSchreibenLos(){
   var b=el("gsknopf"); if(!b)return;
   var thema=(el("gsthema")||{}).value||"";
+  var bisher=(el("gstext")||{}).value||"";
   b.disabled=true; b.textContent="schreibt…";
-  api("/api/vorschlag?k="+S.kanal,{thema:thema}).then(function(r){
+  api("/api/vorschlag?k="+S.kanal,{thema:thema,bisher:bisher}).then(function(r){
     b.disabled=false; b.textContent="Schreiben";
     if(!r||!r.ok)return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
     var d={geschichte_teil:0};
