@@ -1054,6 +1054,66 @@ def _t7_stufen(kanal):
 
 _t7_erzeuge_alt = erzeuge_paket
 
+import re as _clip_re
+_CLIP_NAME = _clip_re.compile(r"^([^:]{1,24}):\s*")
+_CLIP_KLAMMER = _clip_re.compile(r"\[[^\[\]]*\]")
+
+
+def _clip10(paket):
+    """Keine Szene darf laenger gesprochen sein, als der Clip dauert.
+
+    22 Woerter sind bei der Schaetzung knapp unter 10 Sekunden. Was
+    darueber liegt, wird zur naechsten Szene - dasselbe Bild, neuer Satz.
+    Die Text-KI haelt sich nicht an die Vorgabe.
+    """
+    if not isinstance(paket, dict):
+        return paket
+    szenen = paket.get("szenen")
+    if not isinstance(szenen, list):
+        return paket
+    neu = []
+    for s in szenen:
+        if not isinstance(s, dict):
+            neu.append(s)
+            continue
+        roh = _CLIP_KLAMMER.sub(" ", s.get("text") or "")
+        auf = roh.find("[")
+        if auf >= 0:
+            roh = roh[:auf]
+        roh = " ".join(roh.split())
+        name = ""
+        m = _CLIP_NAME.match(roh)
+        if m and len(m.group(1).split()) <= 3:
+            name = m.group(1).strip()
+            roh = roh[m.end():].strip()
+        woerter = roh.split()
+        if len(woerter) <= 22:
+            s2 = dict(s)
+            s2["text"] = (name + ": " + roh).strip(": ").strip() if name else roh
+            neu.append(s2)
+            continue
+        rest = woerter
+        while rest:
+            if len(rest) <= 26:
+                stueck, rest = rest, []
+            else:
+                schnitt = 18
+                for i in range(18, 10, -1):
+                    if rest[i - 1][-1:] in ",;:":
+                        schnitt = i
+                        break
+                stueck, rest = rest[:schnitt], rest[schnitt:]
+            s2 = dict(s)
+            kern = " ".join(stueck)
+            s2["text"] = (name + ": " + kern) if name else kern
+            neu.append(s2)
+    if len(neu) != len(szenen):
+        print("[Text] Zu lang fuer 10 Sekunden: %d Szenen werden %d"
+              % (len(szenen), len(neu)))
+    raus = dict(paket)
+    raus["szenen"] = neu
+    return raus
+
 
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
@@ -1074,7 +1134,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             print("[Text] %d Szenen zu je hoechstens %d Sekunden "
                   "(vorher %d Szenen, im Schnitt %.1f)"
                   % (szenen, stufe, bisher, gesamt / max(1, bisher)))
-            return _t7_erzeuge_alt(k, eigenes_thema)
+            return _clip10(_t7_erzeuge_alt(k, eigenes_thema))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
-    return _t7_erzeuge_alt(kanal, eigenes_thema)
+    return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema))

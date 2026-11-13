@@ -299,8 +299,16 @@ _p50_sek_alt = geschaetzte_sekunden
 
 
 def _p50_ohne_regie(text):
-    """Nimmt die eckigen Klammern samt Inhalt raus - die wird nicht gesprochen."""
-    return _p50_klammern.sub(" ", text or "")
+    """Nimmt die eckigen Klammern samt Inhalt raus - die wird nicht gesprochen.
+
+    Eine vergessene schliessende Klammer zaehlt sonst den ganzen Bildtext
+    als gesprochen mit, und die Szene wirkt laenger als sie ist.
+    """
+    t = _p50_klammern.sub(" ", text or "")
+    auf = t.find("[")
+    if auf >= 0:
+        t = t[:auf]
+    return t
 
 
 def geschaetzte_sekunden(text):
