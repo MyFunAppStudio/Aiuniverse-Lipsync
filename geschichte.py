@@ -153,10 +153,18 @@ def _clip_stueck(satz):
                 beide.append((m.group(1).strip(), wort))
     anhang = "".join(" [%s]" % k for k in klammern)
     if len(beide) >= 2:
-        if sum(len(w.split()) for _n, w in beide) <= 22:
-            kern = " ".join("%s: %s." % (n, w) for n, w in beide)
-            return [(kern + anhang).strip()]
-        return [("%s: %s.%s" % (n, w, anhang)).strip() for n, w in beide]
+        woerter = [(n, w.split()) for n, w in beide]
+        if sum(len(w) for _n, w in woerter) > 20:
+            topf, gekuerzt, rest = 20, [], len(woerter)
+            for name, ww in woerter:
+                rest -= 1
+                nimm = topf if rest == 0 else max(4, topf // (rest + 1))
+                nimm = min(len(ww), topf, nimm)
+                gekuerzt.append((name, " ".join(ww[:max(1, nimm)])))
+                topf -= max(1, nimm)
+            beide = gekuerzt
+        kern = " ".join("%s: %s." % (n, w) for n, w in beide)
+        return [(kern + anhang).strip()]
     name = ""
     m = _CLIP_NAME.match(rest)
     if m and len(m.group(1).split()) <= 3:

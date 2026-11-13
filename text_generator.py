@@ -1070,6 +1070,22 @@ def _clip_sprecher(text):
     return raus if len(raus) >= 2 else []
 
 
+def _clip_beide_kurz(beide, grenze=20):
+    """Beide bleiben in derselben Szene. Zu langer Text wird gekuerzt."""
+    teile = [(n, w.split()) for n, w in beide]
+    if sum(len(w) for _n, w in teile) <= grenze:
+        return [(n, " ".join(w)) for n, w in teile]
+    topf, raus = grenze, []
+    rest = len(teile)
+    for name, ww in teile:
+        rest -= 1
+        nimm = topf if rest == 0 else max(4, topf // (rest + 1))
+        nimm = min(len(ww), topf, nimm)
+        raus.append((name, " ".join(ww[:max(1, nimm)])))
+        topf -= max(1, nimm)
+    return raus
+
+
 def _clip10(paket):
     """Keine Szene darf laenger gesprochen sein, als der Clip dauert.
 
@@ -1094,17 +1110,11 @@ def _clip10(paket):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
+            beide = _clip_beide_kurz(beide)
             s2 = dict(s)
             s2["text"] = " ".join("%s: %s." % (n, w) for n, w in beide)
             s2["wer"] = [n for n, _w in beide]
-            if sum(len(w.split()) for _n, w in beide) <= 22:
-                neu.append(s2)
-            else:
-                for n, w in beide:
-                    einzeln = dict(s)
-                    einzeln["text"] = "%s: %s." % (n, w)
-                    einzeln["wer"] = [n]
-                    neu.append(einzeln)
+            neu.append(s2)
             continue
         name = ""
         m = _CLIP_NAME.match(roh)
