@@ -142,7 +142,8 @@ def _clip_stueck(satz):
         rest = rest[:auf]
     rest = " ".join(rest.split())
     beide = []
-    ms = [m for m in re.finditer(r"(?:^|\s)([^:]{1,20}):\s+", rest)
+    ms = [m for m in re.finditer(
+            r"(?:^|\s)([A-Za-zÄÖÜäöüß]+(?:\s+[A-Za-zÄÖÜäöüß]+){0,2}):\s+", rest)
           if len(m.group(1).split()) <= 3]
     if len(ms) >= 2:
         for i, m in enumerate(ms):

@@ -1052,7 +1052,7 @@ import re as _clip_re
 _CLIP_NAME = _clip_re.compile(r"^([^:]{1,24}):\s*")
 _CLIP_KLAMMER = _clip_re.compile(r"\[[^\[\]]*\]")
 _CLIP_SPRECHER = _clip_re.compile(
-    r"(?:^|\s)([A-Za-zÄÖÜäöüß][^:]{0,20}):\s+")
+    r"(?:^|\s)([A-Za-zÄÖÜäöüß]+(?:\s+[A-Za-zÄÖÜäöüß]+){0,2}):\s+")
 
 
 def _clip_sprecher(text):
