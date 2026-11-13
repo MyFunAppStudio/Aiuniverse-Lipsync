@@ -57,7 +57,10 @@ def zerlege(text, hoechstens=40):
 
     gruppen = [_sauber(g) for g in KLAMMER.findall(ganz)]
     gruppen = [g for g in gruppen if g]
-    if len(gruppen) >= 2:
+    # Eine einzelne Klammer ist eine Szene. Frueher wurden erst zwei
+    # anerkannt, und die eine wurde an Kommas und Punkten zerrissen -
+    # der Bildtext wurde dabei zu eigenen Szenen.
+    if gruppen:
         return gruppen[:hoechstens]
 
     bloecke = [_sauber(b) for b in re.split(r"\n[ \t]*\n", ganz)]
@@ -290,8 +293,8 @@ def vorschlag(kanal, thema=""):
 
 import re as _p84_re
 
-P84_GANZ = _p84_re.compile(r"\[([^\[\]]{1,400})\]", _p84_re.S)
-P84_OFFEN = _p84_re.compile(r"\[([^\[\]]{1,400})$", _p84_re.S)
+P84_GANZ = _p84_re.compile(r"\[([^\[\]]{1,2000})\]", _p84_re.S)
+P84_OFFEN = _p84_re.compile(r"\[([^\[\]]{1,2000})$", _p84_re.S)
 P84_BILD = _p84_re.compile(r"^BILD\s*[:\-]\s*", _p84_re.I)
 P84_BEWEG = _p84_re.compile(r"^BEWEGUNG\s*[:\-]\s*", _p84_re.I)
 
