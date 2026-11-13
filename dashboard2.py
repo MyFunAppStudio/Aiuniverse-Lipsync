@@ -2825,7 +2825,10 @@ def _m6_handlung(namen, regie):
         grund = regie.strip()
         if grund[-1] not in ".!?":
             grund += "."
-        return (grund + " Mouths stay closed. The camera stays locked and "
+        return (grund + " The camera stays locked. %s stays fully in frame "
+                "from the first frame to the last. The mouth stays closed. "
+                % namen[0]) if len(namen) == 1 else (
+                grund + " Mouths stay closed. The camera stays locked and "
                 "both people stay in frame the whole time. ")
     wenn_zwei = ("They stand still and look into the camera. Mouths closed, "
                  "no speech, no pointing. "
@@ -2858,11 +2861,11 @@ def _r5_prompt(k, kanal, s):
              "Both heads face the camera the whole time and never turn away. "
              "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s stands a few steps further back, fully visible from head "
-             "to boots. The landscape is the larger part of the picture. "
-             "The person is smaller than a close-up, but the face is still "
-             "readable. The head faces the camera the whole time. The mouth "
-             "stays closed. No pointing. " % namen[0],
+             "%s stands in the foreground, waist up, face large and readable. "
+             "The head faces the camera the whole time and never turns away. "
+             "The camera stays locked, and the person stays fully in frame "
+             "from the first frame to the last. The mouth stays closed. "
+             "No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()

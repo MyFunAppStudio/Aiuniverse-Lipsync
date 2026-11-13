@@ -692,6 +692,100 @@ def _mund_anders(vorher, nachher, box):
     return int((np.abs(a - b).sum(axis=2) > 18).sum()) > 40
 
 
+KLING_LIPPEN = "fal-ai/kling-video/lipsync/audio-to-video"
+
+
+def _fuer_kling(video, ziel):
+    """2 bis 10 Sekunden, beide Kanten zwischen 720 und 1920."""
+    info = masse(video)
+    if not info:
+        return None
+    b, h, _fps, dauer = info
+    skala = 1.0
+    if max(b, h) > 1920:
+        skala = 1920.0 / max(b, h)
+    if min(b * skala, h * skala) < 720:
+        skala = 720.0 / min(b, h)
+    if max(b * skala, h * skala) > 1920:
+        skala = 1920.0 / max(b, h)
+    nb = max(2, int(round(b * skala)) // 2 * 2)
+    nh = max(2, int(round(h * skala)) // 2 * 2)
+    t = min(9.8, max(2.0, float(dauer)))
+    r = _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
+               "-t", "%.2f" % t, "-vf", "scale=%d:%d" % (nb, nh), "-an",
+               "-c:v", "libx264", "-pix_fmt", "yuv420p", str(ziel)])
+    if r.returncode != 0 or not os.path.exists(ziel):
+        return None
+    return str(ziel)
+
+
+def _kling_ganz(kanal, video, audio, ziel, sag):
+    """Das zurueckgegebene Video ist der Clip. Nichts wird draufgeklebt."""
+    import animation
+    import schluessel
+    e = _eintrag(kanal)
+    key = (e.get("key") or "").strip() or schluessel.fuer(kanal, e)
+    if not key:
+        sag("kein fal-Schluessel")
+        return None
+    sag("lade Clip und Stimme hoch")
+    vurl = animation.m18_hochladen(video, key)
+    aurl = animation.m18_hochladen(audio, key)
+    if not vurl or not aurl or str(vurl).startswith("data:"):
+        sag("Hochladen zu fal ging nicht")
+        return None
+    basis = animation._basis_url(KLING_LIPPEN)
+    try:
+        start = animation._hole(basis, key,
+                                {"video_url": vurl, "audio_url": aurl}, zeit=120)
+    except urllib.error.HTTPError as f:
+        roh = ""
+        try:
+            roh = f.read().decode("utf-8", "replace")[:240]
+        except Exception:
+            pass
+        sag("Kling-Lippen lehnt ab (%s). %s" % (f.code, roh))
+        return None
+    except Exception as f:
+        sag("keine Verbindung zu Kling-Lippen: %s" % str(f)[:140])
+        return None
+    return _warten(basis, key, start, ziel, sag)
+
+
+def _eine_einstellung(k, sid, kanal, s, clip, name, sag):
+    """Eine Person, eine Stimme. Kling-Lipsync ersetzt den ganzen Clip."""
+    import szenen
+    arbeit = tempfile.mkdtemp(prefix="eine_")
+    try:
+        sag("Stimme fuer %s" % name)
+        stuecke = _stuecke(k, kanal, s, arbeit)
+        if not stuecke:
+            return False, "Stimme liess sich nicht erzeugen"
+        sag("Clip fuer Kling-Lippen")
+        passend = _fuer_kling(clip, os.path.join(arbeit, "mass.mp4"))
+        if not passend:
+            return False, "Clip passt nicht zu Kling-Lippen"
+        dauer = masse(passend)[3]
+        roh = _spur(stuecke, name, os.path.join(arbeit, "spur.mp3"))
+        if not roh:
+            return False, "Tonspur ging nicht"
+        ton = auf_laenge(roh, max(2.0, dauer), os.path.join(arbeit, "fest.mp3"))
+        if not ton:
+            return False, "Tonspur liess sich nicht anpassen"
+        endname = "clip_%s_%s_rede.mp4" % (_dateiname(name), time.strftime("%H%M%S"))
+        ziel = os.path.join(szenen.ordner(k), endname)
+        sag("%s redet" % name)
+        fertig = _kling_ganz(kanal, passend, ton, ziel, sag)
+        if not fertig or not os.path.exists(ziel):
+            return False, "Kling-Lippen hat kein Video geliefert"
+        gesetzt = szenen.r3_clip_setzen(k, sid, endname)
+        if not gesetzt.get("ok"):
+            return False, gesetzt.get("fehler") or "Clip nicht angenommen"
+        return True, "redet: %s" % name
+    finally:
+        shutil.rmtree(arbeit, ignore_errors=True)
+
+
 def nachziehen(k, sid, melden=None):
     """Haengt die Muender an den schon erzeugten Szenenclip.
 
@@ -737,6 +831,9 @@ def nachziehen(k, sid, melden=None):
     redner = [n for n in redner if _dabei(n)]
     if not redner:
         return None, ""
+    if len(redner) != 1:
+        return None, ""
+    return _eine_einstellung(k, sid, kanal, s, clip, redner[0], sag)
 
     arbeit = tempfile.mkdtemp(prefix="lippen_")
     try:

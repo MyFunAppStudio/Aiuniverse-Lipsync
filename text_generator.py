@@ -872,11 +872,10 @@ Drei Teile, immer in dieser Reihenfolge:
    Gras im Wind, Regen, Nebel der zieht, Wasser, Licht das wandert.
    Eine Menschenmenge als Ganzes geht; einzelne Leute im Hintergrund,
    die etwas anfassen, werden Matsch.
-3. EINE Kamerabewegung, nur eine: faehrt langsam heran, zurueck oder
-   zur Seite.
+3. Die Kamera bleibt stehen. Keine Fahrt, kein Zoom, kein Schwenk.
+   Der Erklaerende bleibt von vorne im Bild.
 
-Mit Figuren: [BEWEGUNG: Mara zeigt hinunter ins Tal, Rauch zieht ueber
-das Feld, die Reihen schieben sich vor, Kamera faehrt langsam zurueck]
+Mit Figuren: [BEWEGUNG: Mara bleibt stehen und schaut in die Kamera, Rauch zieht ueber das Feld, die Reihen schieben sich vor]
 
 Ohne Figuren: [BEWEGUNG: Kamera faehrt langsam zurueck, Rauch zieht ueber das Feld]"""
 
@@ -931,7 +930,15 @@ def _t4_anweisung(namen):
     else:
         beispiel = ("  %s: Am Morgen des 18. Juni standen sich bei Waterloo "
                     "zweihunderttausend Mann gegenueber.\n" % namen[0])
-        form = ""
+        form = ("%s erklaert das ganze Video allein. In JEDER Szene spricht "
+                "nur %s, genau ein Satz, hoechstens 16 Woerter. "
+                "Das Feld \"wer\" ist in jeder Szene nur dieser eine Name.\n"
+                % (namen[0], namen[0]))
+    satz = ("JEDE Szene ist EINE Einstellung mit EINER Person. Genau ein "
+            "kurzer Satz, hoechstens 16 Woerter. Die Personen wechseln sich "
+            "ab: erst der eine, in der naechsten Szene der andere. "
+            "Das Feld \"wer\" enthaelt nur den Namen, der in dieser Szene redet.\n"
+            if mehrere else "")
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
         "In diesem Kanal treten auf: %s. Es gibt KEINEN Erzaehler. "
@@ -942,12 +949,8 @@ def _t4_anweisung(namen):
         "Die Figuren erklaeren das Thema, sie sind keine Zeitzeugen und "
         "keine historischen Personen. Sie kommentieren nicht, sie "
         "berichten.\n"
-        "JEDE Szene: beide sind im Bild und beide sagen etwas. Genau ein "
-        "kurzer Satz je Person, zusammen hoechstens 16 Woerter. Nicht einer "
-        "allein.\n"
-        "Das Feld \"wer\" enthaelt immer beide Namen, in der Reihenfolge, "
-        "in der sie reden.\n"
-        % (liste, beispiel, form)
+        "%s"
+        % (liste, beispiel, form, satz)
     )
 
 
@@ -1110,11 +1113,11 @@ def _clip10(paket):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
-            beide = _clip_beide_kurz(beide)
-            s2 = dict(s)
-            s2["text"] = " ".join("%s: %s." % (n, w) for n, w in beide)
-            s2["wer"] = [n for n, _w in beide]
-            neu.append(s2)
+            for n, w in _clip_beide_kurz(beide):
+                s2 = dict(s)
+                s2["text"] = "%s: %s." % (n, w)
+                s2["wer"] = [n]
+                neu.append(s2)
             continue
         name = ""
         m = _CLIP_NAME.match(roh)
@@ -1125,6 +1128,8 @@ def _clip10(paket):
         if len(woerter) <= 22:
             s2 = dict(s)
             s2["text"] = (name + ": " + roh).strip(": ").strip() if name else roh
+            if name:
+                s2["wer"] = [name]
             neu.append(s2)
             continue
         rest = woerter
@@ -1141,6 +1146,8 @@ def _clip10(paket):
             s2 = dict(s)
             kern = " ".join(stueck)
             s2["text"] = (name + ": " + kern) if name else kern
+            if name:
+                s2["wer"] = [name]
             neu.append(s2)
     if len(neu) != len(szenen):
         print("[Text] Zu lang fuer 10 Sekunden: %d Szenen werden %d"
