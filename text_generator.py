@@ -918,10 +918,8 @@ def _t4_anweisung(namen):
     mehrere = len(namen) > 1
     if mehrere:
         beispiel = (
-            "  %s: Am Morgen des 18. Juni standen sich bei Waterloo "
-            "zweihunderttausend Mann gegenueber.\n"
-            "  %s: Und Napoleon wartete bis Mittag, weil der Boden vom Regen "
-            "der Nacht noch zu weich war fuer die Kanonen.\n"
+            "  %s: Um sieben Uhr abends warf Napoleon die Garde nach vorn.\n"
+            "  %s: Eine Stunde spaeter war er auf der Flucht.\n"
             % (namen[0], namen[1]))
         form = ("Sie wechseln sich ab wie zwei Sprecher einer Dokumentation: "
                 "einer erzaehlt ein Stueck, der naechste fuehrt genau dort "
@@ -944,15 +942,11 @@ def _t4_anweisung(namen):
         "Die Figuren erklaeren das Thema, sie sind keine Zeitzeugen und "
         "keine historischen Personen. Sie kommentieren nicht, sie "
         "berichten.\n"
-        "Dazu gehoert je Szene das Feld \"wer\": eine Liste der Namen, die in "
-        "DIESEM Bild zu sehen sind. Das ist unabhaengig davon, wer spricht - "
-        "die Figuren koennen auch aus dem Off reden, waehrend man nur die "
-        "Landschaft sieht. Zeig sie nicht in jeder Szene; bei Szenen, in "
-        "denen der Ort oder das Ereignis wichtiger ist, gehoert \"wer\": []."
-        "\nWICHTIG: \"wer\" ist entweder LEER oder enthaelt genau die, "
-        "die in DIESER Szene reden. Zeig nie jemanden, der in der Szene "
-        "nichts sagt - das sieht aus wie ein Fehler. Redet nur einer, "
-        "steht entweder nur er drin oder die Liste bleibt leer."
+        "JEDE Szene: beide sind im Bild und beide sagen etwas. Genau ein "
+        "kurzer Satz je Person, zusammen hoechstens 16 Woerter. Nicht einer "
+        "allein.\n"
+        "Das Feld \"wer\" enthaelt immer beide Namen, in der Reihenfolge, "
+        "in der sie reden.\n"
         % (liste, beispiel, form)
     )
 
@@ -1057,6 +1051,23 @@ _t7_erzeuge_alt = erzeuge_paket
 import re as _clip_re
 _CLIP_NAME = _clip_re.compile(r"^([^:]{1,24}):\s*")
 _CLIP_KLAMMER = _clip_re.compile(r"\[[^\[\]]*\]")
+_CLIP_SPRECHER = _clip_re.compile(
+    r"(?:^|\s)([A-Za-zÄÖÜäöüß][^:]{0,20}):\s+")
+
+
+def _clip_sprecher(text):
+    """[(Name, Satz), ...] wenn mindestens zwei Leute reden."""
+    ms = [m for m in _CLIP_SPRECHER.finditer(text or "")
+          if len(m.group(1).split()) <= 3]
+    if len(ms) < 2:
+        return []
+    raus = []
+    for i, m in enumerate(ms):
+        ende = ms[i + 1].start() if i + 1 < len(ms) else len(text)
+        wort = (text[m.end():ende] or "").strip(" .")
+        if wort:
+            raus.append((m.group(1).strip(), wort))
+    return raus if len(raus) >= 2 else []
 
 
 def _clip10(paket):
@@ -1081,6 +1092,20 @@ def _clip10(paket):
         if auf >= 0:
             roh = roh[:auf]
         roh = " ".join(roh.split())
+        beide = _clip_sprecher(roh)
+        if len(beide) >= 2:
+            s2 = dict(s)
+            s2["text"] = " ".join("%s: %s." % (n, w) for n, w in beide)
+            s2["wer"] = [n for n, _w in beide]
+            if sum(len(w.split()) for _n, w in beide) <= 22:
+                neu.append(s2)
+            else:
+                for n, w in beide:
+                    einzeln = dict(s)
+                    einzeln["text"] = "%s: %s." % (n, w)
+                    einzeln["wer"] = [n]
+                    neu.append(einzeln)
+            continue
         name = ""
         m = _CLIP_NAME.match(roh)
         if m and len(m.group(1).split()) <= 3:

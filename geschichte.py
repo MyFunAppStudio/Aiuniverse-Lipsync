@@ -141,6 +141,21 @@ def _clip_stueck(satz):
     if auf >= 0:
         rest = rest[:auf]
     rest = " ".join(rest.split())
+    beide = []
+    ms = [m for m in re.finditer(r"(?:^|\s)([^:]{1,20}):\s+", rest)
+          if len(m.group(1).split()) <= 3]
+    if len(ms) >= 2:
+        for i, m in enumerate(ms):
+            ende = ms[i + 1].start() if i + 1 < len(ms) else len(rest)
+            wort = rest[m.end():ende].strip(" .")
+            if wort:
+                beide.append((m.group(1).strip(), wort))
+    anhang = "".join(" [%s]" % k for k in klammern)
+    if len(beide) >= 2:
+        if sum(len(w.split()) for _n, w in beide) <= 22:
+            kern = " ".join("%s: %s." % (n, w) for n, w in beide)
+            return [(kern + anhang).strip()]
+        return [("%s: %s.%s" % (n, w, anhang)).strip() for n, w in beide]
     name = ""
     m = _CLIP_NAME.match(rest)
     if m and len(m.group(1).split()) <= 3:
