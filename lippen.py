@@ -591,12 +591,18 @@ def _stuecke(k, kanal, s, ordner):
         if not (wort or "").strip():
             continue
         ziel = os.path.join(ordner, "zeile_%02d.mp3" % i)
+        if not wer:
+            sichtbar = _sichtbare(k, s)
+            if len(sichtbar) == 1:
+                wer = sichtbar[0]
         stimme = None
         if wer:
             try:
                 stimme = sv._stimme_fuer(kanal, wer)
             except Exception:
                 stimme = None
+        sag_name = stimme or "Kanalstimme"
+        print("[Stimme] %s spricht mit %s" % (wer or "ohne Name", sag_name))
         try:
             medien.erzeuge_stimme(kanal, wort, ziel, stimme_id=stimme)
         except TypeError:
@@ -752,6 +758,16 @@ def _kling_ganz(kanal, video, audio, ziel, sag):
     return _warten(basis, key, start, ziel, sag)
 
 
+def _ton_drauf(video, ton, ziel):
+    """Die Charlotte-Aufnahme ersetzt den Ton, den Kling mitliefert."""
+    r = _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
+               "-i", str(ton), "-map", "0:v:0", "-map", "1:a:0",
+               "-c:v", "copy", "-c:a", "aac", "-shortest", str(ziel)])
+    if r.returncode != 0 or not os.path.exists(ziel):
+        return None
+    return str(ziel)
+
+
 def _eine_einstellung(k, sid, kanal, s, clip, name, sag):
     """Eine Person, eine Stimme. Kling-Lipsync ersetzt den ganzen Clip."""
     import szenen
@@ -775,13 +791,22 @@ def _eine_einstellung(k, sid, kanal, s, clip, name, sag):
         endname = "clip_%s_%s_rede.mp4" % (_dateiname(name), time.strftime("%H%M%S"))
         ziel = os.path.join(szenen.ordner(k), endname)
         sag("%s redet" % name)
-        fertig = _kling_ganz(kanal, passend, ton, ziel, sag)
-        if not fertig or not os.path.exists(ziel):
+        rohvideo = os.path.join(arbeit, "kling.mp4")
+        fertig = _kling_ganz(kanal, passend, ton, rohvideo, sag)
+        if not fertig or not os.path.exists(rohvideo):
             return False, "Kling-Lippen hat kein Video geliefert"
+        if not _ton_drauf(rohvideo, ton, ziel):
+            return False, "Stimme liess sich nicht auf den Clip legen"
         gesetzt = szenen.r3_clip_setzen(k, sid, endname)
         if not gesetzt.get("ok"):
             return False, gesetzt.get("fehler") or "Clip nicht angenommen"
-        return True, "redet: %s" % name
+        welche = ""
+        try:
+            import darsteller
+            welche = darsteller.stimme_von(k, name) or ""
+        except Exception:
+            pass
+        return True, "redet: %s, Stimme %s" % (name, welche or "Kanalstimme")
     finally:
         shutil.rmtree(arbeit, ignore_errors=True)
 
