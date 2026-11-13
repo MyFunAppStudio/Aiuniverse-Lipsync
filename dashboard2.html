@@ -2834,7 +2834,22 @@ function textSchreibenLos(){
 try{var _t=(location.search.match(/[?&]tab=([a-z]+)/)||[])[1];if(_t)S.tab=_t}catch(e){}
 api("/api/schluessel")
  .then(function(s){S.schluessel=s;return laden()})
- .then(function(){setInterval(function(){if((S.daten.lauf||{}).laeuft)laden()},4000)});
+ .then(function(){
+  var lief=false;
+  setInterval(function(){
+    var an=!!((S.daten.lauf||{}).laeuft);
+    if(!an && !lief) return;
+    lief=an;
+    laden().then(function(){
+      lief=!!((S.daten.lauf||{}).laeuft);
+      if(!S.kanal) return;
+      api("/api/szenen?k="+S.kanal).then(function(d){
+        S.szenen=d;
+        zeichne();
+      });
+    });
+  },4000);
+ });
 </script>
 </body>
 </html>
