@@ -108,7 +108,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {max(4, int(laenge*60*_p37_wps(kanal)/max(1,anzahl_bilder)))} bis {max(6, int(laenge*60*_p37_wps(kanal)/max(1,anzahl_bilder))+3)} Woerter, in ein bis drei Saetzen. Insgesamt rund {int(laenge*60*_p37_wps(kanal))} Woerter. Zaehle die Woerter mit und halte dich exakt daran. Lieber etwas laenger als kuerzer - zu kurz ist schlimmer! SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon. Zeig die Szene so weit, dass man sieht wo man ist: Landschaft, Gebaeude, Schiffe, Menschen in Bewegung. Grossaufnahmen einzelner Gegenstaende (Siegel, Brief, Muenze, Hand) hoechstens bei jeder vierten Szene, nie bei der ersten. JEDES Bild deutlich anders: wechsle Ort, Entfernung, Tageszeit und Farbstimmung. Bildbeschreibungen auf Englisch, konkret und bildhaft. Schlecht: "money", "a letter", "extreme close-up of wax seal". Das Bild ist der HINTERGRUND, in den spaeter die Avatare gestellt werden. Also: Ort und Ereignis zeigen, den Vordergrund frei lassen, keine grossen Figuren vorne im Bild. Gut: "wide view of a Spanish harbour at dawn, three caravels at anchor, open quay in front", "grassy plain with distant herds and volcanic hills, open space in foreground", "unknown coastline seen from the sea, morning haze, empty beach in front".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt - Kamera, Figuren, Umgebung. Deutsch, hoechstens 15 Woerter. Beispiele: "Kamera faehrt langsam zurueck, Staub wirbelt auf", "Mara zeigt nach oben, Jonas folgt ihrem Blick", "Die Segel blaehen sich, Moewen ziehen vorbei". Keine Schnitte, keine Szenenwechsel - es ist eine einzige Einstellung.
+Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon. Zeig die Szene so weit, dass man sieht wo man ist: Landschaft, Gebaeude, Schiffe, Menschen in Bewegung. Grossaufnahmen einzelner Gegenstaende (Siegel, Brief, Muenze, Hand) hoechstens bei jeder vierten Szene, nie bei der ersten. JEDES Bild deutlich anders: wechsle Ort, Entfernung, Tageszeit und Farbstimmung. Bildbeschreibungen auf Englisch, konkret und bildhaft. Schlecht: "money", "a letter", "extreme close-up of wax seal". Das Bild ist der HINTERGRUND, in den spaeter die Avatare gestellt werden. Also: Ort und Ereignis zeigen, den Vordergrund frei lassen, keine grossen Figuren vorne im Bild. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, empty grass in the lower third, infantry in the middle distance", "medium shot from an empty quay, ships further out, open flagstones in front".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt - Kamera, Figuren, Umgebung. Deutsch, hoechstens 15 Woerter. Beispiele: "Kamera faehrt langsam zurueck, Staub wirbelt auf", "Mara zeigt nach oben, Jonas folgt ihrem Blick", "Die Segel blaehen sich, Moewen ziehen vorbei". Keine Schnitte, keine Szenenwechsel - es ist eine einzige Einstellung.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -778,26 +778,27 @@ beliebige Bilder.
 
 DIE SZENE, NICHT EIN DING DANEBEN
 Zeig, was im Satz passiert, als Szene am Ort des Geschehens. Geht es um
-eine Schlacht, male die Schlacht mit den Heeren darin. Geht es um eine
-Stadt, male die Stadt mit ihren Menschen. Geht es um eine Ueberfahrt,
-male das Meer mit den Schiffen.
-Weit statt nah: Totale oder Halbtotale, Landschaft und Menschen
-zusammen im Bild. Nahaufnahmen nur, wenn der Satz wirklich von einem
-einzelnen Ding handelt - hoechstens jede fuenfte Szene.
+eine Schlacht, sieht man die Heere in der Mitteldistanz. Geht es um eine
+Stadt, sieht man die Stadt hinter einem freien Platz. Geht es um eine
+Ueberfahrt, sieht man die Schiffe vom Kai aus.
+Nicht weit und nicht nah: Halbtotale aus Augenhoehe. Das Ereignis liegt
+zwanzig bis vierzig Meter entfernt. Nahaufnahmen nur, wenn der Satz
+wirklich von einem einzelnen Ding handelt - hoechstens jede fuenfte Szene.
+Keine Totale, keine Luftaufnahme, kein Panorama.
 
 SECHS DINGE GEHOEREN IN JEDE BESCHREIBUNG
-1. Einstellung und Ort: wide shot / low angle / view from a ridge,
-   und wo. KEINE Luftaufnahme, kein Blick von oben, keine Drohne -
-   siehe AUGENHOEHE weiter unten.
+1. Einstellung und Ort: medium shot at eye level, und wo. Niemals
+   "wide shot", "wide view", "aerial", "bird's eye" oder "panorama".
+   KEINE Luftaufnahme, kein Blick von oben, keine Drohne.
 2. Wer ist zu sehen und was tut er: nicht "soldiers", sondern
-   "rows of infantry in blue coats advancing through trampled wheat".
-   Ganze Gestalten, ruhig viele.
+   "a line of infantry in blue coats standing in the middle distance".
+   Die Leute stehen hinter dem freien Vordergrund, nicht im Vordergrund.
 3. Tageszeit, Licht, Wetter: dawn, low sun from the left, heavy rain,
    smoke drifting, overcast.
 4. Epoche an Kleidung und Bauten, nie als Jahreszahl - Jahreszahlen
-   kann kein Bildmodell malen.
-5. Blickwinkel und Tiefe: from a hilltop, from behind the lines,
-   foreground empty, hills receding into haze.
+   kann kein Bildmodell malen. Keine Autos, Jeeps, Lastwagen, Asphalt.
+5. Blickwinkel und Tiefe: from eye level at the edge of the field,
+   empty ground filling the lower third, the action further back.
 6. Ein oder zwei konkrete Einzelheiten, die das Bild echt machen:
    mud, broken fence, horses, campfires, church tower in the distance.
 
@@ -810,14 +811,16 @@ Schreib darum immer dazu, von wo aus man schaut und dass vorne
 begehbarer Boden ist: "viewed from a low ridge, trampled grass in the
 foreground", "seen from the edge of the field, muddy ground in front",
 "from a hillside path, open grass in the foreground".
-Das Geschehen liegt in der Mitteldistanz, nicht direkt vorne.
-Nur wenn in der Szene NIEMAND zu sehen sein soll ("wer": []), darf es
-auch mal ein Blick von oben sein.
+Das Geschehen liegt in der Mitteldistanz, nicht direkt vorne und nicht
+am Horizont. Das untere Drittel des Bildes ist leerer, begehbarer Boden,
+gross genug fuer zwei stehende Personen. Keine Menschenmenge dort.
+Nur wenn in der Szene NIEMAND zu sehen sein soll ("wer": []), darf die
+Kamera etwas hoeher stehen, aber nie aus der Luft.
 
 DREISSIG BIS SECHZIG WOERTER. Lieber zu genau als zu knapp.
-Jede Szene ein anderer Blick: mal weit ueber das Land, mal von einem
-Huegel, mal mitten hinein zwischen die Leute.
-Der VORDERGRUND bleibt frei und offen - dort stehen spaeter die Figuren.
+Jede Szene ein anderer Blick, aber immer aus Augenhoehe und immer mit
+freiem Boden vorne. Mal vom Feldrand, mal von einem Weg, mal vom Kai.
+Nie ueber das ganze Land, nie mitten in der Menge.
 
 WAS NIE INS BILD KOMMT
 Keine Schrift, keine Buchstaben, keine Zahlen, keine Wappen mit Text,
@@ -832,24 +835,21 @@ Kleidung von heute.
 Kein Blut, keine Leichen, keine Verstuemmelung.
 
 DREI BEISPIELE IN DER RICHTIGEN LAENGE
-[BILD: wide shot of a muddy battlefield at dawn, two long lines of
-infantry in dark blue and red coats facing each other across trampled
-wheat, white powder smoke drifting low, cavalry massing on the right
-flank, rolling green hills and a farmhouse in the distance, heavy grey
-clouds, viewed from a low ridge, open muddy ground in the foreground]
+[BILD: medium shot at eye level from the edge of a muddy field at dawn,
+empty trampled grass filling the lower third, a line of infantry in dark
+blue and red coats standing in the middle distance, white powder smoke
+drifting low between them, a farmhouse and low hills behind, heavy grey
+clouds, no people in the foreground]
 
-[BILD: a walled medieval town on a hill seen from the road below at
-midday, timber-framed houses packed inside grey stone walls, a
-cathedral tower rising above the roofs, carts and traders crowding the
-road to the gate, ploughed fields and a winding river to the side,
-summer haze on the far hills, empty dusty road in the foreground at
-eye level]
+[BILD: medium shot at eye level on an empty dirt road below a walled
+medieval town at midday, open dusty ground in the lower third, timber
+houses and a cathedral tower rising in the middle distance, a few carts
+further up the road, summer haze, no crowd in front]
 
-[BILD: wide view of a harbour at sunrise, three wooden sailing ships
-with furled sails being towed out past a stone pier, a crowd of
-onlookers in simple cloaks waving from the quay, barrels and coiled
-rope stacked along the dock, orange light on calm water, gulls
-circling, open flagstones in the foreground]
+[BILD: medium shot at eye level from an empty stone quay at sunrise,
+open flagstones filling the lower third, three wooden sailing ships
+with furled sails in the middle distance beyond a pier, barrels stacked
+further along the dock, orange light on calm water, no people in front]
 
 BEWEGUNG
 Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.
