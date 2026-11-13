@@ -358,11 +358,10 @@ def mund_maske(form, box, weich=31):
     h, w = form[:2]
     maske = np.zeros((h, w), dtype=np.uint8)
     x, y, fw, fh = box[:4]
-    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.68))
-    rx, ry = max(4, int(fw * 0.26)), max(3, int(fh * 0.11))
+    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.70))
+    rx, ry = max(6, int(fw * 0.36)), max(5, int(fh * 0.16))
     cv2.ellipse(maske, (cx, cy), (rx, ry), 0, 0, 360, 255, -1)
-    k = int(max(fw, fh) * 0.16)
-    k = max(7, k)
+    k = max(5, int(min(rx, ry) * 0.55))
     if k % 2 == 0:
         k += 1
     maske = cv2.GaussianBlur(maske, (k, k), 0)
