@@ -2798,10 +2798,11 @@ def _m6_handlung(namen, regie):
         if grund[-1] not in ".!?":
             grund += "."
         return grund + " "
-    wenn_zwei = ("They look into the camera and talk, taking turns, "
-                 "the head at most a slight three-quarter angle, "
+    wenn_zwei = ("They look straight into the camera the whole time and talk, "
+                 "taking turns. The heads never turn toward each other and "
+                 "never turn away. "
                  if len(namen) > 1
-                 else "%s looks into the camera and talks, " % wer)
+                 else "%s looks straight into the camera and talks. The head never turns away. " % wer)
     return (wenn_zwei + "one hand may point back at what is happening "
             "behind them, but the head stays toward the camera and the "
             "body does not twist around. "
@@ -2823,14 +2824,17 @@ def _r5_prompt(k, kanal, s):
         vorspann += " "
     teile = [vorspann,
              _m6_wieviele(namen),
-             "Both people are fully inside the frame from head to boots, small in the "
-             "lower third. Sky and the battle fill the upper two thirds. "
-             "The camera stays wide, never zooms toward their faces, and "
-             "never crops them at the left or right edge. "
+             "Both people are shown from the knees up, standing in the lower half. "
+             "Each face is large enough that the mouth is easy to see, but "
+             "the battle stays visible above their heads. "
+             "From the first frame to the last, both heads stay turned toward "
+             "the camera. Nobody looks away, nobody looks at the other person, "
+             "nobody turns to the side. A hand may point back, the head does not. "
              if len(namen) > 1 else
-             "%s is fully inside the frame from head to boots, small in the "
-             "lower third. Sky and the scene fill the upper two thirds. "
-             "The camera stays wide and never zooms toward the face. " % namen[0],
+             "%s is shown from the knees up, standing in the lower half. "
+             "The face is large enough that the mouth is easy to see, and the "
+             "scene stays visible above the head. The head stays turned toward "
+             "the camera for the whole shot and never looks away. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
