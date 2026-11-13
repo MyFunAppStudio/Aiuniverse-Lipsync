@@ -2209,9 +2209,9 @@ def slot_bereit(key, slot, *teile):
 # gilt fuer das HINTERGRUNDBILD, in das Kling die Avatare setzt.
 # Darum: Vordergrund frei lassen, damit die Figuren Platz haben.
 G7_ANKER = ("photorealistic cinematic film still, shot on 35mm, natural daylight, "
-            "shallow depth of field, wide establishing shot, "
-            "open foreground with room for people to stand, "
-            "detailed landscape, soft haze in the distance, "
+            "the event itself fills the frame, people and action clearly visible, "
+            "a strip of open ground only at the lower left for one person to stand, "
+            "sharp detail on the action, "
             "no text, no letters, no numbers")
 
 
@@ -2870,8 +2870,9 @@ def _r5_prompt(k, kanal, s):
              "No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND if len(namen) > 1 else
-             "The far background moves: smoke drifts, flags and grass move. "
-             "The person in front may shift slightly, nothing more. ",
+             "Troops, horses and smoke in the scene keep moving: ranks advance, "
+             "cavalry rides, powder smoke drifts. Not an empty path. "
+             "The explainer in front may only shift slightly. ",
              " ",
              M6_VERBOTE if len(namen) > 1 else
              "The camera is locked. No dolly, no push in, no pull back, "
