@@ -3286,14 +3286,24 @@ def baue(kanal, ziel_pfad, ordner=None):
 
 
 def _m17_ohne_namen(text, kanal):
-    t = text or ""
+    """Namen vor dem Doppelpunkt bleiben der Stimme, nicht dem Zuschauer."""
+    t = " ".join((text or "").split())
+    if not t:
+        return t
     try:
         namen = _r15_namen(kanal)
+        stuecke = _r15_zerlegen(t, namen, "")
+        if stuecke and any(n for n, _w in stuecke):
+            t = " ".join(w for _n, w in stuecke if w)
     except Exception:
-        return t
-    for n in sorted([x for x in namen if x], key=len, reverse=True):
-        t = re.sub(r"(?<![\wÄÖÜäöüß])" + re.escape(n) + r"\s*:\s*", "", t,
-                   flags=re.I)
+        pass
+    t = re.sub(
+        r"(?:(?<=^)|(?<=\s))"
+        r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß'’-]{1,30}"
+        r"(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'’-]{1,30}){0,2})\s*:\s*",
+        "",
+        t,
+    )
     return re.sub(r"\s{2,}", " ", t).strip()
 
 
