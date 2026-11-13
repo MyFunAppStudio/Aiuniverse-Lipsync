@@ -1615,6 +1615,8 @@ function clipZeile(s){
      +'</div>'
      +'<button class="knopf" style="width:100%;margin-top:7px"'+(laeuft?' disabled':'')
      +' onclick="nurMuender(\''+s.id+'\')">Nur Münder neu</button>'
+     +'<button class="knopf" style="width:100%;margin-top:7px"'+(laeuft?' disabled':'')
+     +' onclick="beideReden(\''+s.id+'\')">Beide reden lassen</button>'
      +versionen(s,"clip")
      +'<div class="szh" style="margin-top:4px">Dieser Clip wird ins Video übernommen. '
      +'Das Standbild wird dann nicht mehr gebraucht.</div></div>';
@@ -1759,6 +1761,19 @@ function nurMuender(id){
     +"Nur die Münder werden neu gesetzt.",
     "Münder neu",function(){
       api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{sid:id,nur_mund:true}).then(function(r){
+        if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+        ladeClips();
+      });
+    });
+}
+function beideReden(id){
+  frage("Beide reden lassen?",
+    "Kling wird nicht noch einmal bezahlt. Aus dem vorhandenen Clip wird "
+    +"ein Standbild genommen, und ein anderes Modell bewegt beide Münder "
+    +"zur Stimme. Dafür muss unter KI & Technik bei „Zwei Sprechende“ "
+    +"fal-ai/ai-avatar/multi eingetragen sein.",
+    "Beide reden lassen",function(){
+      api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{sid:id,beide:true}).then(function(r){
         if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
         ladeClips();
       });

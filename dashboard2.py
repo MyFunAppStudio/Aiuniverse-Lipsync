@@ -1762,7 +1762,9 @@ def _r5_lauf(k, sids):
                 e["nummer"] = nr + 1
                 e["rest"] = list(sids[nr + 1:])
             try:
-                if ( _R5_LAEUFT.get(k) or {}).get("nur_mund"):
+                if (_R5_LAEUFT.get(k) or {}).get("beide"):
+                    _r5_beide_reden(k, sid)
+                elif (_R5_LAEUFT.get(k) or {}).get("nur_mund"):
                     _r5_nur_mund(k, sid)
                 else:
                     _r5_einen(k, sid)
@@ -1787,12 +1789,17 @@ def r5_clip_start(k, b):
             return {"ok": False, "fehler":
                     "Es laeuft schon ein Clip. Einer nach dem anderen."}
     kanal = _r5_kanal(k)
-    ok, grund = animation.ref_bereit(kanal)
-    if not ok:
-        return {"ok": False, "fehler": grund}
-    ok, grund = darsteller.bereit(k)
-    if not ok:
-        return {"ok": False, "fehler": grund}
+    if b.get("beide"):
+        ok, grund = animation.multi_bereit(kanal)
+        if not ok:
+            return {"ok": False, "fehler": grund}
+    else:
+        ok, grund = animation.ref_bereit(kanal)
+        if not ok:
+            return {"ok": False, "fehler": grund}
+        ok, grund = darsteller.bereit(k)
+        if not ok:
+            return {"ok": False, "fehler": grund}
 
     alle = bool(b.get("alle"))
     d = szenen.laden(k)
@@ -1813,7 +1820,8 @@ def r5_clip_start(k, b):
         _R5_LAEUFT[k] = {"sid": sids[0], "rest": sids[1:], "stop": False,
                          "text": "faengt an", "start": _r5_time.time(),
                          "gesamt": len(sids),
-                         "nur_mund": bool(b.get("nur_mund"))}
+                         "nur_mund": bool(b.get("nur_mund")),
+                         "beide": bool(b.get("beide"))}
     t = _r5_threading.Thread(target=_r5_lauf, args=(k, sids), daemon=True)
     t.start()
     return {"ok": True, "anzahl": len(sids)}
@@ -3146,6 +3154,86 @@ def _r5_nur_mund(k, sid):
     szenen.r3_stand_setzen(k, sid, "fertig",
                            "Muender nicht gesetzt: %s" % (hinweis or "unbekannt"))
     return False, hinweis
+
+
+def _r5_beide_reden(k, sid):
+    """Ein Standbild aus dem vorhandenen Clip, dazu beide Stimmen.
+
+    fal-ai/ai-avatar/multi bewegt beide Muender. Kling wird nicht
+    noch einmal bezahlt.
+    """
+    import tempfile
+    import lippen
+    import animation
+    s = szenen.r3_szene(k, sid) or {}
+    name = s.get("clip") or ""
+    alt = (s.get("clip_alt") or [None])[0]
+    if "_lippen" in name and alt:
+        name = alt
+    clip = szenen.datei_pfad(k, name) if name else ""
+    if not clip or not os.path.exists(clip):
+        szenen.r3_stand_setzen(k, sid, "fehler", "kein Szenenclip")
+        return False, "kein Szenenclip"
+
+    def melden(t):
+        if not t:
+            return
+        szenen.r3_stand_setzen(k, sid, "laeuft", t)
+        with _R5_SPERRE:
+            if k in _R5_LAEUFT:
+                _R5_LAEUFT[k]["text"] = t
+
+    arbeit = tempfile.mkdtemp(prefix="beide_")
+    try:
+        bild = os.path.join(arbeit, "stand.jpg")
+        melden("Standbild aus dem Clip")
+        if subprocess.call(["ffmpeg", "-y", "-ss", "0.4", "-i", clip,
+                            "-frames:v", "1", bild],
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL) != 0 or not os.path.exists(bild):
+            szenen.r3_stand_setzen(k, sid, "fehler", "Standbild ging nicht")
+            return False, "Standbild ging nicht"
+        kanal = _r5_kanal(k)
+        redner = szenen.r19_redner(k, s.get("text") or "")
+        if len(redner) < 2:
+            szenen.r3_stand_setzen(k, sid, "fehler",
+                                   "Im Text muessen zwei Namen stehen")
+            return False, "zwei Namen fehlen"
+        melden("Stimmen fuer %s und %s" % (redner[0], redner[1]))
+        stuecke = lippen._stuecke(k, kanal, s, arbeit)
+        if not stuecke:
+            szenen.r3_stand_setzen(k, sid, "fehler", "Stimmen gingen nicht")
+            return False, "Stimmen gingen nicht"
+        links = lippen._spur(stuecke, redner[0], os.path.join(arbeit, "links.mp3"))
+        rechts = lippen._spur(stuecke, redner[1], os.path.join(arbeit, "rechts.mp3"))
+        if not links or not rechts:
+            szenen.r3_stand_setzen(k, sid, "fehler", "Tonspuren gingen nicht")
+            return False, "Tonspuren gingen nicht"
+        endname = "clip_%s_%s_beide.mp4" % (
+            __import__("re").sub(r"[^A-Za-z0-9]+", "", str(sid))[:12],
+            time.strftime("%H%M%S"))
+        ziel = os.path.join(szenen.ordner(k), endname)
+        melden("beide Muender")
+        fertig = animation.erzeuge_multi(
+            kanal, bild, links, rechts, ziel,
+            "Both people stay in place and speak to the camera. "
+            "The person on the left uses the first voice, the person on "
+            "the right the second. Natural mouth movement, camera locked.",
+            melden)
+        if not fertig or not os.path.exists(ziel):
+            szenen.r3_stand_setzen(k, sid, "fehler",
+                                   "Das Mundmodell hat keinen Clip geliefert")
+            return False, "kein Clip"
+        gesetzt = szenen.r3_clip_setzen(k, sid, endname)
+        if not gesetzt.get("ok"):
+            szenen.r3_stand_setzen(k, sid, "fehler",
+                                   gesetzt.get("fehler") or "nicht angenommen")
+            return False, gesetzt.get("fehler") or "nicht angenommen"
+        hinweis = "beide reden, %s links und %s rechts" % (redner[0], redner[1])
+        szenen.r3_stand_setzen(k, sid, "fertig", hinweis)
+        return True, hinweis
+    finally:
+        shutil.rmtree(arbeit, ignore_errors=True)
 
 
 # ---------- Start. Muss die letzte Zeile der Datei bleiben ----------
