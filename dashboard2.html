@@ -1946,15 +1946,15 @@ function stimmenKarte(){
   }
   o+=reihe("Grundstimmung",knoepfeStimmung(stimmungName(S.einst.stimme_energie)),
            "wie lebendig gesprochen wird — gilt für alle Stimmen")
-   +'<button class="knopf or" style="width:100%;margin:9px 0 7px" onclick="stimmenHolen(this)">'
-   +'⬇ Stimmen von ElevenLabs holen</button>'
+   +'<button class="knopf or" style="width:100%;margin:9px 0 7px" onclick="stimmenHolen(this,\'fal\')">'
+   +'⬇ Stimmen von fal.ai holen</button>'
    +'<button class="knopf" style="width:100%;margin:0 0 8px" onclick="stimmenHolen(this,\'deutsch\')">'
    +'⬇ Deutsche Stimmen aus der Bibliothek</button>'
-   +'<div class="hinw" style="padding:0;margin-bottom:9px">Der obere Knopf holt die festen '
-   +'Standardstimmen — fast alles Engländer, die Deutsch mit Akzent sprechen. Der untere sucht in '
-   +'der Bibliothek nach <b>deutschen Sprechern</b>. Die stellen andere Leute ein; steht bei einer '
-   +'ein Tarif im Namen, ist sie nicht im Gratistarif. <b>Hör jede mit ▶ an, bevor du sie '
-   +'vergibst</b> — kommt kein Ton, geht sie über fal.ai nicht.</div>'
+   +'<div class="hinw" style="padding:0;margin-bottom:9px">Der obere Knopf trägt die '
+   +'<b>21 Stimmen von fal</b> ein. Die laufen über den fal-Schlüssel, kein ElevenLabs-Abo. '
+   +'Der untere sucht deutsche Sprecher direkt bei ElevenLabs und braucht dafür den Schlüssel '
+   +'bei <b>ElevenLabs direkt</b>. Was jetzt im Vorrat steht, sind solche Kontostimmen. '
+   +'fal kann die langen IDs nicht sprechen.</div>'
    +falte("Vorrat ansehen und aufräumen",vorratListe(),false)
    +'</div>';
   return o;

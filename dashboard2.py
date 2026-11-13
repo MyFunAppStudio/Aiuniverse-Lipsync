@@ -2675,6 +2675,51 @@ def darsteller_schreiben(key, b):
     return _d7_schreiben_alt(key, b)
 
 
+FAL_STIMMEN = (
+    ("Frau · Rachel (fal)", "Rachel"),
+    ("Frau · Aria (fal)", "Aria"),
+    ("Frau · Sarah (fal)", "Sarah"),
+    ("Frau · Laura (fal)", "Laura"),
+    ("Frau · Charlotte (fal)", "Charlotte"),
+    ("Frau · Alice (fal)", "Alice"),
+    ("Frau · Matilda (fal)", "Matilda"),
+    ("Frau · Jessica (fal)", "Jessica"),
+    ("Frau · Lily (fal)", "Lily"),
+    ("Mann · Roger (fal)", "Roger"),
+    ("Mann · Charlie (fal)", "Charlie"),
+    ("Mann · George (fal)", "George"),
+    ("Mann · Callum (fal)", "Callum"),
+    ("Mann · Liam (fal)", "Liam"),
+    ("Mann · Will (fal)", "Will"),
+    ("Mann · Eric (fal)", "Eric"),
+    ("Mann · Chris (fal)", "Chris"),
+    ("Mann · Brian (fal)", "Brian"),
+    ("Mann · Daniel (fal)", "Daniel"),
+    ("Mann · Bill (fal)", "Bill"),
+    ("River (fal)", "River"),
+)
+
+
+_fal_holen_alt = stimmen_holen
+
+
+def stimmen_holen(key, quelle="fest"):
+    """Die 21 Stimmen, die fal selbst spricht. Kein ElevenLabs-Konto."""
+    if (quelle or "") != "fal":
+        return _fal_holen_alt(key, quelle)
+    alle = einstellungen.laden()
+    kanal = alle.get(key)
+    if not kanal:
+        return {"ok": False, "fehler": "Kanal unbekannt"}
+    kanal["stimmen"] = [{"name": n, "id": i} for n, i in FAL_STIMMEN]
+    if (kanal.get("stimme_id") or "") not in [i for _n, i in FAL_STIMMEN]:
+        kanal["stimme_id"] = "Rachel"
+    alle[key] = kanal
+    einstellungen.speichern(alle)
+    return {"ok": True, "neu": len(FAL_STIMMEN),
+            "text": "21 fal-Stimmen eingetragen. Die alten ElevenLabs-IDs sind raus."}
+
+
 # ---------- Nachtrag m3: Clip ohne Avatare ----------
 #
 # Steht die Szene auf "Nur Bild animieren", geht derselbe Clip-Knopf los
