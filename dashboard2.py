@@ -2833,7 +2833,7 @@ def _m6_handlung(namen, regie):
     wenn_zwei = ("They stand still and look into the camera. Mouths closed, "
                  "no speech, no pointing. "
                  if len(namen) > 1
-                 else "%s stands still, looks into the camera, mouth closed. " % wer)
+                 else "%s stands on the left, looks into the camera, and may shift slightly. Mouth closed. " % wer)
     return (wenn_zwei + "Ignore any instruction to talk, to move the lips, "
             "to point, or to move the camera. "
             + ((regie.strip() + " ") if regie else ""))
@@ -2861,13 +2861,30 @@ def _r5_prompt(k, kanal, s):
              "Both heads face the camera the whole time and never turn away. "
              "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s stands in the foreground, waist up, face large and readable. "
-             "The head faces the camera the whole time and never turns away. "
-             "The camera stays locked, and the person stays fully in frame "
-             "from the first frame to the last. The mouth stays closed. "
+             "%s stands on the left third, not in the center, far enough back "
+             "that the battlefield fills most of the picture. Full figure, "
+             "head to boots, face still readable but not a close-up. "
+             "They may shift their weight and move one hand a little. "
+             "They do not walk, do not turn away, and stay fully in frame "
+             "the whole time. The camera stays locked. The mouth stays closed. "
              "No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
-             M6_HINTERGRUND, " ", M6_VERBOTE]
+             M6_HINTERGRUND if len(namen) > 1 else
+             "The far background moves: smoke drifts, flags and grass move. "
+             "The person in front may shift slightly, nothing more. ",
+             " ",
+             M6_VERBOTE if len(namen) > 1 else
+             "The camera is locked. No dolly, no push in, no pull back, "
+             "no orbit, no zoom. Do not place the person in the center and "
+             "do not enlarge them until they cover the landscape. "
+             "They stay on the left side, full figure, landscape larger "
+             "than they are. A small weight shift is allowed. "
+             "No walking away, no sitting, no pointing, no waving. "
+             "The mouth stays closed: no talking, no lip movement, no teeth. "
+             "Speech is added later. "
+             "Anyone already visible in @Image1 is a different person: "
+             "keep them in their place and never turn them into an @Element "
+             "person. No text, no letters, no logos, no watermark. "]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
 
 
