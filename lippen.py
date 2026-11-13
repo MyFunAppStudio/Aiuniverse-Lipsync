@@ -358,10 +358,10 @@ def mund_maske(form, box, weich=31):
     h, w = form[:2]
     maske = np.zeros((h, w), dtype=np.uint8)
     x, y, fw, fh = box[:4]
-    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.70))
-    rx, ry = max(6, int(fw * 0.36)), max(5, int(fh * 0.16))
+    cx, cy = int(round(x + fw / 2.0)), int(round(y + fh * 0.74))
+    rx, ry = max(8, int(fw * 0.46)), max(8, int(fh * 0.30))
     cv2.ellipse(maske, (cx, cy), (rx, ry), 0, 0, 360, 255, -1)
-    k = max(5, int(min(rx, ry) * 0.55))
+    k = max(5, int(min(rx, ry) * 0.35))
     if k % 2 == 0:
         k += 1
     maske = cv2.GaussianBlur(maske, (k, k), 0)
@@ -650,7 +650,7 @@ def zurueck(dateien, sync_video, spur, rechtecke, aktiv, ordner):
     raus_ordner = os.path.join(ordner, "fertig")
     os.makedirs(raus_ordner, exist_ok=True)
     n, ns = len(dateien), len(syncs)
-    geschrieben = []
+    geschrieben, geaendert = [], 0
     for i, pfad in enumerate(dateien):
         orig = cv2.imread(pfad)
         if orig is None:
@@ -668,10 +668,28 @@ def zurueck(dateien, sync_video, spur, rechtecke, aktiv, ordner):
         if kopf is None:
             cv2.imwrite(ziel, orig, [cv2.IMWRITE_JPEG_QUALITY, 92])
         else:
-            cv2.imwrite(ziel, mischen(orig, kopf, rect, gesehen),
-                        [cv2.IMWRITE_JPEG_QUALITY, 92])
+            neu = mischen(orig, kopf, rect, gesehen)
+            if _mund_anders(orig, neu, gesehen):
+                geaendert += 1
+            cv2.imwrite(ziel, neu, [cv2.IMWRITE_JPEG_QUALITY, 92])
         geschrieben.append(ziel)
+    if geaendert < 3:
+        return None
     return geschrieben
+
+
+def _mund_anders(vorher, nachher, box):
+    """Ob der eingesetzte Mund sich ueberhaupt bewegt hat."""
+    import numpy as np
+    x, y, fw, fh = [int(round(v)) for v in box[:4]]
+    h, w = vorher.shape[:2]
+    y0, y1 = max(0, y + int(fh * 0.55)), min(h, y + fh)
+    x0, x1 = max(0, x + int(fw * 0.25)), min(w, x + int(fw * 0.75))
+    if y1 <= y0 or x1 <= x0:
+        return False
+    a = vorher[y0:y1, x0:x1].astype("int16")
+    b = nachher[y0:y1, x0:x1].astype("int16")
+    return int((np.abs(a - b).sum(axis=2) > 18).sum()) > 40
 
 
 def nachziehen(k, sid, melden=None):
@@ -803,7 +821,7 @@ def nachziehen(k, sid, melden=None):
             aktiv = aktive_rahmen(_zeiten_fuer(wann, n), fps, len(aktuell))
             neu = zurueck(aktuell, sync, spur, rechtecke, aktiv, os.path.join(arbeit, "zurueck_" + _dateiname(n)))
             if not neu:
-                gruende.append("%s: Mund liess sich nicht zuruecklegen" % n)
+                gruende.append("%s: Mund hat sich nicht bewegt" % n)
                 sag(gruende[-1])
                 continue
             aktuell = neu
