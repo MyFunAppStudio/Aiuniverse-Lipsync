@@ -96,6 +96,10 @@ def erzeuge_paket(kanal, eigenes_thema=None):
 
     laenge = einstellungen.laenge_in_minuten(kanal)
     anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
+    _je = min(9.0, (laenge * 60.0) / max(1, anzahl_bilder))
+    _wps = _p37_wps(kanal)
+    _unten = max(4, int(_je * _wps * 0.85))
+    _oben = max(_unten + 1, int(_je * _wps))
 
     prompt = f"""{lade_prompt(kanal)}
 
@@ -105,7 +109,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {max(4, int(laenge*60*_p37_wps(kanal)/max(1,anzahl_bilder)))} bis {max(6, int(laenge*60*_p37_wps(kanal)/max(1,anzahl_bilder))+3)} Woerter, in ein bis drei Saetzen. Insgesamt rund {int(laenge*60*_p37_wps(kanal))} Woerter. Zaehle die Woerter mit und halte dich exakt daran. Lieber etwas laenger als kuerzer - zu kurz ist schlimmer! SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens 9 Sekunden. Der Clip ist 10 Sekunden und kann nicht laenger. Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon. Zeig die Szene so weit, dass man sieht wo man ist: Landschaft, Gebaeude, Schiffe, Menschen in Bewegung. Grossaufnahmen einzelner Gegenstaende (Siegel, Brief, Muenze, Hand) hoechstens bei jeder vierten Szene, nie bei der ersten. JEDES Bild deutlich anders: wechsle Ort, Entfernung, Tageszeit und Farbstimmung. Bildbeschreibungen auf Englisch, konkret und bildhaft. Schlecht: "money", "a letter", "extreme close-up of wax seal". Das Bild ist der HINTERGRUND, in den spaeter die Avatare gestellt werden. Also: Ort und Ereignis zeigen, den Vordergrund frei lassen, keine grossen Figuren vorne im Bild. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, empty grass in the lower third, infantry in the middle distance", "medium shot from an empty quay, ships further out, open flagstones in front".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt - Kamera, Figuren, Umgebung. Deutsch, hoechstens 15 Woerter. Beispiele: "Kamera faehrt langsam zurueck, Staub wirbelt auf", "Mara zeigt nach oben, Jonas folgt ihrem Blick", "Die Segel blaehen sich, Moewen ziehen vorbei". Keine Schnitte, keine Szenenwechsel - es ist eine einzige Einstellung.
@@ -1056,26 +1060,20 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         k = dict(kanal or {})
         minuten = einstellungen.laenge_in_minuten(k)
         gesamt = minuten * 60.0
-        stufen = _t7_stufen(k)
-        if stufen and gesamt > 0:
+        if gesamt > 0:
+            stufen = _t7_stufen(k)
+            nahe = [x for x in stufen if 6 <= x <= 10]
+            stufe = min(nahe, key=lambda x: abs(x - 10)) if nahe else 10
+            stufe = min(10, stufe)
+            szenen = max(1, int(round(gesamt / float(stufe))))
+            if gesamt / szenen > 10:
+                szenen = max(1, int((gesamt + 9) // 10))
             bisher = max(1, int(round(minuten * k.get("bilder_pro_minute", 6))))
-            je_bisher = gesamt / max(1, bisher)
-            # 10 Sekunden je Szene. Nicht die nächste Riesenstufe
-            # nehmen, nur weil sie groesser als 10 ist.
-            nahe = [x for x in stufen if 6 <= x <= 12]
-            stufe = (min(nahe, key=lambda x: abs(x - 10)) if nahe
-                     else min(stufen, key=lambda x: abs(x - 10)))
-            szenen = max(1, int(round(gesamt / stufe)))
-            # +0.4, weil der Bau die Szenenzahl mit int() abschneidet
             k["bilder_pro_minute"] = (szenen + 0.4) / max(0.01, minuten)
-            # Etwas Reserve: die Stimme haelt sich nicht exakt an die
-            # gerechneten Woerter je Sekunde. Ohne Puffer wird aus einer
-            # 10-Sekunden-Szene schnell eine von 11 - und die passt dann
-            # nicht mehr in die Stufe, der Rest wird eingefroren.
-            k["woerter_pro_sekunde"] = round(_p37_wps(k) * 0.92, 3)
-            print("[Text] %d Szenen zu je %d Sekunden - so weit das Modell "
-                  "animiert (vorher %d zu je %.1f)"
-                  % (szenen, stufe, bisher, je_bisher))
+            k["woerter_pro_sekunde"] = round(_p37_wps(k) * 0.85, 3)
+            print("[Text] %d Szenen zu je hoechstens %d Sekunden "
+                  "(vorher %d Szenen, im Schnitt %.1f)"
+                  % (szenen, stufe, bisher, gesamt / max(1, bisher)))
             return _t7_erzeuge_alt(k, eigenes_thema)
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)

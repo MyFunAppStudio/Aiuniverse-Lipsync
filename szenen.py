@@ -441,7 +441,7 @@ def r3_clip_dauer(s):
         w = 0.0
     if w <= 0:
         w = float(geschaetzte_sekunden(s.get("text", "")))
-    return int(max(3, min(15, round(w))))
+    return int(max(3, min(10, round(w))))
 
 
 def fuer_anzeige(kanal):
