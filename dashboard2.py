@@ -2235,6 +2235,13 @@ def darsteller_lesen(key):
                             (e.get("name") or "ohne Namen").strip()]
                            for e in (kanal.get("stimmen") or [])
                            if isinstance(e, dict) and (e.get("id") or "").strip()]
+        schon = set(x[0] for x in d["stimmliste"])
+        for name in ("Rachel", "Aria", "Sarah", "Laura", "Charlotte", "Alice",
+                     "Matilda", "Jessica", "Lily", "Roger", "Charlie", "George",
+                     "Callum", "Liam", "Will", "Eric", "Chris", "Brian",
+                     "Daniel", "Bill", "River"):
+            if name not in schon:
+                d["stimmliste"].append([name, name + " (fal)"])
     except Exception as e:
         print("[Darsteller] Stimmen nicht lesbar:", e)
         d["stimmliste"] = []
