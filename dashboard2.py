@@ -2764,7 +2764,12 @@ M6_HINTERGRUND = ("The background never freezes: smoke and dust drift, the "
                   "in the wind, clouds slide across the sky.")
 
 M6_VERBOTE = ("They stay on the spot - no walking, no grabbing, no sitting "
-              "down. Anyone already visible in @Image1 is a different person: "
+              "down, no pointing, no waving, no gesturing at the camera. "
+              "Arms hang at their sides. "
+              "Mouths stay closed for the whole shot: no talking, no lip "
+              "movement, no teeth, no open mouth, no smile that opens the "
+              "lips. Speech is added later and must not be animated here. "
+              "Anyone already visible in @Image1 is a different person: "
               "keep them in their place, at their own size, doing what they "
               "were doing, and never turn them into an @Element person. "
               "One single camera move for the whole shot. "
@@ -2797,17 +2802,14 @@ def _m6_handlung(namen, regie):
         grund = regie.strip()
         if grund[-1] not in ".!?":
             grund += "."
-        return grund + " "
-    wenn_zwei = ("They look straight into the camera the whole time and talk, "
-                 "taking turns. The heads never turn toward each other and "
-                 "never turn away. "
+        return (grund + " Mouths stay closed, nobody talks, nobody points. ")
+    wenn_zwei = ("They stand still and look into the camera. Mouths closed, "
+                 "no speech, no pointing. "
                  if len(namen) > 1
-                 else "%s looks straight into the camera and talks. The head never turns away. " % wer)
-    return (wenn_zwei + "one hand may point back at what is happening "
-            "behind them, but the head stays toward the camera and the "
-            "body does not twist around. "
-            + ((regie.strip() + ". ") if regie and regie.strip()[-1] not in ".!?"
-               else ((regie.strip() + " ") if regie else "")))
+                 else "%s stands still, looks into the camera, mouth closed. " % wer)
+    return (wenn_zwei + "Ignore any instruction to talk, to move the lips, "
+            "or to point. "
+            + ((regie.strip() + " ") if regie else ""))
 
 
 _m4_prompt_alt = _r5_prompt
@@ -2824,17 +2826,16 @@ def _r5_prompt(k, kanal, s):
         vorspann += " "
     teile = [vorspann,
              _m6_wieviele(namen),
-             "Both people are shown from the knees up, standing in the lower half. "
-             "Each face is large enough that the mouth is easy to see, but "
-             "the battle stays visible above their heads. "
-             "From the first frame to the last, both heads stay turned toward "
-             "the camera. Nobody looks away, nobody looks at the other person, "
-             "nobody turns to the side. A hand may point back, the head does not. "
+             "Both people are framed from the chest up, side by side, large in the shot. "
+             "Each face is big and sharp, lips and eyes easy to read. "
+             "The battle stays visible behind their heads, not instead of them. "
+             "Both heads face the camera the whole time and never turn away. "
+             "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s is shown from the knees up, standing in the lower half. "
-             "The face is large enough that the mouth is easy to see, and the "
-             "scene stays visible above the head. The head stays turned toward "
-             "the camera for the whole shot and never looks away. " % namen[0],
+             "%s is framed from the chest up, large in the shot. "
+             "The face is big and sharp, lips and eyes easy to read, and the "
+             "scene stays visible behind the head. The head faces the camera "
+             "the whole time. The mouth stays closed. No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
