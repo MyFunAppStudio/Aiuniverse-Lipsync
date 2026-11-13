@@ -253,6 +253,104 @@ def _r8_zeiten_auslesen(roh):
     return raus
 
 
+def _eleven_id(sid):
+    """Eine ElevenLabs-Stimm-ID, keine fal-Standardstimme wie Rachel."""
+    s = (sid or "").strip()
+    if len(s) < 16:
+        return False
+    return all(c.isalnum() or c in "_-" for c in s)
+
+
+def _eleven_key(kanal):
+    import schluessel
+    apis = (kanal or {}).get("apis") or {}
+    if isinstance(apis, dict):
+        for liste in apis.values():
+            for x in liste or []:
+                if isinstance(x, dict) and schluessel.anbieter(x.get("url")) == "eleven":
+                    k = (x.get("key") or "").strip()
+                    if k:
+                        return k
+    return (schluessel.aus_umgebung("eleven") or "").strip()
+
+
+def _eleven_worte(alignment):
+    """Buchstabenzeiten von ElevenLabs zu Woertern zusammenfassen."""
+    if not isinstance(alignment, dict):
+        return []
+    zeichen = alignment.get("characters") or []
+    anf = alignment.get("character_start_times_seconds") or []
+    end = alignment.get("character_end_times_seconds") or []
+    if not (len(zeichen) == len(anf) == len(end)) or not zeichen:
+        return []
+    raus, wort, a0, e0 = [], "", None, None
+    for z, a, e in zip(zeichen, anf, end):
+        if str(z).isspace():
+            if wort.strip():
+                raus.append((wort, float(a0), float(e0)))
+            wort, a0, e0 = "", None, None
+            continue
+        if a0 is None:
+            a0 = a
+        wort += str(z)
+        e0 = e
+    if wort.strip():
+        raus.append((wort, float(a0), float(e0)))
+    return raus
+
+
+def _eleven_direkt(kanal, text, ziel, stimme_id, energie):
+    """Spricht mit der ausgewaehlten Stimme direkt bei ElevenLabs."""
+    import base64
+    key = _eleven_key(kanal)
+    if not key:
+        raise RuntimeError(
+            "ElevenLabs-Schluessel fehlt. Die ausgewaehlte Stimme kann so "
+            "nicht gesprochen werden. Unter KI & Technik bei ElevenLabs direkt eintragen.")
+    stability = max(0.0, min(1.0, 1.0 - float(energie)))
+    style = max(0.0, min(1.0, float(energie)))
+    body = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": stability,
+            "similarity_boost": 0.75,
+            "style": style,
+        },
+    }
+    anfrage = urllib.request.Request(
+        "https://api.elevenlabs.io/v1/text-to-speech/%s/with-timestamps" % stimme_id,
+        data=json.dumps(body).encode(),
+        headers={
+            "xi-api-key": key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(anfrage, timeout=120) as antwort:
+            daten = json.loads(antwort.read().decode())
+    except urllib.error.HTTPError as f:
+        leib = f.read().decode()[:240]
+        raise RuntimeError("ElevenLabs %s: %s" % (f.code, leib))
+    roh = daten.get("audio_base64") or ""
+    if not roh:
+        raise RuntimeError("ElevenLabs hat keine Tonspur geliefert")
+    ziel = Path(ziel)
+    ziel.parent.mkdir(parents=True, exist_ok=True)
+    ziel.write_bytes(base64.b64decode(roh))
+    zeiten = _eleven_worte(daten.get("alignment") or daten.get("normalized_alignment"))
+    bei = worte_datei(ziel)
+    if zeiten:
+        with open(bei, "w", encoding="utf-8") as f:
+            _r8_json.dump([{"w": w, "a": a, "e": e} for w, a, e in zeiten],
+                          f, ensure_ascii=False)
+        print("[Stimme] ElevenLabs direkt, %d Wortzeiten" % len(zeiten))
+    else:
+        print("[Stimme] ElevenLabs direkt, ohne Wortzeiten")
+    return ziel
+
+
 def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     """Wie bisher, aber mit Zeitstempeln je Wort, wenn der Anbieter sie gibt."""
     ziel = Path(ziel)
@@ -263,9 +361,12 @@ def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     print("[Stimme] %s (%s): erzeuge Audio..." % (kanal["name"], api.get("name", "?")))
     daten = {"text": text, "timestamps": True}
     sid = stimme_id or kanal.get("stimme_id") or ""
+    energie = float(kanal.get("stimme_energie", 0.6))
+    if _eleven_id(sid):
+        print("[Stimme] ausgewaehlte ElevenLabs-Stimme, nicht die fal-Standardstimme")
+        return _eleven_direkt(kanal, text, ziel, sid.strip(), energie)
     if sid:
         daten["voice"] = sid
-    energie = float(kanal.get("stimme_energie", 0.6))
     daten["stability"] = max(0.0, min(1.0, 1.0 - energie))
     daten["similarity_boost"] = 0.75
     daten["style"] = max(0.0, min(1.0, energie))

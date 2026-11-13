@@ -2742,11 +2742,13 @@ def _m6_handlung(namen, regie):
         if grund[-1] not in ".!?":
             grund += "."
         return grund + " "
-    wenn_zwei = ("They face each other and talk, taking turns, nodding and "
-                 "reacting to each other, " if len(namen) > 1
-                 else "%s talks to the camera, " % wer)
-    return (wenn_zwei + "gesturing with the hands the whole time and pointing "
-            "back towards what is happening behind them. "
+    wenn_zwei = ("They look into the camera and talk, taking turns, "
+                 "the head at most a slight three-quarter angle, "
+                 if len(namen) > 1
+                 else "%s looks into the camera and talks, " % wer)
+    return (wenn_zwei + "one hand may point back at what is happening "
+            "behind them, but the head stays toward the camera and the "
+            "body does not twist around. "
             + ((regie.strip() + ". ") if regie and regie.strip()[-1] not in ".!?"
                else ((regie.strip() + " ") if regie else "")))
 
@@ -2765,8 +2767,13 @@ def _r5_prompt(k, kanal, s):
         vorspann += " "
     teile = [vorspann,
              _m6_wieviele(namen),
-             "They stand together in the open foreground. "
-             if len(namen) > 1 else "%s stands in the open foreground. " % namen[0],
+             "They stand life-size in the foreground, shown from the waist up, "
+             "faces toward the camera and large enough to see the mouth, "
+             "but they do not fill the frame and the scene behind them stays visible. "
+             if len(namen) > 1 else
+             "%s stands life-size in the foreground, shown from the waist up, "
+             "face toward the camera and large enough to see the mouth, "
+             "but does not fill the frame. The scene behind stays visible. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
