@@ -61,12 +61,12 @@ def zerlege(text, hoechstens=40):
     # anerkannt, und die eine wurde an Kommas und Punkten zerrissen -
     # der Bildtext wurde dabei zu eigenen Szenen.
     if gruppen:
-        return gruppen[:hoechstens]
+        return _in_den_clip(gruppen, hoechstens)
 
     bloecke = [_sauber(b) for b in re.split(r"\n[ \t]*\n", ganz)]
     bloecke = [b for b in bloecke if b]
     if len(bloecke) >= 2:
-        return bloecke[:hoechstens]
+        return _in_den_clip(bloecke, hoechstens)
 
     roh = [s.strip() for s in ENDE.split(ganz) if s.strip()]
     # Absatzumbrueche trennen ebenfalls
@@ -111,7 +111,62 @@ def zerlege(text, hoechstens=40):
             and len(_woerter(raus[0])) + len(_woerter(raus[1])) <= VOLL:
         raus[1] = raus[0] + " " + raus[1]
         raus.pop(0)
+    return _in_den_clip(raus, hoechstens)
+
+
+_CLIP_ECKIG = re.compile(r"\[[^\[\]]*\]")
+_CLIP_NAME = re.compile(r"^([^:]{1,24}):\s*")
+
+
+def _in_den_clip(szenen, hoechstens):
+    """Jede Szene muss in 10 Sekunden gesprochen sein.
+
+    22 Woerter bleiben unter 10 Sekunden. Der Rest wird die naechste
+    Szene, mit demselben Bild. Sonst bleibt am Ende ein Standbild stehen,
+    weil der Clip nicht laenger kann.
+    """
+    raus = []
+    for s in szenen:
+        raus.extend(_clip_stueck(s))
+        if len(raus) >= hoechstens:
+            break
     return raus[:hoechstens]
+
+
+def _clip_stueck(satz):
+    ganz = str(satz or "")
+    klammern = [k.strip() for k in _CLIP_ECKIG.findall(ganz) if k.strip()]
+    rest = _CLIP_ECKIG.sub(" ", ganz)
+    auf = rest.find("[")
+    if auf >= 0:
+        rest = rest[:auf]
+    rest = " ".join(rest.split())
+    name = ""
+    m = _CLIP_NAME.match(rest)
+    if m and len(m.group(1).split()) <= 3:
+        name = m.group(1).strip()
+        rest = rest[m.end():].strip()
+    woerter = rest.split()
+    anhang = "".join(" [%s]" % k for k in klammern)
+    if len(woerter) <= 22:
+        kern = (name + ": " + rest).strip() if name else rest
+        return [((kern + anhang).strip() or ganz)]
+    teile, restw = [], woerter
+    while restw:
+        if len(restw) <= 22:
+            stueck, restw = restw, []
+        else:
+            schnitt = 18
+            for i in range(min(18, len(restw)), 10, -1):
+                if restw[i - 1][-1:] in ",;:":
+                    schnitt = i
+                    break
+            stueck, restw = restw[:schnitt], restw[schnitt:]
+        kern = " ".join(stueck)
+        if name:
+            kern = name + ": " + kern
+        teile.append((kern + anhang).strip())
+    return teile or [ganz]
 
 
 def bildprompt(satz, stil="", figur_name="", zusatz=""):
