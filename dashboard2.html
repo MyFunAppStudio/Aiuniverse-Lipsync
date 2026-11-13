@@ -1,0 +1,2839 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AiUniverse</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#0A0C12;color:#ECF1F8;font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding-bottom:96px}
+h1,h2,.zahl{font-family:"Space Grotesk",sans-serif}
+.kopf{padding:16px 16px 12px;background:linear-gradient(180deg,#141821,#0A0C12);border-bottom:1px solid #202636;position:sticky;top:0;z-index:5}
+.zeile{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.punkt{width:9px;height:9px;border-radius:50%;background:#3DDC84;box-shadow:0 0 10px rgba(61,220,132,.8);flex:none}
+.punkt.aus{background:#454F6B;box-shadow:none}
+.kname{font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unter{font-size:11px;color:#76849E;margin-top:1px}
+.knopf{background:#1E2434;border:1px solid #39435C;color:#D2DAE8;border-radius:10px;padding:11px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;min-height:44px}
+.knopf:active{background:#2A3245;border-color:#4C5873}
+.knopf:disabled{opacity:.45}
+.or{background:#24D3E8;border:none;color:#04161B;font-weight:700;font-family:"Space Grotesk",sans-serif;letter-spacing:.03em}
+.rot{color:#FF7A7A}
+.stand:not(:empty){margin-top:12px}
+.fehlt{display:block;width:100%;text-align:left;background:#2A1B14;border:1px solid #6B3E1E;
+ border-radius:10px;padding:9px 11px;color:#E8B98A;font:inherit;font-size:11.5px;line-height:1.45;cursor:pointer}
+.fehlt b{color:#F5C78F}
+.gruen{color:#3DDC84}.grau{color:#66748E}
+.reiter{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:12px 16px 0}
+.reiter button{background:#12151E;border:1px solid #23293B;border-radius:12px;padding:11px 4px;color:#9EA9BF;font:inherit;font-size:10.5px;font-weight:600;cursor:pointer;line-height:1.3}
+.reiter button.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;box-shadow:0 6px 16px rgba(36,211,232,.32)}
+.erkl{display:flex;gap:9px;margin:11px 16px 0;padding:11px 12px;background:rgba(36,211,232,.07);border:1px solid rgba(36,211,232,.25);border-radius:12px;font-size:11.5px;line-height:1.5;color:#C0C9DA}
+.erkl i{width:7px;height:7px;border-radius:50%;background:#24D3E8;margin-top:5px;flex:none}
+/* Unten steht die feste Leiste mit VIDEO ERZEUGEN, bei einem laufenden
+   Bau zusaetzlich die Statuszeile. Ohne Abstand verschwindet die letzte
+   Karte dahinter - genau das ist bei den fertigen Videos passiert. */
+.inhalt{padding:12px 16px calc(150px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.karte{background:linear-gradient(180deg,#171B26,#11141C);border:1px solid #242B3E;border-radius:16px;padding:4px 13px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.karte.p{padding:13px}
+.kt{font-family:"Space Grotesk",sans-serif;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:#8593AC;margin:0 0 9px}
+.r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #202636}
+.r:last-child{border-bottom:none}
+.rw{border-bottom:1px solid #202636}
+.rw:last-child{border-bottom:none}
+.rw>.r{border-bottom:none}
+.frag{flex:0 0 auto;width:18px;height:18px;line-height:16px;padding:0;border-radius:50%;background:#1B1F2C;border:1px solid #2A3147;color:#8593AC;font:inherit;font-size:11px;cursor:pointer;vertical-align:middle}
+.frag.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;font-weight:600}
+.erk{font-size:11.5px;line-height:1.55;color:#A3B3CA;background:#131824;border-left:2px solid #24D3E8;border-radius:0 7px 7px 0;padding:9px 11px;margin:0 0 11px}
+.szf{margin:9px 0}
+.szf .szh{display:block;margin-bottom:4px}
+.szf textarea{min-height:52px}
+.dz{border-top:1px solid #202636;padding:10px 0}
+.dz:first-of-type{border-top:none}
+.dznr{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#6C7A94;margin-bottom:5px}
+.dzz{font-size:12px;line-height:1.5;color:#C0C9DA;margin:3px 0;padding-left:9px;border-left:2px solid #2A3147}
+.dzz span{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#6C7A94}
+.dzz.av{border-left-color:#24D3E8}.dzz.bi{border-left-color:#3DDC84}.dzz.be{border-left-color:#E8B98A}
+.erk b{color:#D7E0EE}.erk i{color:#9FD9E4;font-style:italic}
+.r label,.r .lb{font-size:12.5px;color:#C0C9DA}
+.r .lb{display:flex;align-items:center;gap:6px}
+.r .hint{font-size:10.5px;color:#76849E;margin-top:2px}
+input[type=text],input[type=number],select,textarea{background:#0D1017;border:1px solid #2A3147;border-radius:9px;color:#ECF1F8;padding:8px 9px;font:inherit;font-size:12.5px}
+input[type=text],input[type=number]{text-align:right;width:92px}
+input.breit{text-align:left;width:100%}
+/* Ein select ist so breit wie sein laengster Eintrag, wenn man es laesst.
+   Lange Stimmennamen haben damit die ganze Seite breiter gemacht, und man
+   konnte sie seitlich wegschieben. min-width:0 erlaubt dem Feld, kleiner
+   zu werden als sein Inhalt - dann wird der Text abgeschnitten. */
+select{width:auto;max-width:100%;min-width:0}
+/* Ein Kind einer Flex-Zeile weigert sich von Haus aus, schmaler zu werden
+   als sein Inhalt. Darum hat die Zeile mit Auswahlfeld und Abspielknopf
+   die Seite aufgeblasen, obwohl das Feld selbst schon schrumpfen durfte. */
+.szz>div{min-width:0}
+textarea{width:100%;text-align:left;resize:vertical;min-height:92px;line-height:1.55;font-size:12px}
+.sch{width:46px;height:26px;border-radius:999px;background:#272E42;position:relative;flex:none;border:none;cursor:pointer;padding:0}
+.sch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#66748E;transition:.15s}
+.sch.an{background:#24D3E8}.sch.an i{left:23px;background:#04161B}
+.pills{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;max-width:62%;justify-content:flex-end}
+.pills button{background:#1B1F2C;border:1px solid #2A3147;color:#8593AC;border-radius:8px;padding:6px 10px;font:inherit;font-size:11px;cursor:pointer}
+.pills button.an{background:#24D3E8;border-color:#24D3E8;color:#04161B;font-weight:600}
+.liste .e{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1D222F}
+.liste .e:last-child{border-bottom:none}
+.e .tx{flex:1;min-width:0}
+.e .ti{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.e .me{font-size:10.5px;color:#76849E;margin-top:2px}
+.ik{width:34px;height:34px;border-radius:9px;background:#1B1F2C;border:1px solid #2A3147;color:#E6E6EA;font-size:14px;cursor:pointer;flex:none}
+.leer{color:#66748E;font-size:12px;padding:12px 0;text-align:center}
+.leiste{position:fixed;left:0;right:0;bottom:0;padding:11px 16px calc(14px + env(safe-area-inset-bottom));background:#0A0C12;border-top:1px solid #202636;display:flex;flex-wrap:wrap;align-items:center;gap:11px;z-index:6}
+.lauf{flex:0 0 100%;display:none;align-items:center;gap:9px;padding:8px 11px;margin:-2px 0 2px;background:#141821;border:1px solid #2A2A33;border-radius:11px;font-size:12.5px;color:#D2D2DA}
+.lauf.an{display:flex}
+.lauf .pk{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:#E8711A;animation:pul 1.3s ease-in-out infinite}
+.lauf .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lauf .zt{flex:0 0 auto;color:#919DB4;font-variant-numeric:tabular-nums}
+@keyframes pul{0%,100%{opacity:1}50%{opacity:.25}}
+.leiste .pr{flex:none}
+.leiste .pr .t{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#6C7A94}
+.leiste .pr .w{font-size:19px;font-weight:700;font-family:"Space Grotesk",sans-serif}
+.gen{flex:1;border-radius:14px;padding:16px 10px;font-size:15px}
+.dim{position:fixed;inset:0;background:rgba(5,6,10,.78);z-index:20;display:flex;align-items:flex-end;padding:16px}
+.dlg{background:linear-gradient(180deg,#1D1D24,#11141C);border:1px solid #313A54;border-radius:22px;padding:20px;width:100%;box-shadow:0 28px 60px rgba(0,0,0,.8)}
+.dlg h2{margin:0 0 4px;font-size:18px}
+.dlg p{margin:0 0 14px;font-size:12.5px;color:#8593AC;line-height:1.5}
+.dlg .zw{display:flex;gap:10px}
+.dlg .zw button{flex:1;border-radius:14px;padding:15px 8px;font-size:14px}
+.log{font:11px/1.6 ui-monospace,monospace;color:#919DB4;white-space:pre-wrap;word-break:break-word;max-height:170px;overflow:auto}
+.hinw{font-size:10.5px;color:#66748E;padding:4px 0 10px}
+.kind{padding-left:16px}
+.szn{background:#12151E;border:2px solid #2E3850;border-radius:14px;padding:12px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.szn+.szn{margin-top:0}
+.szn .kopf{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:static;top:auto;z-index:auto;padding:0;background:none;border-bottom:0}
+.szn .nr{font-size:11px;color:#9FB0C8;letter-spacing:.08em;flex:1;font-weight:600}
+.szn .bildchen{width:100%;height:132px;object-fit:cover;border-radius:9px;background:#0A0C12;display:block}
+.szn textarea{width:100%;min-height:58px;margin-top:8px}
+.szz{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.szh{font-size:10.5px;color:#76849E}
+.hak{display:flex;align-items:center;gap:6px;font-size:12px;color:#9EA9BF;cursor:pointer}
+.hak input{width:17px;height:17px;accent-color:#24D3E8}
+.hak.aus{opacity:.45}
+.szn select,.szn input[type=text]{font-size:12px}
+.raster{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.zl{background:#12151E;border:1px solid #202636;border-radius:9px;padding:7px 9px}
+.zt{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#6C7A94}
+.zw{font-size:12px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me.warn{color:#24D3E8}
+.suchf{margin:12px 16px 0;position:relative}
+.suchf input[type=text]{width:100%;box-sizing:border-box;text-align:left;background:#12151E;border:1px solid #23293B;border-radius:12px;padding:11px 13px;color:#ECF1F8;font:inherit;font-size:13.5px}
+.suchf input::placeholder{color:#6B6B78}
+.sucherg:empty{display:none}
+.sucherg{position:absolute;left:0;right:0;top:46px;z-index:40;background:#17171D;border:1px solid #2E2E38;border-radius:12px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.sucherg div{padding:11px 13px;border-bottom:1px solid #1F2432;font-size:13px;cursor:pointer}
+.sucherg div:last-child{border-bottom:none}
+.sucherg div:active{background:#1F2432}
+.sucherg b{color:#24D3E8;font-weight:600}
+.sucherg span{display:block;color:#7E7E8B;font-size:11px;margin-top:2px}
+.treffer{animation:blitz 2s ease-out}
+@keyframes blitz{0%,55%{background:rgba(36,211,232,.22)}100%{background:transparent}}
+.spaeter{margin:0 0 4px;padding:10px 12px;background:#12151E;border:1px dashed #313A54;border-radius:11px;font-size:11.5px;line-height:1.5;color:#8A8A96}
+input[type=range]{-webkit-appearance:none;appearance:none;height:16px;border-radius:8px;
+ outline:none;border:1px solid #2A3147;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+ border-radius:50%;background:#fff;border:2px solid #0A0C12;box-shadow:0 1px 4px rgba(0,0,0,.7)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;
+ border:2px solid #0A0C12}
+
+/* Minus/Plus statt Schieberegler */
+.stufen{display:flex;align-items:center;gap:4px}
+.stufen .stuf{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid #2A3147;
+  background:#1B1F2C;color:#ECF1F8;font-size:19px;font-weight:700;line-height:1;cursor:pointer}
+.stufen .stuf:active{background:#24D3E8;color:#04161B;border-color:#24D3E8}
+.stufwert{min-width:52px;text-align:center;font-size:14px;font-weight:700;color:#ECF1F8;
+  font-variant-numeric:tabular-nums}
+.stufwert i{font-style:normal;color:#8593AC;font-size:11px;margin-left:2px}
+
+/* Farbfelder statt Farbregler */
+.farbfeld{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:214px}
+.farbfeld .fb{width:30px;height:30px;flex:none;border-radius:8px;cursor:pointer;
+  border:2px solid #2A3147;padding:0}
+.farbfeld .fb.an{border-color:#ECF1F8;box-shadow:0 0 0 2px #24D3E8}
+
+/* Eingeklappte Abschnitte in den Einstellungen */
+details.falt{background:linear-gradient(180deg,#171B26,#11141C);border:1px solid #242B3E;
+  border-radius:16px;margin:0 0 11px;overflow:hidden}
+details.falt>summary{list-style:none;cursor:pointer;padding:15px 15px;font-family:"Space Grotesk",sans-serif;
+  font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#C0C9DA;
+  display:flex;align-items:center;justify-content:space-between}
+details.falt>summary::-webkit-details-marker{display:none}
+details.falt>summary::after{content:"▾";color:#6C7A94;font-size:15px;transition:transform .15s}
+details.falt[open]>summary::after{transform:rotate(180deg)}
+details.falt[open]>summary{color:#24D3E8;border-bottom:1px solid #202636}
+details.falt .faltin{padding:12px 0 2px}
+details.falt .faltin>.karte{box-shadow:none;border-radius:0;border-left:0;border-right:0;
+  background:transparent;border-color:#1F2432}
+details.falt .faltin>.karte:last-child{border-bottom:0}
+
+/* Zweitrangiges je Szene, eingeklappt */
+details.mehr{margin:9px 0 2px;border-top:1px solid #202636;padding-top:4px}
+details.mehr>summary{list-style:none;cursor:pointer;font-size:12px;color:#8593AC;
+  padding:7px 0;display:flex;align-items:center;gap:6px}
+details.mehr>summary::-webkit-details-marker{display:none}
+details.mehr>summary::before{content:"▸";color:#6C7A94;font-size:12px}
+details.mehr[open]>summary::before{content:"▾"}
+details.mehr[open]>summary{color:#24D3E8}
+
+/* Ein Avatar, der fuer dieses Video angehakt ist */
+.karte.mit{border-color:#24D3E8}
+
+/* Der Dreifachschalter je Szene */
+.schalt{display:flex;gap:6px;margin:10px 0 2px}
+.schalt .st{flex:1;padding:10px 6px;border-radius:9px;border:1px solid #2A3147;
+  background:#171B26;color:#8593AC;font-size:11.5px;font-weight:600;
+  line-height:1.3;cursor:pointer;text-align:center}
+.schalt .st.an{border-color:#24D3E8;color:#ECF1F8;background:rgba(36,211,232,0.12)}
+/* Der Verlauf: die letzten Fassungen, antippbar */
+.verl{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
+.verl img,.verl video{width:46px;height:62px;object-fit:cover;border-radius:6px;
+  background:#0A0C12;cursor:pointer;border:1px solid #2A3147;display:block}
+.verl img:hover,.verl video:hover{border-color:#24D3E8}
+
+/* Wer in der Szene im Bild steht */
+.wer{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px}
+.wer .wn{padding:7px 13px;border-radius:999px;border:1px solid #2A3147;
+  background:#171B26;color:#8593AC;font-size:12.5px;font-weight:600;cursor:pointer}
+.wer .wn.an{border-color:#24D3E8;color:#ECF1F8;background:rgba(36,211,232,0.12)}
+</style>
+</head>
+<body>
+
+<div class="kopf">
+  <div class="zeile">
+    <div style="display:flex;align-items:center;gap:9px;min-width:0">
+      <span class="punkt" id="pt"></span>
+      <div style="min-width:0">
+        <div class="kname" id="knam">—</div>
+        <div class="unter" id="kunt"></div>
+      </div>
+    </div>
+    <button class="knopf" onclick="zeige('kanaele')">Kanäle</button>
+  </div>
+  <div class="stand" id="stand"></div>
+</div>
+
+<div class="suchf"><input type="text" id="suchf" placeholder="Suchen: Untertitel, Abspann, Musik, Tempo …" oninput="suchTreffer(this.value)" onblur="setTimeout(suchZu,220)"><div class="sucherg" id="sucherg"></div></div>
+<div class="reiter" id="reiter"></div>
+<div class="erkl"><i></i><span id="erkl"></span></div>
+<div class="inhalt" id="inhalt"></div>
+
+<div class="leiste" id="leiste">
+  <div class="lauf" id="lauf"><span class="pk"></span><span class="tx" id="laufTx">läuft …</span><span class="zt" id="laufZt"></span></div>
+  <div class="pr"><div class="t">Kostet</div><div class="w" id="preis">—</div></div>
+  <button class="knopf or gen" id="gen" onclick="fragGenerieren()">VIDEO ERZEUGEN</button>
+</div>
+
+<div id="dialog"></div>
+
+<script>
+var S={offen:{},erk:{},kanal:null,tab:"machen",spielt:null,daten:{},einst:{},themen:{offen:[],erledigt:[]},videos:[],preis:{},modelle:null,szenen:null,tg:null,fig:null,gs:null,arten:null,vorlagen:{},schluessel:{},guthaben:null,schriften:null};
+
+var TABS=[
+ ["machen","Video machen","Thema, Text, Szenen und Clips. Hier entsteht das Video."],
+ ["darsteller","Avatare & Sprecher","Wer mitspielt und wie er klingt. Avatare stehen im Bild, Sprecher reden nur."],
+ ["einst","Einstellungen","Format, Ton, Untertitel, Abspann, Modelle und Kanäle."]
+];
+
+function h(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+/* Ohne Content-Type-Kopf lief hier frueher .indexOf auf null und warf.
+   Das hat jeden Serverfehler als "Verbindung abgebrochen" aussehen lassen. */
+function api(w,d){
+  return fetch(w,d?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}:undefined)
+   .then(function(r){
+     var ct=r.headers.get("content-type")||"";
+     if(ct.indexOf("json")>=0)return r.json();
+     return r.text().then(function(x){
+       if(r.ok)return x;
+       return {ok:false,fehler:"Der Server hat Fehler "+r.status+" gemeldet"+(x?": "+String(x).slice(0,160):".")};
+     });
+   });
+}
+function el(id){return document.getElementById(id)}
+
+function frage(titel,text,knopf,fn,gefahr){
+  el("dialog").innerHTML='<div class="dim" onclick="if(event.target===this)zu()"><div class="dlg">'
+   +'<h2>'+h(titel)+'</h2><p>'+text+'</p><div class="zw">'
+   +'<button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf '+(gefahr?"":"or")+'" id="ja" style="'+(gefahr?"background:#9B2C3B;border-color:#9B2C3B;color:#fff;font-weight:700":"")+'">'+h(knopf)+'</button>'
+   +'</div></div></div>';
+  el("ja").onclick=function(){zu();fn()};
+}
+function zu(){el("dialog").innerHTML=""}
+function melde(t){el("dialog").innerHTML='<div class="dim" onclick="zu()"><div class="dlg"><h2>Hinweis</h2><p>'+h(t)+'</p><div class="zw"><button class="knopf or" onclick="zu()">Alles klar</button></div></div></div>'}
+
+function kanalDaten(){for(var i=0;i<(S.daten.kanaele||[]).length;i++){if(S.daten.kanaele[i].key===S.kanal)return S.daten.kanaele[i]}return null}
+
+function laden(){
+  /* Der erste Aufruf ging ohne ?k= raus. Der Server kennt dann keinen
+     Kanal und meldet jedes Modell als fehlend. Das Ergebnis landete in
+     S.daten.apis, und zeigeKopf() hat sofort danach die Zeile "fehlt
+     noch" daraus gebaut - mit Zahlen, die zu keinem Kanal gehoerten.
+     Der zweite Aufruf weiter unten hat es zwar richtiggestellt, aber
+     nur wenn er auch durchkam. Jetzt geht schon der erste Aufruf mit
+     dem Kanal raus, und die Zeile wird nur gezeichnet, wenn die Daten
+     nachweislich zu diesem Kanal gehoeren (S.apis_von). */
+  var merk=S.kanal||kanalGemerkt()||"";
+  return api("/api/stand"+(merk?"?k="+encodeURIComponent(merk):"")).then(function(d){
+    S.daten=d;
+    var ks=d.kanaele||[];
+    if(!S.kanal||!kanalDaten()){
+      var gm=kanalGemerkt(), da=false;
+      for(var i=0;i<ks.length;i++){if(ks[i].key===gm)da=true}
+      S.kanal=da?gm:(ks.length?ks[0].key:null);
+    }
+    S.apis_von=merk;
+    zeigeKopf();
+    if(!S.kanal)return;
+    return Promise.all([
+      api("/api/kanal?k="+S.kanal).then(function(x){S.einst=x}),
+      api("/api/themen?k="+S.kanal).then(function(x){S.themen=x}),
+      api("/api/videos?k="+S.kanal).then(function(x){S.videos=x}),
+      api("/api/preis?k="+S.kanal).then(function(x){S.preis=x}),
+      api("/api/stand?k="+S.kanal).then(function(x){S.daten.apis=x.apis;S.apis_von=S.kanal})
+    ]).then(function(){zeigeKopf();zeichne()});
+  });
+}
+
+function zeigeKopf(){
+  var k=kanalDaten();
+  el("knam").textContent=k?k.name:"Kein Kanal";
+  el("kunt").textContent=k?(sprachName((k.sprachen||["de"])[0])+" · "+(S.einst.format||"9:16")):"";
+  el("pt").className="punkt"+(k?"":" aus");
+  var a=S.daten.apis||{};
+  var g=S.guthaben&&S.guthaben.ok?(Number(S.guthaben.betrag).toFixed(2)+" "+(S.guthaben.waehrung==="USD"?"$":S.guthaben.waehrung)):"—";
+  /* Hier stand eine Zeile "Ein Modell fehlt noch". Sie wurde aus
+     S.daten.apis gebaut, und dieses Feld kann aus einem anderen Kanal
+     stammen als dem, der gerade oben steht: der erste /api/stand-Aufruf
+     geht ohne Kanal raus, und bei schnellem Umschalten kann die
+     Antwort fuer den vorigen Kanal nach der neuen eintreffen. Dann
+     meldet die Zeile ein Modell als fehlend, das laengst eingetragen
+     ist, und niemand kann es nachvollziehen.
+
+     Die Karte "Modelle" unter KI & Technik zeigt dasselbe, aber immer
+     fuer den richtigen Kanal, mit Namen und antippbar. Eine Anzeige,
+     die falsch sein kann, ist schlechter als keine. */
+  el("stand").innerHTML="";
+}
+function kurz(n,fallback){n=(n||"").trim();return n?n:fallback}
+
+function zeige(t){S.tab=t;zeichne()}
+
+
+function laufZeit(s){
+  s=Math.max(0,Math.round(Number(s)||0));
+  var m=Math.floor(s/60); s=s%60;
+  return m+":"+(s<10?"0":"")+s;
+}
+function laufLeiste(){
+  var k=el("lauf"); if(!k)return;
+  var l=S.daten.lauf||{};
+  if(!l.laeuft){k.className="lauf";return}
+  var z=(l.zeilen||[]).filter(function(x){return (x||"").trim()});
+  var letzte=z.length?z[z.length-1]:"läuft …";
+  el("laufTx").textContent=letzte;
+  el("laufZt").textContent=laufZeit(l.sekunden);
+  k.className="lauf an";
+}
+
+function zeichne(){
+  el("reiter").innerHTML=TABS.map(function(t){
+    return '<button class="'+(S.tab===t[0]?"an":"")+'" onclick="zeige(\''+t[0]+'\')">'+h(t[1])+'</button>'}).join("");
+  var e=TABS.filter(function(t){return t[0]===S.tab})[0];
+  el("erkl").textContent=e?e[2]:"Kanäle anlegen, klonen oder löschen. Jeder Kanal hat seinen eigenen Masterprompt.";
+  /* Der Erzeugen-Balken gehoert zum Machen, nicht zu den Einstellungen.
+     Er haengt an derselben Entscheidung wie der Inhalt weiter unten: zeigt
+     die Seite das Machen, ist der Balken da. Frueher stand hier der
+     Vergleich mit "machen", der Startwert war aber "start" - gleich nach
+     dem Laden zeigte die Seite also das Machen OHNE den Balken, und er
+     kam erst, wenn man einmal auf einen Reiter getippt hatte. */
+  var istMachen=!({darsteller:1,einst:1,kanaele:1}[S.tab]);
+  el("leiste").style.display=istMachen?"flex":"none";
+  el("preis").textContent=(S.preis.gesamt!=null?S.preis.gesamt.toFixed(2).replace(".",","):"—")+" €";
+  var f={machen:tMachen,darsteller:tDarstellerSeite,einst:tEinst,kanaele:tKanaele}[S.tab]||tMachen;
+  /* Die Seite springt sonst bei jeder Aenderung nach oben. */
+  var stand=window.pageYOffset||document.documentElement.scrollTop||0;
+  el("inhalt").innerHTML=f();
+  if(stand>0)window.scrollTo(0,stand);
+  laufLeiste();
+  if(S.tab==="einst")p70Lade();
+}
+
+/* ---------- Bausteine ---------- */
+/* ---- Erklaerungen: was jede Einstellung wirklich bewirkt ----
+   Schluessel ist der Feldname. Das Fragezeichen baut reihe() selbst
+   ein, sobald hier ein Eintrag steht. */
+var ERK={
+drehbuch:"Was der Bau aus deinem Text machen wird — Szene für Szene, bevor etwas Geld kostet. Zerlegt wird auf dem Server mit genau dem Code, der danach auch baut; was hier steht, wird also so gebaut.<br><br><b>Erzähler</b> ist normaler Text. <b>Avatar sagt</b> ist, was in Anführungszeichen steht. <b>Bild</b> kommt aus <i>[BILD: ...]</i> und geht an Flux. <b>Bewegung</b> kommt aus <i>[BEWEGUNG: ...]</i> und steuert den Clip. Steht nur eine Klammer ohne Namen drin, wird sie für Bild und Bewegung genommen — dann stehen beide gleich da.<br><br>Fehlt eine Zeile, fehlt sie auch im Video. Ändern tust du oben im Textfeld, nicht hier.",
+
+szenentext:"<b>So schreibst du den Text einer Szene.</b><br><br>Jede Zeile beginnt mit dem Namen der Figur, die sie spricht:<br><i>Mara: Da vorne liegt die Küste.</i><br><i>Jonas: Das kann unmöglich Indien sein.</i><br>Jede Zeile bekommt die Stimme dieser Figur — dafür muss ein Stimmen-Eintrag genauso heißen wie der Avatar. Eine Zeile ohne Namen spricht die Kanalstimme.<br><br>Reden und zu sehen sein sind zwei verschiedene Dinge: Eine Figur kann sprechen, ohne unter <b>Wer steht im Bild</b> angewählt zu sein — dann hört man sie über der Landschaft.<br><br><b>In eckigen Klammern</b> steht, was nicht gesprochen wird:<br><i>[BILD: verwitterter Rucksack auf Geröll, Morgenlicht]</i> — danach malt Flux.<br><i>[BEWEGUNG: Kamera fährt langsam zurück]</i> — danach bewegt sich der Clip.<br>Schreibst du nur eine Klammer ohne Namen, wird sie für beides genommen.",
+
+prompt:"Wer der Kanal ist und wie er klingt. Steht am Anfang jeder Anfrage an Claude: Rolle, Tonfall, Sprache, für wen das Video gemacht ist. Gilt für jedes Video dieses Kanals, egal welches Thema. Hier steht das <b>Wer und Wie</b>.",
+
+regeln:"Die harten Vorgaben, die bei jedem Schreiben zusätzlich mitgehen — eine Regel je Zeile. Hook in den ersten Sekunden, keine Begrüßung, keine Themenwiederholung, was nicht vorkommen darf. Hier steht das <b>Was darf und was nicht</b>. Claude bekommt Masterprompt und Regeln zusammen, dazu rechnet der Code Länge, Szenenzahl und Wortzahl selbst aus.",
+
+
+format:"Das Seitenverhältnis des fertigen Videos. <i>9:16</i> ist Hochkant für TikTok, Reels und Shorts — das ist deins. <i>4:5</i> ist der Instagram-Feed, <i>1:1</i> quadratisch, <i>16:9</i> das normale Querformat für YouTube. Das Format bestimmt auch, in welcher Form die Bilder gemalt werden — nachträglich umstellen heißt, die Bilder passen nicht mehr.",
+
+laenge:"Wie lang das fertige Video wird, ohne Abspann. Daraus rechnet Claude zwei Dinge aus: wie viele Szenen es gibt und wie viele Wörter der Text haben darf. Bei 20 Sekunden und normalem Sprechtempo sind das rund 50 Wörter, verteilt auf etwa 3 bis 4 Szenen. Der Abspann kommt danach obendrauf, der zählt hier nicht mit.",
+
+woerter_pro_sekunde:"Wie schnell gesprochen wird — 2,2 / 2,5 / 2,8 Wörter je Sekunde. Das ändert <b>nicht</b> die Stimme, sondern die Textmenge: bei <i>flott</i> schreibt Claude mehr Wörter in dieselbe Zeit, bei <i>ruhig</i> weniger. Für Erzählendes nimm ruhig, für Fakten und Listen flott. Stimmt der Wert nicht zum Text, wird die Szene am Ende länger oder kürzer als geplant.",
+
+bewegung_an:"Betrifft nur Standbilder. Ist er an, bekommt jedes Standbild eine langsame Fahrt oder einen Zoom, damit das Bild nicht tot wirkt. Aus heißt: das Bild steht wirklich still. Echte Clips aus Kling bewegen sich sowieso, die ändert der Schalter nicht.",
+
+bewegung_staerke:"Wie weit das Standbild dabei zoomt oder fährt. <i>sanft</i> ist kaum zu merken und sieht nach Kamera aus, <i>stark</i> fährt deutlich sichtbar ins Bild. Bei stark gehen die Bildränder verloren, weil hineingezoomt wird — steht am Rand etwas Wichtiges, ist es weg. sanft reicht fast immer.",
+
+bildstimmung:"Eine Farbkorrektur, die über jedes Bild im Video gelegt wird. Sie macht aus einzeln gemalten KI-Bildern einen Film, der zusammenpasst: ohne sie ist das eine Bild bläulicher, das nächste gelber, und man sieht bei jedem Schnitt, dass sie aus verschiedenen Durchläufen stammen. Außerdem werden die Ränder leicht abgedunkelt, das zieht am Handy den Blick zur Mitte. Körnung und Tiefen stellen sich passend mit ein.",
+
+stimme_energie:"Wie energisch der Sprecher klingt. Gilt überall da, wo bei der Szene selbst nichts anderes eingetragen ist. <i>ruhig</i> und <i>sachlich</i> sind für Erklärendes, <i>dramatisch</i> für Spannung. Zu viel Energie über ein ganzes Video wirkt schnell anstrengend — eine einzelne Szene darf dramatisch sein, ein ganzes Video selten.",
+
+
+nachlauf:"Wie viele Sekunden nach dem letzten gesprochenen Wort noch stehenbleiben, bevor der Abspann kommt. Ohne das reißt das Video mitten im letzten Wort ab und wirkt abgehackt. 0,9 Sekunden sind ein guter Wert. Mehr als 2 wirkt wie eine Panne.",
+
+tempo:"Die Höchstlänge einer Einstellung: <i>ruhig</i> teilt gar nicht, <i>normal</i> bei 6,5 Sekunden, <i>schnell</i> bei 3,2, <i>sehr schnell</i> bei 2,3. Ist eine Szene länger, wird dasselbe Bild in mehrere Einstellungen zerlegt, bei denen Zoom und Fahrt wechseln. Gilt nur für Szenen auf „Nur Bild, still“ — Clips liefert Kling schon in der richtigen Länge und bleiben am Stück.",
+
+musik_an:"Hintergrundmusik unter dem ganzen Video. Hast du ein eigenes Lied hochgeladen, wird das genommen, sonst sucht der Code selbst eines. Die Musik endet mit der letzten Szene — der Abspann behält seinen eigenen Ton.",
+
+musik_leise:"Wie laut die Musik ist, solange jemand spricht — in Prozent. Zu laut und man versteht den Sprecher nicht mehr, besonders am Handylautsprecher. 10 bis 15 ist der übliche Bereich.",
+
+musik_laut:"Wie laut die Musik wird, wenn gerade niemand spricht — in Prozent. Füllt die Pausen, damit es nicht still wird. 70 bis 80 ist normal.",
+
+musik_anheben:"Ob die Musik in Sprechpausen überhaupt lauter wird. An heißt: ab etwa 2,5 Sekunden Stille zieht sie auf den lauten Wert hoch und geht beim nächsten Wort wieder runter. Aus heißt: sie bleibt durchgehend leise. Bei Videos, in denen fast durchgehend gesprochen wird, ist aus ruhiger — sonst pumpt die Musik ständig.",
+
+musik_ein:"Wie viele Sekunden die Musik am Anfang von still auf volle Lautstärke hochkommt. Ohne das setzt sie hart mit dem ersten Bild ein, was billig klingt. 1 Sekunde reicht.",
+
+musik_aus:"Wie viele Sekunden die Musik am Ende ausblendet. Das passiert am Ende der letzten Szene, nicht am Ende des Abspanns. 1,5 Sekunden sind ein weicher Schluss.",
+
+untertitel_an:"Blendet den gesprochenen Text als Untertitel ein, Wort für Wort mitlaufend. Auf TikTok und Reels wird der größte Teil ohne Ton geschaut — ohne Untertitel ist das Video für die meisten stumm. Die Zeiten kommen vom Sprachmodell selbst, deshalb sitzen sie genau auf dem Wort.",
+
+
+
+
+
+
+modus:"<b>Claude schreibt es</b> — du gibst Thema und Länge, sonst nichts. Claude schreibt das Drehbuch, Flux malt zu jeder Szene das Bild, fertig. Du liest nichts gegen.<br><br><b>Text ansehen und ändern</b> — dasselbe, aber der Text hält vorher an. Claude schreibt eine Geschichte, in der jede runde Klammer eine Szene wird und jede eckige Klammer darin die Bildbeschreibung ist. Du liest drüber, änderst was dir nicht passt, und erst dann werden die Bilder gemalt.<br><br><b>Ich baue es selbst</b> — kein Drehbuch, keine Geschichte. Du legst jede Szene einzeln an: eigenes Bild oder eigener Clip hochladen, ein Satz Text dazu, Schalter auf <i>Avatare im Bild</i> / <i>Nur Bild, bewegt</i> / <i>Nur Bild, still</i>, wer im Bild ist, wie lange sie dauert. Du musst trotzdem nicht alles selbst malen: <b>Bild neu</b> bei einer Szene lässt Flux ein Bild für genau diese eine Szene erzeugen, aus ihrem Text und ihrer Regieanweisung.",
+
+sprachen_eins:"In welcher Sprache gesprochen und untertitelt wird. Die Stimme muss dazu passen — eine deutsche Stimm-ID liest englischen Text mit Akzent vor.",
+
+};
+
+function feldAus(s){var m=/setz\('([a-zA-Z0-9_]+)'/.exec(s||"");return m?m[1]:""}
+function erkUm(f){if(!S.erk)S.erk={};if(S.erk[f])delete S.erk[f];else S.erk[f]=1;zeichne()}
+function kartenKopf(titel,f){
+  var e=ERK[f], auf=!!(e&&S.erk&&S.erk[f]);
+  return '<h2 class="kt">'+h(titel)
+   +(e?'<button class="frag'+(auf?' an':'')+'" onclick="erkUm(\''+f+'\')" title="Was bewirkt das?">?</button>':'')
+   +'</h2>'+(auf?'<div class="erk">'+e+'</div>':'');
+}
+function reihe(label,rechts,hint,schluessel){
+  var f=schluessel||feldAus(rechts), e=f&&ERK[f], auf=!!(e&&S.erk&&S.erk[f]);
+  var z='<div class="r"><div><div class="lb">'+h(label)
+   +(e?'<button class="frag'+(auf?' an':'')+'" onclick="erkUm(\''+f+'\')" title="Was bewirkt das?">?</button>':'')
+   +'</div>'+(hint?'<div class="hint">'+h(hint)+'</div>':'')+'</div>'+rechts+'</div>';
+  if(!e)return z;
+  return '<div class="rw">'+z+(auf?'<div class="erk">'+e+'</div>':'')+'</div>';
+}
+function zahl(feld,wert,breit){
+  return '<input type="number" value="'+h(wert)+'" onchange="setz(\''+feld+'\',this.value,1)">'
+}
+function text(feld,wert){
+  return '<input type="text" value="'+h(wert)+'" onchange="setz(\''+feld+'\',this.value)">'
+}
+function schalter(feld,an){
+  return '<button class="sch'+(an?" an":"")+'" onclick="setz(\''+feld+'\','+(an?"false":"true")+')"><i></i></button>'
+}
+function wahl(feld,wert,liste){
+  return '<select onchange="setz(\''+feld+'\',this.value)">'+liste.map(function(o){
+    var v=o[0],n=o[1];return '<option value="'+h(v)+'"'+(String(wert)===String(v)?" selected":"")+'>'+h(n)+'</option>'}).join("")+'</select>'
+}
+function knoepfe(feld,wert,liste){
+  return '<div class="pills">'+liste.map(function(o){
+    return '<button class="'+(String(wert)===String(o[0])?"an":"")+'" onclick="setz(\''+feld+'\',\''+o[0]+'\')">'+h(o[1])+'</button>'}).join("")+'</div>'
+}
+function frHex(h,s,l){
+  s=s/100; l=l/100;
+  var k=function(n){return (n+h/30)%12};
+  var a=s*Math.min(l,1-l);
+  var f=function(n){var v=l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+                    return Math.round(255*v)};
+  return '#'+[f(0),f(8),f(4)].map(function(x){return ('0'+x.toString(16)).slice(-2)})
+         .join('').toUpperCase();
+}
+function frHsl(hex){
+  var s=String(hex||'#FFFFFF').replace('#','');
+  if(s.length!==6)s='FFFFFF';
+  var r=parseInt(s.substr(0,2),16)/255, g=parseInt(s.substr(2,2),16)/255, b=parseInt(s.substr(4,2),16)/255;
+  var mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn, h=0, l=(mx+mn)/2;
+  var sa=d===0?0:d/(1-Math.abs(2*l-1));
+  if(d!==0){
+    if(mx===r)h=60*(((g-b)/d)%6);
+    else if(mx===g)h=60*(((b-r)/d)+2);
+    else h=60*(((r-g)/d)+4);
+  }
+  if(h<0)h+=360;
+  return [Math.round(h), Math.round(sa*100), Math.round(l*100)];
+}
+function frZeig(id,feld,speichern){
+  var h=+el(id+'_h').value, s=+el(id+'_s').value, l=+el(id+'_l').value;
+  var hex=frHex(h,s,l);
+  el(id+'_v').style.background=hex;
+  el(id+'_s').style.background='linear-gradient(90deg,'+frHex(h,0,l)+','+frHex(h,100,l)+')';
+  el(id+'_l').style.background='linear-gradient(90deg,#000,'+frHex(h,s,50)+',#fff)';
+  if(speichern)setz(feld,hex);
+}
+function farbregler(feld,wert,standard){
+  /* Keine Schieberegler. Antippbare Felder - am Handy schneller
+     und genauer als drei Regler zu ziehen. */
+  var hex=String(wert||standard||'#FFFFFF').toUpperCase();
+  var tafel=[
+    ['#FFFFFF','Weiss'],['#FFD400','Gelb'],['#FFA02E','Orange'],['#FF4D4D','Rot'],
+    ['#FF5FA2','Pink'],['#B06BFF','Violett'],['#4D8BFF','Blau'],['#24D3E8','Cyan'],
+    ['#3DDC84','Gruen'],['#C8FF3D','Limette'],['#9EA9BF','Grau'],['#000000','Schwarz']
+  ];
+  var o='<div class="farbfeld">';
+  tafel.forEach(function(f){
+    o+='<button class="fb'+(f[0]===hex?' an':'')+'" title="'+f[1]+'"'
+      +' style="background:'+f[0]+'"'
+      +' onclick="setz(\''+feld+'\',\''+f[0]+'\')"></button>';
+  });
+  o+='</div>';
+  return o;
+}
+function farbStandard(welche){
+  var w=(S.einst.untertitel_stil||"klassisch");
+  if(welche==="aktiv")return w==="wortweise"?"#FFFFFF":"#FFD400";
+  return w==="wortweise"?"#AAB4C6":"#FFFFFF";
+}
+function reglerZeig(id,feld,speichern){
+  var v=+el(id).value;
+  el(id+'_z').textContent=v;
+  if(speichern)setz(feld,v,1);
+}
+function regler(feld,wert,standard,mn,mx,einheit){
+  /* Keine Schieberegler mehr. Minus und Plus, dazwischen der Wert.
+     Lange gedrueckt halten geht in Zehnerschritten. */
+  var v=Number((wert==null||wert==='')?standard:wert);
+  var id='rg'+feld.replace(/[^a-z0-9]/gi,'');
+  var spanne=Math.abs(Number(mx)-Number(mn));
+  var gross=spanne>120?10:(spanne>40?5:1);
+  function t(zeichen,schritt,titel){
+    return '<button class="stuf" title="'+titel+'" onclick="stufe(\''+feld+'\','+schritt
+      +','+mn+','+mx+')">'+zeichen+'</button>';
+  }
+  return '<div class="stufen">'
+   + t('&minus;',-gross,'kleiner')
+   + '<span id="'+id+'_z" class="stufwert">'+h(v)+(einheit?'<i>'+h(einheit)+'</i>':'')+'</span>'
+   + t('+',gross,'groesser')
+   + '</div>';
+}
+
+function stufe(feld,schritt,mn,mx){
+  var jetzt=Number(S.einst[feld]);
+  if(isNaN(jetzt))jetzt=0;
+  var neu=jetzt+Number(schritt);
+  if(neu<Number(mn))neu=Number(mn);
+  if(neu>Number(mx))neu=Number(mx);
+  if(neu===jetzt)return;
+  setz(feld,neu,1);
+}
+function utStandard(welche){
+  /* genauso gerechnet wie in szenen_video.py, bei 1920 Pixeln Hoehe */
+  var st=(S.einst.untertitel_stil||"klassisch");
+  var n=+(S.einst.untertitel_woerter||3);
+  var g=Math.max(20,Math.min(120,+(S.einst.untertitel_groesse||48)));
+  var sh={1:1.12,2:1.0,3:0.88,4:0.78,5:0.70,6:0.64}[n]||0.78;
+  var H=1920, fs, mv, rand, scha;
+  if(st==="kino"){
+    fs=Math.max(18,Math.floor(H*0.032*g/48*(0.92+0.08*sh)));
+    mv=47; rand=Math.max(2,Math.floor(fs*0.10)); scha=0;
+  }else if(st==="fett"){
+    fs=Math.max(28,Math.floor(H*0.058*g/48*sh));
+    mv=30; rand=Math.max(4,Math.floor(fs*0.14)); scha=Math.max(2,Math.floor(fs*0.06));
+  }else if(st==="knall"){
+    fs=Math.max(30,Math.floor(H*0.056*g/48*sh));
+    mv=34; rand=Math.max(4,Math.floor(fs*0.15)); scha=Math.max(2,Math.floor(fs*0.07));
+  }else if(st==="karaoke"){
+    fs=Math.max(28,Math.floor(H*0.050*g/48*sh));
+    mv=40; rand=Math.max(3,Math.floor(fs*0.13)); scha=0;
+  }else if(st==="wortweise"){
+    fs=Math.max(30,Math.floor(H*0.050*g/48*sh));
+    mv=47; rand=Math.max(3,Math.floor(fs*0.10)); scha=0;
+  }else{  /* klassisch wird an einer ganz anderen Stelle gebaut */
+    fs=Math.max(24,Math.floor(H*0.046*g/48));
+    mv=17; rand=Math.max(3,Math.floor(fs*0.11)); scha=Math.max(2,Math.floor(fs*0.07));
+  }
+  if(welche==="hoehe")return mv;
+  if(welche==="rand")return Math.min(30,rand);
+  return Math.min(40,scha);
+}
+function setzViele(d){
+  var text=false;
+  for(var f in d){S.einst[f]=d[f]; if(f==="geschichte_text")text=true}
+  if(text)setTimeout(function(){S.gs=null;ladeGeschichte()},260);
+  return api("/api/kanal?k="+S.kanal,d).then(function(){zeichne()});
+}
+function setz(feld,wert,zahlFeld){
+  if(feld==="geschichte_text"||feld==="geschichte_stil")setTimeout(function(){S.gs=null;ladeGeschichte()},260);
+  if(wert==="true")wert=true;else if(wert==="false")wert=false;
+  else if(zahlFeld)wert=Number(wert)||0;
+  var d={};
+  if(feld==="sprachen_eins"){d.sprachen=[wert];S.einst.sprachen=[wert];}
+  else{d[feld]=wert;S.einst[feld]=wert;}
+  api("/api/kanal?k="+S.kanal,d).then(function(){
+    if(["laenge","modus","vorlage","format"].indexOf(feld)>=0){
+      api("/api/preis?k="+S.kanal).then(function(x){S.preis=x;zeichne()})}
+    else zeichne();
+  });
+}
+
+/* ---------- Reiter ---------- */
+function tStartKopf(){
+  /* Nur noch, was du vor jedem einzelnen Video anfasst. Der Kanalname
+     steht bei den Kanaelen, Masterprompt und Regeln in den
+     Einstellungen. Baust du selbst, gibt es kein Thema zu vergeben -
+     dann schreibt ja niemand etwas daraus. */
+  if(modusJetzt()==="szenen")return '';
+  return '<div class="karte">'
+   +reihe("Thema von Hand",'<input type="text" id="thema" placeholder="leer = nächstes aus der Liste" style="width:160px;text-align:left">',"leer lassen nimmt das nächste Thema")
+   +'</div>';
+}
+
+function tMusik(){
+  var d=S.szenen;
+  if(!d){ladeSzenen();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var o='';
+  o+='<div class="karte p">'
+   +reihe("Musik an",schalter("musik_an",!!S.einst.musik_an));
+  if(!S.einst.musik_an)return o+'<div class="hinw">Das Video bekommt keine '
+   +'Hintergrundmusik. Der Abspann behält seinen eigenen Ton.</div></div>';
+  o+='<div class="liste">';
+  if(!d.musik)o+='<div class="leer">kein eigenes Lied — dann nimmt er die Automatik-Musik</div>';
+  else o+='<div class="e"><div class="tx"><div class="ti">'+h(d.musik)+'</div><div class="me">läuft unter dem ganzen Video</div></div>'
+        +'<button class="ik rot" onclick="musikWeg()">✕</button></div>';
+  o+='</div><button class="knopf" style="width:100%;margin:9px 0 4px" onclick="hochladen(\'musik\')">+ Lied hochladen</button>'
+   +reihe("Leise unter der Stimme",zahl("musik_leise",(S.einst.musik_leise==null?12:S.einst.musik_leise)),"in Prozent")
+   +reihe("Laut ohne Stimme",zahl("musik_laut",(S.einst.musik_laut==null?75:S.einst.musik_laut)),"in Prozent")
+   +reihe("Ohne Stimme lauter",schalter("musik_anheben",S.einst.musik_anheben!==false),
+      (S.einst.musik_anheben===false?"aus — bleibt durchgehend leise":"ab etwa 2,5 Sekunden Stille"))
+   +reihe("Einblenden",zahl("musik_ein",(S.einst.musik_ein==null?1:S.einst.musik_ein)),"Sekunden am Anfang")
+   +reihe("Ausblenden",zahl("musik_aus",(S.einst.musik_aus==null?1.5:S.einst.musik_aus)),"Sekunden am Ende")
+   +'</div>';
+  return o;
+}
+
+/* Wie lang das fertige Video wird. "Länge in Sekunden" ist nur der
+   gesprochene Teil - Abspann und Nachlauf kommen oben drauf, und genau
+   deshalb kam bei 90 eingestellt ein Video von 99 heraus. */
+function abspannSek(){
+  var d=S.ab; if(!d)return null;
+  var li=d.eintraege||[], wahl=d.wahl||"";
+  for(var i=0;i<li.length;i++){
+    if(li[i].id===wahl||(!wahl&&i===0))return Number(li[i].sekunden)||0;
+  }
+  return li.length?(Number(li[0].sekunden)||0):0;
+}
+function laengeVorschau(){
+  var gesprochen=Number(S.einst.laenge)||0;
+  var nach=(S.einst.nachlauf===undefined?0.9:Number(S.einst.nachlauf))||0;
+  var ab=abspannSek();
+  if(ab===null){ladeAbspann();ab=0}
+  var fertig=gesprochen+nach+ab;
+  var teile='gesprochen '+gesprochen+' s';
+  if(nach)teile+=' + Nachlauf '+String(nach).replace(".",",")+' s';
+  teile+=' + Abspann '+(ab?(String(ab).replace(".",",")+' s'):'0 s (keiner gewählt)');
+  var warn=(fertig<63)
+    ?'<br><span style="color:#FFB454">Unter 63 Sekunden — fürs Monetarisieren solltest '
+     +'du über einer Minute landen, mit etwas Luft. Die Stimme spricht nicht immer '
+     +'gleich schnell.</span>':'';
+  return '<div class="szh" style="margin-top:7px;line-height:1.5">'
+   +'<b>Fertiges Video: etwa '+(Math.round(fertig*10)/10).toString().replace(".",",")+' Sekunden</b><br>'
+   +teile+warn+'</div>';
+}
+function tAblauf(){
+  return '<div class="karte">'
+   +reihe("Länge in Sekunden",zahl("laenge",S.einst.laenge||20,1),"nur der gesprochene Teil")
+   +laengeVorschau()
+   +reihe("Sprechtempo",knoepfe("woerter_pro_sekunde",String(S.einst.woerter_pro_sekunde||2.5),[["2.2","ruhig"],["2.5","normal"],["2.8","flott"]]),"Wörter je Sekunde")
+   +'</div>';
+}
+
+function tLauf(){
+  var l=S.daten.lauf||{};
+  if(!(l.laeuft||(l.zeilen&&l.zeilen.length)))return '';
+  var text=(l.zeilen||[]).join("\n");
+  var fertig=!l.laeuft&&/FERTIG in/.test(text);
+  return '<div class="karte p"'+(fertig?' style="border:2px solid #37D67A"':'')+'><h2 class="kt">'
+    +(l.laeuft?"Läuft gerade":(fertig?'<span style="color:#37D67A">● Fertig</span>':"Letzter Lauf"))+'</h2><div class="log">'
+    +h((l.zeilen||[]).join("\n")||"—")+'</div>'
+    +(l.laeuft?'<button class="knopf" style="width:100%;margin-top:10px" onclick="abbrechen()">Abbrechen</button>':'')+'</div>';
+}
+
+function tVideos(){
+  var o='<div class="karte p"><h2 class="kt">Fertige Videos</h2><div class="liste">';
+  if(!S.videos.length)o+='<div class="leer">noch keine</div>';
+  S.videos.forEach(function(v){
+    var laeuft=(S.spielt===v.ordner);
+    /* Gerade fertig geworden: gruen umrandet, damit man es sofort sieht. */
+    var roh=(v.fertig===false);          /* wird noch geschrieben */
+    var frisch=!roh&&(v.alter_min!=null&&v.alter_min<=30);
+    var rahmen=roh?'border:2px solid #FFB454;background:rgba(255,180,84,.07)'
+                  :(frisch?'border:2px solid #37D67A;background:rgba(55,214,122,.07)':'');
+    o+='<div class="e"'+(rahmen?' style="'+rahmen+';border-radius:12px;padding:9px 10px"':'')+'>'
+      +'<div class="tx"><div class="ti">'
+      +(roh?'<span style="color:#FFB454">● wird gebaut </span>':'')
+      +(frisch?'<span style="color:#37D67A">● NEU </span>':'')+h(v.titel)+'</div>'
+      +'<div class="me">'+h(v.zeit)+' · '+v.mb+' MB'
+      +(roh?' · noch nicht abspielbar':(frisch?' · gerade fertig':''))+'</div></div>'
+      +'<button class="ik"'+(roh?' disabled':'')+' onclick="spiel(\''+v.ordner+'\')">'+(laeuft?"✕":"▶")+'</button>'
+      +'<button class="ik"'+(roh?' disabled':'')+' onclick="herunter(\''+v.ordner+'\')">⤓</button>'
+      +'<button class="ik rot" onclick="fragWeg(\''+v.ordner+'\',\''+h(v.titel).replace(/'/g,"")+'\')">✕</button></div>';
+    if(laeuft)
+      o+='<div class="szz" style="display:block;margin:4px 0 10px">'
+       +'<video src="/video/'+encodeURIComponent(v.ordner)+'" controls playsinline preload="metadata" '
+       +'style="width:100%;max-height:70vh;border-radius:10px;background:#000;display:block"></video>'
+       +'<div class="szh" style="margin-top:5px">Läuft nicht? Dann mit ⤓ herunterladen und '
+       +'im Videoplayer des Handys ansehen.</div></div>';
+  });
+  o+='</div><div class="hinw">Vor jedem Löschen kommt eine Abfrage.</div></div>';
+  return o;
+}
+
+function tStart(){
+  return standKarte()+tStartKopf()+tLauf()+tVideos();
+}
+
+function tMachen(){
+  /* Der Ablauf von oben nach unten: was gebaut wird, woraus, dann die
+     Szenen mit ihren Clips, dann was gerade laeuft und was fertig ist. */
+  return tWie()+tStartKopf()+tAbspannWahl()+tPrompt()+tLauf()+tVideos();
+}
+
+function tDarstellerSeite(){
+  var o=tDarsteller();
+  return o;
+}
+
+/* Beim Neuzeichnen wird die Seite komplett neu aufgebaut. Ohne das hier
+   klappt jede geoeffnete Lade bei jeder Aenderung wieder zu. */
+function faltSchluessel(t){return String(t||"").replace(/[^a-zA-Z0-9]+/g,"_").slice(0,40)}
+
+function faltMerk(d){
+  var k=d.getAttribute("data-falt");
+  if(!k)return;
+  if(!S.offen)S.offen={};
+  if(d.open)S.offen[k]=1; else delete S.offen[k];
+}
+
+function faltOffen(k,standard){
+  if(!S.offen)S.offen={};
+  return S.offen[k]?true:!!standard;
+}
+
+function falte(titel,inhalt,offen){
+  var k=faltSchluessel(titel);
+  return '<details class="falt" data-falt="'+k+'" ontoggle="faltMerk(this)"'
+   +(faltOffen(k,offen)?' open':'')+'>'
+   +'<summary>'+h(titel)+'</summary>'
+   +'<div class="faltin">'+inhalt+'</div></details>';
+}
+
+function tEinst(){
+  var o=falte("Überblick",standKarte(),false)
+   +falte("Masterprompt & Regeln",tSchreiben(),false)
+   +falte("Abspann",tAbspannBib(),false)
+   +falte("Länge & Tempo",tAblauf(),false)
+   +falte("Video & Ton",tVideo(),false)
+   +falte("Musik",tMusik(),false)
+   +falte("KI & Technik",tTechnik(),false)
+   +falte("Kanäle",tKanaele(),false);
+  return o;
+}
+
+
+function modusJetzt(){
+  return (S.einst.modus==="szenen")?"szenen":((S.einst.modus==="geschichte")?"geschichte":"auto");
+}
+function tWie(){
+  /* Steht ganz oben, weil diese eine Auswahl bestimmt, was darunter
+     ueberhaupt kommt. */
+  var modus=modusJetzt();
+  return '<div class="karte">'+reihe("Wie das Video entsteht",
+    wahl("modus",modus,[["auto","Claude schreibt es"],["geschichte","Text ansehen und ändern"],["szenen","Ich baue es selbst"]]),
+    modus==="szenen"?"Deine Bilder, Clips und Texte":
+    (modus==="geschichte"?"Thema rein, Text zum Gegenlesen, dann erzeugen":"Thema rein, fertiges Video raus"))
+   +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN),
+          "gilt für Text und Untertitel")
+   +'</div>';
+}
+function tPrompt(){
+  var modus=modusJetzt();
+  if(modus==="szenen")return tSzenen();
+  if(modus==="geschichte")return tThemen()+tGeschichte()+tSzenen();
+  return tThemen();
+}
+
+function tSchreiben(){
+  /* Masterprompt und Regeln aendern sich nicht je Video, sondern je
+     Kanal - deshalb stehen sie bei den Einstellungen und nicht da,
+     wo man ein Video startet. */
+  return '<div class="karte p">'+kartenKopf("Masterprompt","prompt")
+   +'<textarea onchange="promptAendern(this.value)" placeholder="DU BIST: ...">'
+   +h(S.einst.prompt||"")+'</textarea>'
+   +'<div class="hinw" style="margin-top:8px">Änderungen werden erst nach einer Abfrage gespeichert.</div></div>'
+   +'<div class="karte p">'+kartenKopf("Regeln","regeln")
+   +'<textarea onchange="regelnAendern(this.value)" placeholder="Eine Regel je Zeile">'
+   +h(S.einst.regeln||"")+'</textarea>'
+   +'<div class="hinw" style="margin-top:8px">Beides geht bei jedem Schreiben zusammen an Claude. '
+   +'Länge, Szenenzahl und Wortzahl rechnet der Code selbst aus — die musst du hier nicht hinschreiben.</div></div>';
+}
+
+function tThemen(){
+  var o='<div class="karte p"><h2 class="kt">Themenliste · '+(S.themen.offen||[]).length+' offen</h2><div class="liste">';
+  if(!(S.themen.offen||[]).length)o+='<div class="leer">leer — dann denkt die Text-KI sich selbst etwas aus</div>';
+  var gew=(S.einst.geschichte_thema||"").trim().toLowerCase();
+  (S.themen.offen||[]).forEach(function(t,i){
+    var an=(t.trim().toLowerCase()===gew);
+    o+='<div class="e"'+(an?' style="border-color:#24D3E8"':'')+'>'
+     +'<div class="tx" onclick="themaWaehlen(\''+h(t).replace(/'/g,"")+'\')">'
+     +'<div class="ti">'+(an?'▸ ':'')+(i+1)+'. '+h(t)+'</div>'
+     +'<div class="me">'+(an?'ist gewählt — Schreiben nimmt dieses':'antippen zum Auswählen')+'</div></div>'
+     +'<button class="ik rot" onclick="themaWeg(\''+h(t).replace(/'/g,"")+'\')">✕</button></div>';
+  });
+  o+='</div><div style="display:flex;gap:7px;margin-top:10px">'
+   +'<input type="text" id="neuthema" class="breit" placeholder="Neues Thema">'
+   +'<button class="knopf or" onclick="themaNeu()">+</button></div>'
+   +'<button class="knopf" style="width:100%;margin-top:8px" id="thvor" onclick="themenVorschlag()">'
+   +'Themen vorschlagen lassen</button>'
+   +'<div class="hinw" style="padding-top:6px">Die Text-KI schlägt zwölf neue vor, passend zu '
+   +'Masterprompt und Regeln. Schon vergebene und erledigte kommen nicht noch einmal.</div>';
+  var erl=(S.themen.erledigt||[]).slice(-6).reverse();
+  o+='<div class="hinw" style="margin-top:12px">Erledigt: '+(S.themen.erledigt||[]).length
+   +(erl.length?' · zuletzt '+h(erl.map(function(x){return x.thema}).join(", ")):'')+'</div>';
+  o+='<div class="hinw" style="padding-top:0">Tipp ein Thema an, dann nimmt der Schreibknopf '
+   +'genau dieses. Ohne Auswahl nimmt er das oberste. Nach dem Schreiben wandert es zu '
+   +'<b>Erledigt</b> und ist beim nächsten Mal nicht mehr dran.</div>'
+   +'<button class="knopf" style="width:100%" onclick="fragReset()">Gedächtnis leeren</button></div>';
+  return o;
+}
+
+function tFiguren(){
+  return tDarstellerSeite();
+}
+function tFigurenAlt(){
+  return '<div class="karte p"><h2 class="kt">Charaktere &amp; Bilder</h2>'
+   +'<p style="font-size:12.5px;color:#919DB4;line-height:1.55;margin:0">Feste Figuren mit fest zugeordneter Stimme, frei erfundene aus dem Stimmenvorrat, '
+   +'Gespräche zwischen zwei Figuren und eigene Bilder zum Hochladen. Das ist der nächste Schritt — '
+   +'der Motor dafür muss zuerst gebaut werden.</p></div>';
+}
+
+/* Bildstimmung: ein Feld statt vier. Alte Kanaele werden mitgenommen. */
+var STIMMUNG_WOZU={
+ aus:"Die Bilder bleiben so, wie Flux sie gemalt hat.",
+ kalt:"Kühl und ernst, dunkle Ränder. Für Krimi, Mystery, ungeklärte Fälle.",
+ warm:"Abendsonne. Für Geschichte, Natur, Reise, alles Erzählende.",
+ hart:"Fast ohne Farbe, harter Kontrast. Für Krieg, Krisen, Doku."};
+function stimmungJetzt(){
+  var w=(S.einst.bildstimmung||"").toLowerCase();
+  if(STIMMUNG_WOZU[w])return w;
+  if(S.einst.look_an===false)return "aus";
+  w=(S.einst.look_stil||"kalt").toLowerCase();
+  return STIMMUNG_WOZU[w]?w:"kalt";
+}
+
+function tVideo(){
+  var o='';
+  o+='<div class="karte p">'+kartenKopf("Format","format")
+   +knoepfe("format",S.einst.format||"9:16",[["9:16","9:16 TikTok"],["4:5","4:5 Insta"],["1:1","1:1"],["16:9","16:9 YouTube"]])+'</div>';
+  /* "Bilder pro Minute" und "Serie: Teile" sind raus: die Zahl der Szenen
+     ergibt sich aus Laenge und Satzlaenge, und Serien schneidet das
+     Drehbuch selbst. */
+  o+='<div class="karte">'
+   +reihe("Bewegung im Bild",schalter("bewegung_an",S.einst.bewegung_an!==false),"aus = Standbilder stehen still, nur echte Clips bewegen sich")
+   +reihe("Stärke",knoepfe("bewegung_staerke",S.einst.bewegung_staerke||"sanft",[["sanft","sanft"],["mittel","mittel"],["stark","stark"]]),"sanft reicht fast immer")
+   +'</div>';
+  o+='<div class="karte p"><h2 class="kt">Bildstimmung</h2>'
+   +reihe("Stimmung",knoepfe("bildstimmung",stimmungJetzt(),
+     [["aus","aus"],["kalt","kalt"],["warm","warm"],["hart","hart"]]),
+     STIMMUNG_WOZU[stimmungJetzt()])
+   +'</div>';
+  /* Die Stimmenkarte stand hier ein zweites Mal. Sie gehoert zu denen,
+     die reden - also in den Reiter "Avatare & Sprecher". */
+  o+=tTexte();
+  o+='<div class="karte p"><h2 class="kt">Schluss</h2>'
+   +reihe("Nachlauf",zahl("nachlauf",(S.einst.nachlauf===undefined?0.9:S.einst.nachlauf),1),
+          "Sekunden, die nach dem letzten Wort noch stehenbleiben")
+   +'</div>';
+  o+='<div class="karte p"><h2 class="kt">Schnitt</h2>'
+   +reihe("Tempo",knoepfe("tempo",S.einst.tempo||"normal",
+     [["ruhig","ruhig"],["normal","normal"],["schnell","schnell"],["sehr_schnell","sehr schnell"]]),
+     "Gilt nur für Szenen auf „Nur Bild, still“. Lange Standbilder werden "
+     +"in mehrere Einstellungen geteilt. Clips bleiben immer am Stück.")
+   +'</div>';
+  return o;
+}
+
+/* ---------- Vorschau ---------- */
+var P70={plattform:"tiktok",zonen:true,nonce:0,bild:"",timer:null,zu:false};
+var P70_PLATT=[["tiktok","TikTok"],["insta","Instagram"],["shorts","Shorts"],["pinterest","Pinterest"]];
+/* links, oben, breit, hoch - alles in Prozent des Bildes */
+var P70_ZONEN={
+ tiktok:    [[0,0,100,7],[82,38,18,48],[0,76,80,17],[0,93,100,7]],
+ insta:     [[0,0,100,7],[82,44,18,40],[0,72,78,18],[0,90,100,10]],
+ shorts:    [[0,0,100,8],[82,46,18,42],[0,78,78,14],[0,92,100,8]],
+ pinterest: [[0,0,100,8],[80,8,20,12],[0,84,100,16]]
+};
+function p70Zonen(){
+  if(!P70.zonen)return "";
+  return (P70_ZONEN[P70.plattform]||[]).map(function(r){
+    return '<div style="position:absolute;left:'+r[0]+'%;top:'+r[1]+'%;width:'+r[2]+'%;height:'+r[3]+'%;'
+     +'box-sizing:border-box;pointer-events:none;border:1px solid rgba(255,96,96,.38);'
+     +'background:repeating-linear-gradient(45deg,rgba(255,70,70,.20) 0,rgba(255,70,70,.20) 5px,'
+     +'rgba(255,70,70,.04) 5px,rgba(255,70,70,.04) 10px)"></div>'}).join("");
+}
+function p70Jetzt(){
+  if(P70.zu)return;
+  var k=S.kanal; if(!k)return;
+  var mein=++P70.nonce;
+  var u="/api/vorschau?k="+encodeURIComponent(k)+"&n="+mein;
+  var sp=el("p70sp"); if(sp)sp.style.display="block";
+  var i=new Image();
+  i.onload=function(){
+    if(mein!==P70.nonce)return;
+    P70.bild=u;
+    var b=el("p70b"); if(b)b.style.backgroundImage='url("'+u+'")';
+    var x=el("p70t"); if(x)x.style.display="none";
+    var s=el("p70sp"); if(s)s.style.display="none";
+  };
+  i.onerror=function(){
+    if(mein!==P70.nonce)return;
+    var s=el("p70sp"); if(s)s.style.display="none";
+    if(!P70.bild){var x=el("p70t"); if(x)x.style.display="block"}
+  };
+  i.src=u;
+}
+function p70Lade(){
+  if(P70.timer)clearTimeout(P70.timer);
+  P70.timer=setTimeout(p70Jetzt,320);
+}
+function p70Platt(w){P70.plattform=w;zeichne()}
+function p70Um(){P70.zonen=!P70.zonen;zeichne()}
+function p70Gross(){
+  if(!P70.bild)return;
+  el("dialog").innerHTML='<div class="dim" onclick="zu()" style="padding:8px">'
+   +'<div style="position:relative;width:min(94vw,calc(84vh*9/16));height:min(84vh,calc(94vw*16/9));'
+   +'margin:0 auto;border-radius:12px;overflow:hidden;background:#000 center/contain no-repeat url(\''+P70.bild+'\')">'
+   +p70Zonen()+'</div>'
+   +'<div class="hinw" style="max-width:520px;margin:10px auto 0">Echtes Einzelbild vom Server, '
+   +'gerechnet mit demselben ffmpeg wie das Video. Die roten Flächen sind ungefähr, wo die App '
+   +'ihre Knöpfe und ihren Begleittext drüberlegt.</div></div>';
+}
+function schriftDa(){
+  if(S.schriften===null){
+    S.schriften=0;
+    api("/api/schriften").then(function(x){S.schriften=x||{};zeichne()});
+  }
+  return S.schriften&&S.schriften.gut?S.schriften:null;
+}
+function schriftFehlt(){
+  var w=S.einst.untertitel_schrift||"auto";
+  if(w==="auto"||!w)return "";
+  var s=schriftDa(); if(!s)return "";
+  return (s.gut||[]).concat(s.rest||[]).indexOf(w)<0?w:"";
+}
+function schriftHinweis(){
+  var f=schriftFehlt();
+  if(f)return "»"+f+"« ist nicht installiert — es wird eine andere benutzt";
+  return "nur was installiert ist, wirkt auch";
+}
+function schriftWahl(){
+  var w=S.einst.untertitel_schrift||"auto";
+  var s=schriftDa();
+  if(!s)return '<select disabled style="max-width:168px"><option>wird geladen …</option></select>';
+  var o='<select onchange="setz(\'untertitel_schrift\',this.value)" style="max-width:168px">'
+   +'<option value="auto"'+((w==="auto"||!w)?" selected":"")+'>beste vorhandene</option>';
+  var f=schriftFehlt();
+  if(f)o+='<option value="'+h(f)+'" selected>'+h(f)+' — FEHLT</option>';
+  var teil=function(titel,liste){
+    if(!liste||!liste.length)return "";
+    return '<optgroup label="'+titel+'">'+liste.map(function(n){
+      return '<option value="'+h(n)+'"'+(n===w?" selected":"")+'>'+h(n)+'</option>'}).join("")+'</optgroup>';
+  };
+  o+=teil("gut für Untertitel",s.gut)+teil("sonst installiert",s.rest);
+  return o+'</select>';
+}
+function p70Zu(){P70.zu=true;zeichne()}
+function p70Auf(){P70.zu=false;zeichne();p70Jetzt()}
+function p70Karte(){
+  var halt='position:sticky;top:6px;z-index:6;margin-bottom:10px';
+  if(P70.zu){
+    return '<div class="karte p" style="'+halt+';padding:9px 13px">'
+     +'<div style="display:flex;align-items:center;justify-content:space-between">'
+     +'<div class="kt" style="margin:0">Vorschau</div>'
+     +'<button class="knopf" style="padding:5px 12px" onclick="p70Auf()">zeigen</button>'
+     +'</div></div>';
+  }
+  return '<div class="karte p" style="'+halt+'">'
+   +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">'
+   +'<div class="kt" style="margin:0">Vorschau</div>'
+   +'<button class="knopf" style="padding:5px 12px" onclick="p70Zu()">ausblenden</button></div>'
+   +'<div style="display:flex;gap:11px;align-items:flex-start">'
+   +'<div id="p70b" onclick="p70Gross()" style="position:relative;width:128px;height:228px;flex:none;'
+   +'border-radius:10px;overflow:hidden;border:1px solid #2A3147;cursor:pointer;background-color:#12151E;'
+   +'background-position:center;background-size:cover;background-repeat:no-repeat'
+   +(P70.bild?';background-image:url(\''+P70.bild+'\')':'')+'">'
+   +p70Zonen()
+   +'<div id="p70t" class="hint" style="display:'+(P70.bild?"none":"block")
+   +';padding:10px;text-align:center;line-height:1.4;font-size:11px">Noch kein Bild. '
+   +'Lade im Szenen-Editor eins hoch.</div>'
+   +'<div id="p70sp" style="display:none;position:absolute;left:0;right:0;bottom:0;height:3px;'
+   +'background:linear-gradient(90deg,#6BE4F2,#FFD400)"></div>'
+   +'</div>'
+   +'<div style="flex:1;min-width:0">'
+   +'<div class="pills" style="flex-wrap:wrap">'+P70_PLATT.map(function(x){
+      return '<button class="'+(P70.plattform===x[0]?"an":"")+'" onclick="p70Platt(\''+x[0]
+       +'\')">'+h(x[1])+'</button>'}).join("")+'</div>'
+   +'<div style="display:flex;align-items:center;gap:8px;margin-top:10px">'
+   +'<span class="hint" style="flex:1;min-width:0">Bereiche der App</span>'
+   +'<button class="sch'+(P70.zonen?" an":"")+'" onclick="p70Um()"><i></i></button></div>'
+   +'<div style="display:flex;gap:6px;margin-top:10px">'
+   +'<button class="knopf" style="flex:1;padding:7px 0" onclick="p70Jetzt()">neu</button>'
+   +'<button class="knopf" style="flex:1;padding:7px 0" onclick="p70Gross()">groß</button></div>'
+   +'</div></div></div>';
+}
+function tTexte(){
+  /* Ein fester Stil, der sitzt: ein bis zwei Woerter, gross, weiss mit
+     dickem schwarzem Rand, gemischte Schreibweise, mittig im sicheren
+     Streifen ueber TikToks eigenen Knoepfen. Nichts davon ist
+     einstellbar - sitzt es nicht, wird der Stil im Code geaendert. */
+  return '<div class="karte">'
+   +reihe("Untertitel",schalter("untertitel_an",S.einst.untertitel_an!==false))
+   +'</div>';
+}
+
+function tTechnik(){
+  var a=S.daten.apis||{};
+  var p=S.preis||{};
+  var o='<div class="karte">'
+   +zeileDienst("Text · Claude",a.text,"Skript, Titel, Beschreibung",(p.text||0).toFixed(2)+" €")
+   +zeileDienst("Bild · Flux Pro",a.bilder,(p.bilder||0)+" Bilder · "+(p.je_bild||0).toFixed(2)+" € je Bild",(((p.bilder||0)*(p.je_bild||0))||0).toFixed(2)+" €")
+   +zeileDienst("Stimme",a.stimme,"über fal.ai",(p.stimme||0).toFixed(2)+" €")
+   +zeileDienst("Referenzclip · Kling",a.ref,"noch nicht eingerichtet","—")
+   +'</div>';
+  o+='<div class="karte p"><h2 class="kt">Guthaben</h2>'
+   +'<div class="r" style="padding-top:0"><div><div class="lb">fal.ai</div><div class="hint">Bilder und Stimme</div></div>'
+   +'<div style="display:flex;align-items:center;gap:8px"><span class="zahl" style="font-size:15px;font-weight:700" id="gh">'
+   +(S.guthaben?(S.guthaben.ok?Number(S.guthaben.betrag).toFixed(2)+" "+S.guthaben.waehrung:h(S.guthaben.text)):"—")
+   +'</span><button class="knopf" onclick="holGuthaben()">abrufen</button></div></div></div>';
+  o+='<div class="karte p"><h2 class="kt">Schlüssel</h2><div class="liste">';
+  [["anthropic","Claude"],["fal","fal.ai"],["eleven","ElevenLabs"],["kling","Kling"],["hedra","Hedra"],["freesound","Freesound"]].forEach(function(s){
+    var w=S.schluessel[s[0]]||"";
+    o+='<div class="e"><div class="tx"><div class="ti">'+s[1]+'</div><div class="me">'+(w?h(w):"nicht gesetzt")+'</div></div>'
+     +'<button class="knopf" onclick="schluesselSetzen(\''+s[0]+'\',\''+s[1]+'\')">'+(w?"ersetzen":"eintragen")+'</button></div>';
+  });
+  o+='</div><div class="hinw">Eingetragene Schlüssel werden nie wieder angezeigt.</div></div>';
+  return o;
+}
+function zeileDienst(name,ok,hint,preis){
+  return '<div class="r"><div><div class="lb">'+(ok?'<span class="gruen">✓</span> ':'<span class="grau">○</span> ')+h(name)+'</div>'
+   +'<div class="hint">'+h(hint)+'</div></div><div class="zahl" style="font-size:12.5px">'+h(preis)+'</div></div>'
+}
+
+function tKanaele(){
+  var ks=S.daten.kanaele||[];
+  var o='<div class="karte"><div class="liste">';
+  ks.forEach(function(k){
+    o+='<div class="e'+(k.eltern?" kind":"")+'">'
+     +'<span class="punkt'+(k.key===S.kanal?"":" aus")+'"></span>'
+     +'<div class="tx" onclick="waehle(\''+k.key+'\')"><div class="ti">'+h(k.name)+'</div>'
+     +'<div class="me">'+(k.eltern?"Geschwisterkanal · ":"")+h(sprachName((k.sprachen||["de"])[0]))+' · '+(k.videos||0)+' Videos</div></div>'
+     +(k.eltern?'<button class="ik" title="lösen" onclick="fragLoesen(\''+k.key+'\')">⛓</button>':'')
+     +'<button class="ik rot" onclick="fragKanalWeg(\''+k.key+'\',\''+h(k.name).replace(/'/g,"")+'\')">✕</button></div>';
+  });
+  o+='</div></div>';
+  var jetzt=kanalDaten();
+  if(jetzt)o+='<div class="karte">'
+   +reihe("Name dieses Kanals",'<button class="knopf" onclick="kanalUmbenennen()">ändern</button>',
+          h(jetzt.name||""))+'</div>';
+  o+='<div class="karte p"><h2 class="kt">Neuer Kanal</h2>'
+   +'<input type="text" id="nname" class="breit" placeholder="Name" style="margin-bottom:8px">'
+   +'<div class="r"><div class="lb">Sprache</div><select id="nsprache">'
+   +[["de","Deutsch"],["en","Englisch"],["es","Spanisch"],["fr","Französisch"]].map(function(s){return '<option value="'+s[0]+'">'+s[1]+'</option>'}).join("")
+   +'</select></div>'
+   +'<button class="knopf or" style="width:100%;margin-top:10px;padding:14px" onclick="kanalNeu()">Kanal anlegen</button>'
+   +'<div class="hinw" style="margin-top:9px">Was für eine Sorte Video der Kanal macht, '
+   +'steht im Masterprompt des Kanals — im Reiter <b>Video machen</b>. Bild und Ton stellst '
+   +'du hier in den Einstellungen ein.</div></div>';
+  var k=kanalDaten();
+  if(k){
+    o+='<div class="karte p"><h2 class="kt">Von '+h(k.name)+' ableiten</h2>'
+     +'<input type="text" id="kname" class="breit" placeholder="Name des neuen Kanals" style="margin-bottom:8px">'
+     +'<div class="r" style="padding-top:4px"><div class="lb">Sprache für Geschwisterkanal</div><select id="gsprache">'
+     +[["en","Englisch"],["es","Spanisch"],["fr","Französisch"],["de","Deutsch"]].map(function(s){return '<option value="'+s[0]+'">'+s[1]+'</option>'}).join("")
+     +'</select></div>'
+     +'<div style="display:flex;gap:8px;margin-top:10px">'
+     +'<button class="knopf" style="flex:1;padding:13px" onclick="klon()">Klonen</button>'
+     +'<button class="knopf or" style="flex:1;padding:13px" onclick="gesch()">Geschwisterkanal</button></div>'
+     +'<div class="hinw">Ein Klon ist eigenständig. Ein Geschwisterkanal läuft mit und benutzt dieselben Bilder — das spart gut zwei Drittel.</div></div>';
+  }
+  return o;
+}
+
+/* ---------- Aktionen ---------- */
+function kanalMerken(k){try{localStorage.setItem("aiu_kanal",k||"")}catch(e){}}
+function kanalGemerkt(){try{return localStorage.getItem("aiu_kanal")||""}catch(e){return ""}}
+function waehle(k){S.kanal=k;kanalMerken(k);S.tab="machen";S.modelle=null;S.szenen=null;S.tg=null;S.fig=null;S.ds=null;S.ab=null;S.gs=null;S.arten=null;laden()}
+/* Frueher ging hier window.open auf einen neuen Tab. Auf dem Handy kam
+   dabei nichts - der Player laeuft jetzt in der Seite, so wie bei den
+   Clips, wo es nachweislich funktioniert. */
+function spiel(o){S.spielt=(S.spielt===o)?null:o;zeichne()}
+function herunter(o){location.href="/laden/"+encodeURIComponent(o)}
+function jn(x){return x?"an":"aus"}
+function standKarte(){
+  var e=S.einst||{}, k=kanalDaten()||{};
+  var modus=(e.modus==="szenen")?"Eigene Szenen":
+            ((e.modus==="geschichte")?"Deine Geschichte":"Claude schreibt");
+  var z=[["Wie",modus],["Format",h(e.format||"9:16")],
+         ["Sprache",h(sprachName((e.sprachen||["de"])[0]))],["Länge",(e.laenge||20)+" Sek."],
+         ["Untertitel",jn(e.untertitel_an!==false)],["Musik",jn(e.musik_an!==false)],
+         ["Telegram",jn(e.telegram_token&&e.telegram_chat)],
+         ["Tempo",h((e.tempo||"normal").replace("_"," "))],
+         ["Bildstimmung",h(stimmungJetzt())]];
+  var o='<div class="karte p"><h2 class="kt">Eingestellt</h2><div class="raster">';
+  z.forEach(function(x){o+='<div class="zl"><div class="zt">'+x[0]+'</div><div class="zw '
+    +(x[1]==="aus"?"grau":"")+'">'+x[1]+'</div></div>'});
+  return o+'</div></div>';
+}
+function kanalUmbenennen(){
+  var k=kanalDaten()||{};
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Kanal umbenennen</h2>'
+   +'<input type="text" id="knneu" class="breit" value="'+h(k.name||"")+'" style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="kanalNameSpeichern()">Speichern</button></div></div></div>';
+}
+function kanalNameSpeichern(){
+  var n=(el("knneu").value||"").trim();
+  if(!n)return melde("Name darf nicht leer sein.");
+  api("/api/kanal?k="+S.kanal,{name:n}).then(function(){zu();S.einst.name=n;laden()});
+}
+
+function abbrechen(){api("/api/stop",{}).then(laden)}
+
+/* Die Abfrage sprach immer vom naechsten Thema aus der Liste - auch
+   dann, wenn aus fertigen Szenen gebaut wird und gar kein Thema
+   gebraucht wird. Jetzt steht da, was wirklich passiert. */
+function fragGenerieren(){
+  var t=(el("thema")&&el("thema").value||"").trim();
+  var k=kanalDaten(), p=S.preis||{};
+  var szenen=(((S.szenen||{}).szenen)||[]);
+  var kopf, was;
+  if(p.modus==="szenen"){
+    var mitClip=szenen.filter(function(x){return x.clip}).length;
+    kopf="Aus deinen "+(p.szenen||szenen.length)+" Szenen";
+    var offen=Number(p.animiert)||0;
+    was="Gebaut wird aus dem, was da ist: "
+      +(mitClip?(mitClip+(mitClip===1?" Szene":" Szenen")+" mit fertigem Clip, "):"")
+      +"der Rest als Bild. Dazu kommen Stimme, Untertitel, Musik und Abspann."
+      +"<br>Es wird <b>kein</b> neuer Text geschrieben und kein Thema verbraucht."
+      +(mitClip?"<br>Fertige Clips sind bezahlt und kosten nicht noch einmal.":"")
+      +(offen?("<br><span style=\"color:#FFB454\">"+offen+(offen===1?" Szene":" Szenen")
+               +" ohne Clip werden dabei noch animiert — das ist der Preis unten.</span>")
+             :"<br>Es wird nichts mehr animiert, es kostet nur noch die Stimme.");
+  }else{
+    kopf=t||"nächstes Thema aus der Liste";
+    was="Die Text-KI schreibt eine neue Geschichte, dann werden Bilder, "
+      +"Stimme und Video erzeugt.";
+  }
+  var sek=(p.sekunden?(Math.round(p.sekunden)+" Sek gesprochen"):((S.einst.laenge||20)+" Sek"));
+  frage("Video erzeugen?",
+    "<b>"+h(kopf)+"</b><br>"+h(k?k.name:"")+" · "+sek+" · "+(S.einst.format||"9:16")
+    +"<br><br>"+was
+    +"<br><br>Kostet etwa <b>"+(Number(p.gesamt)||0).toFixed(2).replace(".",",")+" €</b> echtes Guthaben."
+    +'<br><br><span style="color:#FFB454">Während das läuft, keinen Neustart '
+    +'machen — der Bau wird sonst abgebrochen.</span>',
+    "Ja, erzeugen",function(){
+      api("/api/start",{k:S.kanal,thema:t}).then(function(r){if(!r.ok)melde(r.text||"ging nicht");laden()});
+    });
+}
+function fragWeg(o,t){
+  frage("Video löschen?","<b>"+h(t)+"</b><br><br>Das Video und alle Bilder dazu werden gelöscht. Das lässt sich nicht rückgängig machen.",
+    "Löschen",function(){api("/api/video_weg",{ordner:o}).then(laden)},true);
+}
+function fragKanalWeg(k,n){
+  frage("Kanal löschen?","<b>"+h(n)+"</b><br><br>Einstellungen und Themenliste sind weg. Die fertigen Videos bleiben liegen.",
+    "Löschen",function(){api("/api/kanal_weg",{k:k}).then(function(r){
+      if(!r.ok)melde(r.fehler==="hat Geschwisterkanaele"?"Dieser Kanal hat einen Geschwisterkanal. Den erst lösen.":"Ging nicht: "+r.fehler);
+      if(k===S.kanal)S.kanal=null;laden()})},true);
+}
+function fragLoesen(k){
+  frage("Verbindung lösen?","Der Kanal läuft dann nicht mehr automatisch mit und bekommt eine eigene Themenliste.",
+    "Lösen",function(){api("/api/kanal_loesen",{k:k}).then(laden)});
+}
+function fragReset(){
+  frage("Gedächtnis leeren?","Erledigte Themen werden vergessen. Claude darf sie dann wieder verwenden.",
+    "Leeren",function(){api("/api/themen?k="+S.kanal,{zuruecksetzen:true}).then(function(x){S.themen=x;zeichne()})},true);
+}
+function themaNeu(){
+  var v=(el("neuthema").value||"").trim();if(!v)return;
+  api("/api/themen?k="+S.kanal,{hinzu:v}).then(function(x){S.themen=x;zeichne()});
+}
+function fragAlleSzenenWeg(n){
+  frage("Alle "+n+" Szenen löschen?",
+    "Die Liste wird leer. Die hochgeladenen Bilder und Clips bleiben im Ordner liegen — "
+    +"du kannst sie jederzeit wieder einfügen.","Alle löschen",
+    function(){api("/api/szenen?k="+S.kanal,{aktion:"alle_weg"}).then(function(r){
+      if(!r||!r.ok)return melde("Ging nicht");
+      S.szenen=null;ladeSzenen();melde((r.weg||0)+" Szenen gelöscht.")})},true);
+}
+function themenVorschlag(){
+  var b=el("thvor"); if(!b)return;
+  b.disabled=true; b.textContent="fragt nach…";
+  api("/api/themen_vorschlag?k="+S.kanal,{wieviel:12}).then(function(r){
+    b.disabled=false; b.textContent="Themen vorschlagen lassen";
+    if(!r||!r.ok)return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
+    if(r.themen)S.themen=r.themen;
+    zeichne();
+    melde(r.dazu?(r.dazu+" Themen dazugekommen."):"Keine neuen dabei — alle waren schon in der Liste.");
+  }).catch(function(e){
+    b.disabled=false; b.textContent="Themen vorschlagen lassen";
+    melde("Die Anfrage kam nicht durch: "+(e&&e.message?e.message:"Verbindung abgebrochen")
+      +". Im Reiter Einstellungen unter KI & Technik prüfen, ob beim Drehbuch ein Schlüssel steht.");
+  });
+}
+function themaWaehlen(t){
+  var f=el("thema"); if(f)f.value=t;
+  var g=el("gsthema"); if(g)g.value=t;
+  setz("geschichte_thema",t);
+}
+function themaWeg(t){api("/api/themen?k="+S.kanal,{weg:t}).then(function(x){S.themen=x;zeichne()})}
+function kanalNeu(){
+  var n=(el("nname").value||"").trim();if(!n)return melde("Bitte einen Namen eingeben.");
+  api("/api/kanal_neu",{name:n,sprache:el("nsprache").value}).then(function(r){S.kanal=r.key;laden()});
+}
+function klon(){
+  var n=(el("kname").value||"").trim();if(!n)return melde("Bitte einen Namen eingeben.");
+  api("/api/kanal_klon",{quelle:S.kanal,name:n}).then(function(r){S.kanal=r.key;laden()});
+}
+function gesch(){
+  var n=(el("kname").value||"").trim();if(!n)return melde("Bitte einen Namen eingeben.");
+  api("/api/kanal_geschwister",{eltern:S.kanal,name:n,sprache:el("gsprache").value}).then(function(r){S.kanal=r.key;laden()});
+}
+function holGuthaben(){
+  api("/api/guthaben").then(function(d){S.guthaben=d.fal;zeigeKopf();zeichne()});
+}
+function schluesselSetzen(slot,name){
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>'+h(name)+'</h2>'
+   +'<p>Der Schlüssel wird gespeichert und danach nie wieder angezeigt.</p>'
+   +'<input type="text" id="skey" class="breit" placeholder="Schlüssel einfügen" style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="schluesselSpeichern(\''+slot+'\')">Speichern</button></div></div></div>';
+}
+function schluesselSpeichern(slot){
+  var v=(el("skey").value||"").trim();if(!v)return;
+  api("/api/schluessel",{slot:slot,wert:v}).then(function(){zu();
+    api("/api/schluessel").then(function(x){S.schluessel=x;laden()})});
+}
+
+
+/* ---------- Modelle (Patch M1) ---------- */
+var SLOTNAME={ref:"Clips mit Avataren",text:"Drehbuch",bilder:"Bilder",stimme:"Stimme",video:"Bild bewegen",musik:"Musik",sound:"Geräusche",avatar:"Avatar (einer spricht)",multi:"Zwei Sprechende",lippen:"Lippen auf den Clip"}
+/* Was das Modell TUT, nicht wie es heisst. */
+var SLOTWOZU={ref:"baut aus Bild und Figuren den Clip. Die Münder setzt danach ein eigener Schritt.",text:"schreibt Text, Titel und Beschreibungen",bilder:"malt das Bild zu jeder Szene",stimme:"spricht den Text",video:"animiert ein Bild ohne Figuren",musik:"nur wenn du kein eigenes Lied hochlädst",sound:"Geräusche",avatar:"altes Lippensync aus einem Standbild, eine Person",multi:"altes Lippensync aus einem Standbild, zwei Personen",lippen:"setzt die Münder auf den fertigen Kling- oder MiniMax-Clip. Leer lassen geht: dann wird fal-ai/sync-lipsync/v2 mit dem fal-Schlüssel genommen."};
+var EINHEIT={ref:"je Sekunde",text:"je Video",bilder:"je Bild",stimme:"je Sekunde",video:"je Sekunde",musik:"je Stueck",sound:"je Stueck",avatar:"je Sekunde",multi:"je Sekunde",lippen:"je Sekunde"};
+var BEISPIEL={text:"0.02",bilder:"0.04",stimme:"0.008",video:"0.09",musik:"0.01",sound:"0.01",avatar:"0.05",multi:"0.05",lippen:"0.05"};
+var ADRESSE={bilder:"fal-ai/flux-pro/v1.1",
+             video:"fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+             avatar:"fal-ai/kling-video/ai-avatar/v2/standard",
+             multi:"fal-ai/ai-avatar/multi",
+             lippen:"fal-ai/sync-lipsync/v2"};
+
+function ladeModelle(){return api("/api/modelle?k="+S.kanal).then(function(m){S.modelle=m;zeichne()})}
+
+/* Die Anleitung stand bisher ganz unten, sechs Karten unter der Karte,
+   die sie meint ("oben bei Referenzclip..."). Jetzt steht sie drin. */
+function refAnleitung(wieviele){
+  if(wieviele)return '';
+  return '<div class="hinw" style="padding:0;margin:0 0 10px">'
+   +'<b>Noch nichts eingetragen.</b> Tipp unten auf <b>+ Eigenes Modell</b> und trag ein:<br><br>'
+   +'Name <b>Kling Referenz</b><br>'
+   +'Adresse <b>fal-ai/kling-video/o3/standard/reference-to-video</b><br>'
+   +'Preis <b>0.112</b> je Sekunde<br>'
+   +'Schlüssel leer lassen — der von fal.ai wird mitbenutzt.<br><br>'
+   +'Ohne das bleibt der Knopf <b>Clip</b> bei jeder Szene grau.</div>';
+}
+
+/* Eine Zeile, die auf einen Blick zeigt, was eingerichtet ist und was fehlt. */
+function modellUeberblick(m){
+  var reihe=["text","bilder","ref","multi","stimme","video","musik"];
+  var o='<div class="karte p"><h2 class="kt">Modelle</h2>'
+   +'<div class="szh" style="margin:-4px 0 10px">Was fehlt, ist grau. Antippen springt hin.</div>'
+   +'<div style="display:flex;flex-wrap:wrap;gap:7px">';
+  reihe.forEach(function(s){
+    if(!((m.slots||[]).indexOf(s)>=0))return;
+    var da=((m.apis||{})[s]||[]).some(function(e){return e.url});
+    o+='<button class="wn'+(da?" an":"")+'" onclick="zuSlot(\''+s+'\')">'
+     +(da?"":"\u2022 ")+h(SLOTNAME[s]||s)+'</button>';
+  });
+  return o+'</div></div>';
+}
+
+function zuSlot(s){
+  /* Kann aus jedem Reiter kommen: erst in die Einstellungen, dann
+     "KI & Technik" aufklappen, dann hinscrollen. */
+  if(!S.offen)S.offen={};
+  S.offen[faltSchluessel("KI & Technik")]=1;
+  if(S.tab!=="einst")S.tab="einst";
+  zeichne();
+  setTimeout(function(){
+    var z=document.getElementById("slot_"+s);
+    if(z)z.scrollIntoView({behavior:"smooth",block:"start"});
+  },120);
+}
+
+function tTechnik(){
+  var m=S.modelle;
+  if(!m){ladeModelle();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var p=S.preis||{};
+  var o=modellUeberblick(m)
+   +'<div class="karte p"><h2 class="kt">Was ein Video kostet</h2>';
+  if(p.modus==="szenen"){
+    o+='<div class="r" style="padding-top:0"><div><div class="lb">'+(p.szenen||0)+' eigene Szenen</div>'
+      +'<div class="hint">deine Bilder und Texte kosten nichts</div></div><div class="zahl">0.00 €</div></div>'
+      +'<div class="r"><div><div class="lb">Stimme</div><div class="hint">'+(p.gesprochen||0)+' gesprochene Szenen</div></div>'
+      +'<div class="zahl">'+(p.stimme||0).toFixed(2)+' €</div></div>'
+      +(p.animiert?'<div class="r"><div><div class="lb">'+p.animiert+' Szenen animiert</div>'
+     +'<div class="hint">KI-Animation, '+Number(p.je_clip||0).toFixed(2)+' je Szene</div></div>'
+     +'<div class="zahl">'+(p.animation||0).toFixed(2)+' €</div></div>':'')
+   +'<div class="r"><div class="lb"><b>Zusammen</b></div><div class="zahl"><b>'+(p.gesamt||0).toFixed(2)+' €</b></div></div>'
+      +'<div class="hinw" style="margin-top:8px">Länge etwa '+(p.sekunden||0)+' Sekunden, ergibt sich aus den Szenen.</div></div>';
+  }else{
+    o+='<div class="r" style="padding-top:0"><div class="lb">Text</div><div class="zahl">'+(p.text||0).toFixed(2)+' €</div></div>'
+      +'<div class="r"><div class="lb">'+(p.bilder||0)+' Bilder</div><div class="zahl">'+(((p.bilder||0)*(p.je_bild||0))||0).toFixed(2)+' €</div></div>'
+      +'<div class="r"><div class="lb">Stimme</div><div class="zahl">'+(p.stimme||0).toFixed(2)+' €</div></div>'
+      +'<div class="r"><div class="lb"><b>Zusammen</b></div><div class="zahl"><b>'+(p.gesamt||0).toFixed(2)+' €</b></div></div>'
+      +'<div class="hinw" style="margin-top:8px">Bei '+(p.sekunden||0)+' Sekunden. Ändert sich mit Länge und Bildern pro Minute.</div></div>';
+  }
+
+  o+='<div class="karte p"><h2 class="kt">Guthaben</h2>'
+   +'<div class="r" style="padding-top:0"><div><div class="lb">fal.ai</div><div class="hint">Bilder und Stimme</div></div>'
+   +'<div style="display:flex;align-items:center;gap:8px"><span class="zahl" style="font-size:15px;font-weight:700">'
+   +(S.guthaben?(S.guthaben.ok?Number(S.guthaben.betrag).toFixed(2)+" "+S.guthaben.waehrung:h(S.guthaben.text)):"—")
+   +'</span><button class="knopf" onclick="holGuthaben()">abrufen</button></div></div></div>';
+
+  /* avatar kann keinen Hintergrund und wird nicht gebraucht, Geraeusche
+     sind raus. "video" (Bild bewegen) MUSS sichtbar sein - ohne das
+     Modell geht die Schalterstellung "Nur Bild, bewegt" nicht. */
+  (m.slots||[]).filter(function(s){
+    return s!=="avatar"&&s!=="sound";
+  }).forEach(function(s){
+    var liste=(m.apis||{})[s]||[];
+    o+='<div class="karte p" id="slot_'+s+'"><h2 class="kt">'+h(SLOTNAME[s]||s)+'</h2>'
+     +(SLOTWOZU[s]?'<div class="szh" style="margin:-4px 0 9px">'+h(SLOTWOZU[s])+'</div>':'')
+     +(s==="ref"?refAnleitung(liste.length):'')
+     +'<div class="liste">';
+    if(!liste.length)o+='<div class="leer">nichts eingetragen</div>';
+    liste.forEach(function(e,i){
+      o+='<div class="e"><button class="ik" style="'+(e.aktiv?"background:#24D3E8;border-color:#24D3E8;color:#04161B":"")+'" '
+        +'onclick="modellAktiv(\''+s+'\','+i+')" title="aktiv schalten">'+(e.aktiv?"●":"○")+'</button>'
+        +'<div class="tx" onclick="modellBearbeiten(\''+s+'\','+i+')"><div class="ti">'+h(e.name||"ohne Namen")+'</div>'
+        +'<div class="me">'+h(e.url||"keine Adresse")+(e.preis!==""&&e.preis!=null?" · "+h(e.preis)+" € "+(EINHEIT[s]||""):"")
+        +(e.key?" · Schlüssel ✓":(e.woher?" · Schlüssel mitbenutzt":" · kein Schlüssel"))+'</div></div>'
+        +'<button class="ik rot" onclick="modellWeg(\''+s+'\','+i+',\''+h(e.name).replace(/'/g,"")+'\')">✕</button></div>';
+    });
+    o+='</div><button class="knopf" style="width:100%;margin-top:9px" onclick="modellNeu(\''+s+'\')">+ Eigenes Modell</button></div>';
+  });
+  o+=tgKarte();
+  o+='<div class="karte p"><div class="hinw" style="padding:0">Der orange Punkt links ist das Modell, das benutzt wird. '
+   +'Auf den Namen tippen zum Ändern. Schlüssel werden gespeichert, aber nie wieder angezeigt.</div></div>';
+  return o;
+}
+
+function modellFormular(titel,s,i,e){
+  e=e||{};
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>'+h(titel)+'</h2>'
+   +'<p>Slot: '+h(SLOTNAME[s]||s)+'</p>'
+   +'<input type="text" id="mname" class="breit" placeholder="Name, z.B. Flux Pro" value="'+h(e.name||"")+'" style="margin-bottom:8px">'
+   +'<input type="text" id="murl" class="breit" placeholder="Adresse, z.B. '+(ADRESSE[s]||"fal-ai/flux-pro/v1.1")+'" value="'+h(e.url||"")+'" style="margin-bottom:8px">'
+   +'<input type="text" id="mpreis" class="breit" placeholder="Preis '+(EINHEIT[s]||"je Einheit")+' in Euro, z.B. '+(BEISPIEL[s]||"0.04")+'" value="'+h(e.preis==null?"":e.preis)+'" style="margin-bottom:8px">'
+   +'<input type="text" id="mkey" class="breit" placeholder="'+(e.key?"Schlüssel ersetzen (leer = behalten)":"Schlüssel")+'" style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="modellSpeichern(\''+s+'\','+i+')">Speichern</button></div></div></div>';
+}
+function modellNeu(s){modellFormular("Eigenes Modell",s,-1,{})}
+function modellBearbeiten(s,i){modellFormular("Modell ändern",s,i,((S.modelle.apis||{})[s]||[])[i])}
+function modellSpeichern(s,i){
+  var d={slot:s,aktion:(i<0?"neu":"speichern"),i:i,
+    name:el("mname").value,url:el("murl").value,preis:el("mpreis").value,key:el("mkey").value};
+  api("/api/modelle?k="+S.kanal,d).then(function(r){zu();
+    if(!r.ok)return melde(r.fehler||"ging nicht");
+    ladeModelle().then(function(){api("/api/preis?k="+S.kanal).then(function(x){S.preis=x;zeichne()})});
+  });
+}
+function modellAktiv(s,i){
+  api("/api/modelle?k="+S.kanal,{slot:s,aktion:"aktiv",i:i}).then(function(){
+    ladeModelle().then(function(){api("/api/preis?k="+S.kanal).then(function(x){S.preis=x;zeichne()})})});
+}
+function modellWeg(s,i,n){
+  frage("Modell löschen?","<b>"+h(n)+"</b><br><br>Der Eintrag und sein Schlüssel werden gelöscht.","Löschen",
+    function(){api("/api/modelle?k="+S.kanal,{slot:s,aktion:"weg",i:i}).then(function(){ladeModelle()})},true);
+}
+
+
+/* ---------- Eigene Szenen ---------- */
+function ladeSzenen(){return api("/api/szenen?k="+S.kanal).then(function(d){S.szenen=d;
+  return api("/api/preis?k="+S.kanal).then(function(x){S.preis=x;zeichne()})})}
+
+function szeneSetz(id,feld,wert){
+  api("/api/szenen?k="+S.kanal,{aktion:feld,id:id,wert:wert}).then(function(r){
+    if(!r.ok)return melde(r.fehler||"ging nicht");ladeSzenen()})
+}
+function szeneSchieb(id,wohin){
+  api("/api/szenen?k="+S.kanal,{aktion:wohin,id:id}).then(function(){ladeSzenen()})
+}
+function szeneWeg(id,name){
+  frage("Szene löschen?","<b>"+h(name)+"</b><br><br>Die Szene und ihre Datei werden gelöscht.","Löschen",
+    function(){api("/api/szenen?k="+S.kanal,{aktion:"weg",id:id}).then(function(){ladeSzenen()})},true)
+}
+function musikWeg(){
+  frage("Lied entfernen?","Das hochgeladene Lied wird gelöscht.","Entfernen",
+    function(){api("/api/szenen?k="+S.kanal,{aktion:"musik_weg"}).then(function(){ladeSzenen()})},true)
+}
+
+function hochladen(zweck,sid,nur){
+  var i=document.createElement("input");
+  i.type="file";
+  i.accept=(zweck==="musik")?"audio/*"
+    :(nur==="video"?"video/*":(nur==="bild"?"image/*":"image/*,video/*"));
+  i.onchange=function(){
+    var f=i.files&&i.files[0];if(!f)return;
+    if(f.size>90*1024*1024){melde("Datei zu groß — höchstens 90 MB.");return}
+    el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Lädt hoch</h2><p id="hpro">'+h(f.name)+' · 0 %</p></div></div>';
+    var x=new XMLHttpRequest();
+    x.open("POST","/api/hochladen?k="+encodeURIComponent(S.kanal)+"&zweck="+zweck+"&name="+encodeURIComponent(f.name)+(sid?("&sid="+encodeURIComponent(sid)):""));
+    x.upload.onprogress=function(e){if(e.lengthComputable&&el("hpro"))el("hpro").textContent=f.name+" · "+Math.round(e.loaded/e.total*100)+" %"};
+    x.onload=function(){zu();var r={};try{r=JSON.parse(x.responseText)}catch(err){}
+      if(!r.ok)return melde(r.fehler||"Hochladen ging nicht");
+      R6.stand=null; ladeSzenen(); ladeClips()};
+    x.onerror=function(){zu();melde("Hochladen fehlgeschlagen — Verbindung weg?")};
+    x.send(f);
+  };
+  i.click();
+}
+
+function szeneNeu(id,hatClip){
+  var warn=hatClip
+    ? "<br><br><b>Achtung:</b> der vorhandene Clip ist dann noch vom alten Bild. "
+      +"Er wird als veraltet markiert und muss neu erzeugt werden — das kostet noch einmal."
+    : "";
+  frage("Bild neu erzeugen?",
+    "Nur f\u00fcr diese eine Szene wird ein neues Bild erzeugt. Das kostet den Preis f\u00fcr ein Bild."
+    +"<br><br>Das jetzige Bild rutscht in den Verlauf, du kannst es zur\u00fcckholen."+warn,
+    "Neu erzeugen",function(){
+      el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Wird erzeugt</h2><p>Einen Moment, das Bildmodell braucht ein paar Sekunden.</p></div></div>';
+      api("/api/szene_neu?k="+encodeURIComponent(S.kanal),{sid:id}).then(function(r){
+        zu();
+        if(!r||!r.ok)return melde((r&&r.fehler)||"Das hat nicht geklappt");
+        ladeSzenen();
+      }).catch(function(){
+        /* Das Bildmodell braucht bis zu einer Minute. Am Handy reisst
+           die Verbindung in der Zeit gern ab - der Server malt aber
+           weiter. Also nicht "ging nicht" melden, sondern nachsehen. */
+        zu();
+        melde("Die Verbindung ist abgerissen, während das Bild entstand. "
+             +"Der Server malt weiter. In etwa einer Minute unten auf "
+             +"<b>Neu laden</b> tippen, dann ist es da.");
+        setTimeout(ladeSzenen,45000);
+      });
+    });
+}
+
+function szenenDauer(){
+  var ges=0;
+  ((S.szenen||{}).szenen||[]).forEach(function(s){
+    ges+= s.gesprochen ? s.vorschlag : (Number(s.sekunden)||s.vorschlag);
+  });
+  return ges;
+}
+
+/* Clips r6 */
+var R6 = {stand:null, tick:null};
+
+function ladeClips(){
+  return api("/api/clip_stand?k="+S.kanal).then(function(d){
+    R6.stand=d;
+    if(d&&d.laeuft){ if(!R6.tick) R6.tick=setInterval(ladeClips,5000); }
+    else if(R6.tick){ clearInterval(R6.tick); R6.tick=null; ladeSzenen(); }
+    zeichne();
+  });
+}
+function clipStand(id){
+  var l=((R6.stand||{}).szenen)||[];
+  for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i];
+  return null;
+}
+function clipLaeuftHier(id){
+  var d=R6.stand||{};
+  return !!(d.laeuft && (d.lauf||{}).sid===id);
+}
+
+/* ---------- Schalter, Verlauf und Nachfragen je Szene (r6) ---------- */
+
+/* Der Schalter mit drei Stellungen. Er ersetzt Figur, Pose, Platz,
+   Groesse und die alte KI-Animation. */
+/* Wer in dieser Szene im Bild steht. Leere Liste heisst: die ganze
+   Besetzung - deshalb schreibt die Oberflaeche beim ersten Antippen
+   die volle Liste und nimmt dann einen heraus. */
+function werZeile(s){
+  if(s.modus!=="avatare")return "";
+  if(!S.ds){ladeDarsteller();return ""}
+  var dabei=(S.ds.darsteller||[]).filter(function(f){return f.dabei});
+  if(!dabei.length)
+    return '<div class="szh" style="margin-top:8px;color:#FFB454">Kein Avatar angehakt — '
+     +'im Reiter <b>Avatare &amp; Sprecher</b> anhaken, sonst kann für diese Szene kein Clip entstehen.</div>';
+  var wer=(s.wer&&s.wer.length)?s.wer:dabei.map(function(f){return f.id});
+  var o='<div class="wer"><span class="szh" style="flex:0 0 100%">Wer steht im Bild</span>';
+  dabei.forEach(function(f){
+    var drin=wer.indexOf(f.id)>=0;
+    o+='<button class="wn'+(drin?" an":"")+'" '
+     +'onclick="szeneWer(\''+s.id+'\',\''+h(f.id)+'\')">'+h(f.name)+'</button>';
+  });
+  o+='</div>';
+  var n=wer.length, je=Math.max(1,Math.floor(3/Math.max(1,n)));
+  o+='<div class="szh" style="margin-top:5px">'
+   +(n===1?('Allein im Bild — bekommt bis zu drei Referenzbilder von sich und bleibt sich '
+            +'dadurch ähnlicher.')
+          :(n+' Figuren — je bis zu '+je+' Referenzbild'+(je>1?'er':'')+'. '
+            +'Weniger Figuren heißt ähnlichere Gesichter.'))
+   +' Wer spricht, steht als Name vor der Zeile im Sprechtext — '
+   +'sie können auch reden, ohne hier angewählt zu sein.</div>';
+  return o;
+}
+
+function szeneWer(sid,did){
+  var dabei=((S.ds||{}).darsteller||[]).filter(function(f){return f.dabei})
+              .map(function(f){return f.id});
+  var s=(((S.szenen||{}).szenen)||[]).filter(function(x){return x.id===sid})[0]||{};
+  var wer=(s.wer&&s.wer.length)?s.wer.slice():dabei.slice();
+  var i=wer.indexOf(did);
+  if(i>=0)wer.splice(i,1); else wer.push(did);
+  if(!wer.length)
+    return melde("Mindestens eine Figur. Soll in der Szene niemand zu sehen sein, "
+      +"stell den Schalter auf <b>Nur Bild</b>.");
+  // In der Reihenfolge der Besetzung halten, damit nichts herumspringt
+  wer=dabei.filter(function(x){return wer.indexOf(x)>=0});
+  szeneSetz(sid,"wer",wer);
+}
+
+function schalterZeile(s,d){
+  var modi=(d&&d.modi)||[["avatare","Avatare im Bild"],
+                         ["bild_ki","Nur Bild animieren"],
+                         ["bewegt","Kamerafahrt"],
+                         ["still","Standbild"]];
+  var jetzt=s.modus||"still";
+  var o='<div class="schalt">';
+  modi.forEach(function(m){
+    o+='<button class="st'+(m[0]===jetzt?" an":"")+'" '
+     +'onclick="szeneSetz(\''+s.id+'\',\'modus\',\''+m[0]+'\')">'+h(m[1])+'</button>';
+  });
+  o+='</div>';
+  o+='<div class="szh" style="margin-top:5px">Der Schalter sagt nur, was man <b>sieht</b> — '
+   +'geredet wird in allen vieren, wer redet steht im Sprechtext vor der Zeile.<br>'
+   +'<b>Avatare im Bild</b>: KI-Clip, sie sind drin und gestikulieren. '
+   +'<b>Nur Bild animieren</b>: KI-Clip vom Hintergrund, niemand zu sehen, sie reden aus dem Off. '
+   +'Diese beiden kosten. '
+   +'<b>Kamerafahrt</b>: Standbild, das langsam wandert. <b>Standbild</b>: es steht. '
+   +'Die zwei sind gratis.</div>';
+  if(s.eigener_clip)
+    o+='<div class="szh" style="margin-top:5px;color:#24D3E8">'
+     +'Eigener Clip hochgeladen — Bild und Videomodell werden übersprungen.</div>';
+  return o;
+}
+
+/* Die letzten Fassungen, antippbar. Nichts wird überschrieben. */
+function versionen(s,welche){
+  var li=((welche==="bild")?s.bild_alt:s.clip_alt)||[];
+  if(!li.length)return "";
+  var o='<div class="verl"><span class="szh">vorher</span>';
+  li.forEach(function(n){
+    var ruf='szeneZurueck(\''+s.id+'\',\''+welche+'\',\''+h(n)+'\')';
+    o+=(welche==="bild")
+      ? '<img alt="" src="/eigen/'+encodeURIComponent(n)+'?k='+S.kanal+'" title="zurückschalten" onclick="'+ruf+'">'
+      : '<video src="/eigen/'+encodeURIComponent(n)+'?k='+S.kanal+'" muted preload="metadata" title="zurückschalten" onclick="'+ruf+'"></video>';
+  });
+  return o+'</div>';
+}
+
+function szeneZurueck(sid,welche,datei){
+  frage("Zurückschalten?",
+    (welche==="bild"?"Diese Szene nimmt wieder das ältere Bild."
+                    :"Diese Szene nimmt wieder den älteren Clip.")
+    +"<br><br>Die jetzige Fassung geht nicht verloren — sie rutscht in den Verlauf.",
+    "Zurückschalten",function(){
+      api("/api/szenen?k="+S.kanal,{aktion:"zurueck",id:sid,welche:welche,datei:datei})
+        .then(function(r){
+          if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+          R6.stand=null; ladeSzenen(); ladeClips();
+        });
+    });
+}
+
+function clipZeile(s){
+  var st=clipStand(s.id)||{}, clip=st.clip||s.clip||"", stand=st.stand||s.clip_stand||"";
+  var txt=st.text||s.clip_text||"", hier=clipLaeuftHier(s.id);
+  var laeuft=(R6.stand||{}).laeuft;
+  /* Die Regie steht oben im Feld "Animationsanweisung". Frueher stand
+     sie hier ein zweites Mal - zwei Felder fuer denselben Wert. */
+  var o='';
+  if(s.clip_veraltet)
+    o+='<div class="szz" style="display:block;color:#FFB454"><b>Der Clip ist noch vom alten Bild.</b>'
+     +'<div class="szh">Du hast das Bild danach ausgetauscht. Erzeuge den Clip neu, '
+     +'oder schalte unten auf das alte Bild zurück.</div></div>';
+
+  if(hier){
+    o+='<div class="szz p62" style="display:block;color:#FFB454;'
+     +'border:2px solid #FFB454;border-radius:12px;padding:10px">'
+     +'<b>● Clip läuft…</b> '+h(txt||"wird geschickt")
+     +'<div class="szh">Das dauert ein paar Minuten. Du kannst die Seite zumachen.</div></div>';
+    return o;
+  }
+  if(clip){
+    /* Fertiger Clip: gruen umrandet, wie das fertige Video. */
+    o+='<div class="szz p62" style="display:block;border:2px solid #37D67A;'
+     +'border-radius:12px;padding:9px">'
+     +'<div class="szh" style="color:#37D67A;margin-bottom:6px">● Clip fertig</div>'
+     +'<video src="/eigen/'+encodeURIComponent(clip)+'?k='+S.kanal+'" controls playsinline muted '
+     +'style="width:100%;max-height:300px;border-radius:9px;background:#000;display:block"></video>'
+     +'<div style="display:flex;gap:7px;margin-top:7px">'
+     +'<button class="knopf" style="flex:1"'+(laeuft?' disabled':'')
+     +' onclick="clipNeu(\''+s.id+'\','+(s.clip_dauer||0)+',true)">Clip neu machen</button>'
+     +'<button class="knopf" onclick="clipWeg(\''+s.id+'\')">Verwerfen</button>'
+     +'</div>'
+     +versionen(s,"clip")
+     +'<div class="szh" style="margin-top:4px">Dieser Clip wird ins Video übernommen. '
+     +'Das Standbild wird dann nicht mehr gebraucht.</div></div>';
+    return o;
+  }
+  o+='<div class="szz p62" style="display:block">'
+   +'<button class="knopf" style="width:100%"'+(laeuft?' disabled':'')
+   +' onclick="clipNeu(\''+s.id+'\','+(s.clip_dauer||0)+',false)">Clip erzeugen'
+   +(s.clip_dauer?(' · '+s.clip_dauer+' s'):'')+'</button>';
+  if(stand==="fehler"&&txt)
+    o+='<div class="szh" style="margin-top:5px;color:#FFB454">'+h(txt)+'</div>';
+  o+='</div>';
+  return o;
+}
+
+function clipKarte(){
+  var d=R6.stand;
+  if(!d){ladeClips();return ''}
+  var o='<div class="karte p"><h2 class="kt">Clips</h2>';
+  if(d.ref_url&&d.ref_passt===false)
+    o+='<div class="fehlt" style="margin-bottom:10px;cursor:default">'
+     +'<b>Das ist das falsche Kling-Modell.</b><br>'
+     +'Eingetragen: '+h(d.ref_url)+'<br>'
+     +'Gebraucht wird eines mit <b>reference-to-video</b> in der Adresse. '
+     +'Das andere macht nur Lippenbewegung zu einem fertigen Bild und kennt '
+     +'deine Avatare nicht.</div>';
+  else if(d.ref_url)
+    o+='<div class="hinw" style="padding:0;margin-bottom:9px">Benutzt: <b>'
+     +h(d.ref_name||"ohne Namen")+'</b> · '+h(d.ref_url)
+     +'<br>Die Szene kommt von Kling oder MiniMax. Danach werden die Münder '
+     +'auf die Stimmen gesetzt: links spricht, wer im Text zuerst drankommt, rechts der zweite.</div>';
+  if(!d.bereit){
+    o+='<div class="hinw" style="padding:0;color:#24D3E8">'+h(d.grund||"noch nicht eingerichtet")+'</div>';
+    o+='<div class="hinw" style="padding:0;margin-top:9px">Das Referenzmodell trägst du unter '
+     +'<b>KI &amp; Technik</b> bei <b>Referenzclip</b> ein:<br>'
+     +'Adresse <b>fal-ai/kling-video/o3/standard/reference-to-video</b><br>'
+     +'Preis <b>0.112</b> je Sekunde · Schlüssel leer lassen, der von fal wird mitbenutzt.</div></div>';
+    return o;
+  }
+  if(d.laeuft){
+    var l=d.lauf||{};
+    o+='<div class="hinw" style="padding:0;color:#FFB454"><b>Läuft.</b> '
+     +(l.gesamt>1?('Szene '+(l.nummer||1)+' von '+l.gesamt+'. '):'')
+     +h(l.text||"")+' · '+(l.dauer||0)+' s</div>'
+     +'<button class="knopf" style="width:100%;margin-top:9px" onclick="clipStop()">Nach diesem Clip aufhören</button></div>';
+    return o;
+  }
+  if(!d.offen){
+    o+='<div class="hinw" style="padding:0">Alle Szenen haben einen Clip. '
+     +'Das Video nimmt sie, wie sie sind.</div></div>';
+    return o;
+  }
+  o+='<div class="hinw" style="padding:0">'+d.offen+' Szene'+(d.offen===1?'':'n')+' ohne Clip, '
+   +'zusammen '+d.offen_sekunden+' Sekunden. Das kostet etwa <b>'
+   +(Number(d.offen_preis)||0).toFixed(2)+' USD</b>.</div>'
+   +'<button class="knopf or" style="width:100%;margin-top:9px" onclick="clipAlle()">'
+   +'Alle offenen Clips erzeugen</button>'
+   +'<div class="hinw" style="padding:0;margin-top:7px">Einer nach dem anderen. '
+   +'Du kannst jederzeit aufhören, fertige Clips bleiben.<br><br>'
+   +'<b>Danach:</b> das fertige Video baust du unten in der orangen Leiste mit '
+   +'<b>VIDEO ERZEUGEN</b> — dort kommen Stimme, Untertitel, Musik und Abspann dazu. '
+   +'Clips sind dafür nicht nötig; Szenen auf <b>Kamerafahrt</b> oder <b>Standbild</b> '
+   +'gehen genauso ins Video.</div></div>';
+  return o;
+}
+
+/* Was in dieser Szene eingestellt ist, im Klartext. Vor dem Erzeugen
+   steht das in der Abfrage - ein falscher Schalter kostet sonst Geld,
+   und man sieht es erst, wenn der Clip da ist. */
+function szeneVon(id){
+  return (((S.szenen||{}).szenen)||[]).filter(function(x){return x.id===id})[0]||{};
+}
+function clipLage(s){
+  /* Ohne geladene Besetzung wuerde hier "niemand angehakt" stehen,
+     obwohl welche angehakt sind. Dann lieber gar nichts behaupten. */
+  var geladen=!!(S.ds&&S.ds.darsteller);
+  var dabei=((S.ds||{}).darsteller||[]).filter(function(f){return f.dabei});
+  var wer=(s.wer&&s.wer.length)?s.wer:dabei.map(function(f){return f.id});
+  var namen=dabei.filter(function(f){return wer.indexOf(f.id)>=0})
+                 .map(function(f){return f.name});
+  var text=(s.text||"").trim();
+  /* "Mara: ..." am Zeilenanfang - so steht im Sprechtext, wer redet. */
+  var redner=[], gesehen={};
+  text.split("\n").forEach(function(z){
+    var m=/^\s*([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,28}?)\s*:\s*\S/.exec(z);
+    if(m&&!gesehen[m[1]]){gesehen[m[1]]=1;redner.push(m[1].trim())}
+  });
+  return {namen:namen, text:text, redner:redner, modus:s.modus||"still",
+          geladen:geladen};
+}
+/* Welche Laenge wirklich bestellt wird. Leer = jede Sekunde moeglich. */
+function clipStufe(sek){
+  var st=((R6.stand||{}).stufen)||[];
+  if(!st.length||!sek)return 0;
+  for(var i=0;i<st.length;i++){if(st[i]>=sek-0.2)return st[i]}
+  return st[st.length-1];
+}
+function clipAbfrage(s,sek,preis,schon){
+  var L=clipLage(s), o='';
+  var zeile=function(k,v){return '<div style="margin-bottom:5px">'+k+': <b>'+v+'</b></div>'};
+  var warn=[];
+  if(L.modus==="avatare")
+    o+=zeile("Im Bild",!L.geladen?"Besetzung noch nicht geladen"
+             :(L.namen.length?h(L.namen.join(", ")):"niemand angehakt"));
+  else if(L.modus==="bild_ki")
+    o+=zeile("Im Bild","niemand — nur der Hintergrund wird animiert");
+  else
+    o+=zeile("Im Bild","Standbild"+(L.modus==="bewegt"?" mit Kamerafahrt":", ohne Bewegung"));
+  o+=zeile("Gesprochen", L.redner.length?(h(L.redner.join(", "))
+            +(L.modus==="avatare"?"":" — aus dem Off"))
+          :(L.text?"ja, ohne Namen davor":"nichts eingetragen"));
+  if(sek){
+    var best=clipStufe(sek);
+    o+=zeile("Länge der Szene",sek+" Sekunden");
+    if(best&&best!==sek)
+      o+=zeile("Bestellt wird",best+" Sekunden"
+        +(best>sek?" — der Rest wird abgeschnitten":""));
+    if(best&&best<sek)
+      warn.push("Das Modell kann höchstens <b>"+best+" Sekunden</b>. Die letzten "
+        +(Math.round((sek-best)*10)/10)+" Sekunden der Szene werden mit einem "
+        +"stehenden Bild aufgefüllt. Kürze den Sprechtext, dann passt es.");
+  }
+  if(preis)o+=zeile("Kostet etwa",preis.toFixed(2).replace(".",",")+" €");
+  if(L.geladen&&L.modus==="avatare"&&!L.namen.length)
+    warn.push("Der Schalter steht auf <b>Avatare im Bild</b>, aber es ist niemand angehakt.");
+  if(L.geladen&&L.modus==="bild_ki"&&L.namen.length)
+    warn.push("Der Schalter steht auf <b>Nur Bild animieren</b> — die angehakten Avatare "
+             +"kommen nicht ins Bild, sie reden nur.");
+  if(!L.text)
+    warn.push("Im Sprechtext steht nichts. Die Szene bleibt stumm.");
+  if(!(s.bild||s.datei))
+    warn.push("Diese Szene hat noch kein Bild.");
+  if(warn.length)
+    o+='<div style="margin-top:10px;color:#FFB454">'+warn.join("<br>")+'</div>';
+  if(schon)o+='<div style="margin-top:10px">Der jetzige Clip geht nicht verloren — '
+    +'er rutscht in den Verlauf.</div>';
+  return o;
+}
+function clipNeu(id,sek,schon){
+  var js=((R6.stand||{}).je_sekunde)||0;
+  var zahlt=clipStufe(sek)||sek;        /* bezahlt wird die bestellte Laenge */
+  var preis=(js&&zahlt)?(js*zahlt):0;
+  frage("Clip erzeugen?", clipAbfrage(szeneVon(id),sek,preis,schon),
+    "Erzeugen",function(){
+      api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{sid:id}).then(function(r){
+        if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+        ladeClips();
+      });
+    });
+}
+function clipAlle(){
+  var d=R6.stand||{};
+  /* Beim Stapel kostet ein falscher Schalter gleich mehrfach. Darum
+     steht hier, was fuer Clips das werden und wo etwas fehlt. */
+  var offen=(((S.szenen||{}).szenen)||[]).filter(function(s){
+    return !s.clip&&(s.modus==="avatare"||s.modus==="bild_ki")});
+  var mitA=offen.filter(function(s){return s.modus==="avatare"}).length;
+  var nurB=offen.filter(function(s){return s.modus==="bild_ki"}).length;
+  var ohneBild=offen.filter(function(s){return !(s.bild||s.datei)}).length;
+  var stumm=offen.filter(function(s){return !(s.text||"").trim()}).length;
+  var o=d.offen+" Szenen, zusammen "+d.offen_sekunden+" Sekunden.<br><br>";
+  if(mitA)o+='<div style="margin-bottom:5px"><b>'+mitA+'</b> mit Avataren im Bild</div>';
+  if(nurB)o+='<div style="margin-bottom:5px"><b>'+nurB+'</b> nur Hintergrund, niemand zu sehen</div>';
+  o+='<div style="margin-top:8px">Das kostet etwa <b>'
+   +(Number(d.offen_preis)||0).toFixed(2)+' USD</b>.</div>';
+  var warn=[];
+  if(ohneBild)warn.push(ohneBild+" davon "+(ohneBild===1?"hat":"haben")+" noch kein Bild.");
+  if(stumm)warn.push(stumm+" davon "+(stumm===1?"hat":"haben")+" keinen Sprechtext.");
+  if(warn.length)o+='<div style="margin-top:9px;color:#FFB454">'+warn.join("<br>")+'</div>';
+  frage("Alle offenen Clips erzeugen?",o,"Los",function(){
+      api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{alle:true}).then(function(r){
+        if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+        ladeClips();
+      });
+    });
+}
+function clipStop(){
+  api("/api/clip_stop?k="+encodeURIComponent(S.kanal),{}).then(function(r){
+    if(r&&r.hinweis)melde(r.hinweis);
+    ladeClips();
+  });
+}
+function clipWeg(id){
+  frage("Clip verwerfen?","Der Clip rutscht in den Verlauf — gelöscht wird nichts. "
+    +"Das Standbild der Szene bleibt.",
+    "Verwerfen",function(){
+      api("/api/clip_weg?k="+encodeURIComponent(S.kanal),{sid:id}).then(function(r){
+        if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+        R6.stand=null; ladeClips(); ladeSzenen();
+      });
+    },true);
+}
+
+function tSzenen(){
+  var d=S.szenen;
+  if(!d){ladeSzenen();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var li=d.szenen||[];
+  var o='';
+  o+=clipKarte();
+
+  o+='<div class="karte p">'+kartenKopf("Szenen · "+li.length+" · etwa "+Math.round(szenenDauer())+" Sek.","szenentext");
+  if(!li.length)o+='<div class="leer">noch nichts — lade dein erstes Bild hoch</div>';
+  else o+='<div style="display:flex;gap:7px;margin:-2px 0 10px">'
+   +'<button class="knopf" onclick="ladeSzenen()">Neu laden</button>'
+   +'<button class="knopf" onclick="fragAlleSzenenWeg('+li.length+')">Alle Szenen löschen</button></div>';
+  li.forEach(function(s,i){
+    var vor=(s.typ==="clip")
+      ? '<video class="bildchen" controls preload="metadata" playsinline src="/eigen/'+encodeURIComponent(s.datei)+'?k='+S.kanal+'"></video>'
+      : '<img class="bildchen" src="/eigen/'+encodeURIComponent(s.datei)+'?k='+S.kanal+'" alt="">';
+    o+='<div class="szn"><div class="kopf"><div class="nr">'+(i+1)+' · '+(s.typ==="clip"?"CLIP":"BILD")+' · '+h(s.datei)+'</div>'
+     +'<button class="ik" onclick="szeneSchieb(\''+s.id+'\',\'hoch\')"'+(i===0?" disabled":"")+'>↑</button>'
+     +'<button class="ik" onclick="szeneSchieb(\''+s.id+'\',\'runter\')"'+(i===li.length-1?" disabled":"")+'>↓</button>'
+     +'<button class="ik rot" onclick="szeneWeg(\''+s.id+'\',\''+h(s.datei).replace(/'/g,"")+'\')">✕</button></div>'
+     +vor
+     +versionen(s,"bild")
+     +'<div class="szf"><span class="szh">Sprechtext</span>'
+     +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea></div>'
+     +'<div class="szf"><span class="szh">Bildbeschreibung</span>'
+     +'<textarea placeholder="Was auf dem Bild zu sehen ist. Leer = aus dem Sprechtext." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
+     +'<div class="szf"><span class="szh">Animationsanweisung</span>'
+     +'<textarea placeholder="Wie sich das Bild bewegen soll. Leer = ruhige Fahrt." onchange="szeneSetz(\''+s.id+'\',\'regie\',this.value)">'+h(s.regie||"")+'</textarea></div>'
+     ;
+    o+=schalterZeile(s,d)+werZeile(s);
+    /* "Wer spricht" und der Haken "Gesprochen" sind weg: Claude
+       schreibt zu jeder Szene Text, und wer ihn spricht, steht als
+       Name vor der Zeile. Ein Schalter, der den geschriebenen Text
+       wegwirft, ergibt keinen Sinn. */
+    var mehr='<div class="szz">'
+     +'<label class="hak"><input type="checkbox"'+(s.untertitel?" checked":"")+' onchange="szeneSetz(\''+s.id+'\',\'untertitel\',this.checked)">Untertitel</label>'
+     +'</div>'
+     +'<div class="szz"><span class="szh">Dauert so lang wie der Satz, etwa '+s.vorschlag+' Sek.</span></div>';
+    if(s.typ!=="clip"){
+      mehr+='<div class="szz"><span class="szh">Bild</span><select onchange="szeneSetz(\''+s.id+'\',\'passen\',this.value)">'
+       +(d.passenarten||[]).map(function(x){return '<option value="'+x[0]+'"'+(s.passen===x[0]?" selected":"")+'>'+h(x[1])+'</option>'}).join("")
+       +'</select></div>';
+      mehr+='<div class="szz"><span class="szh">Bewegung</span><select onchange="szeneSetz(\''+s.id+'\',\'bewegung\',this.value)">'
+       +(d.bewegungen||[]).map(function(b){return '<option value="'+b[0]+'"'+(s.bewegung===b[0]?" selected":"")+'>'+h(b[1])+'</option>'}).join("")
+       +'</select></div>';
+    }
+    mehr+='<div class="szz"><span class="szh">Stimmung</span><select onchange="szeneSetz(\''+s.id+'\',\'stimmung\',this.value)">'
+      +(d.stimmungen||[]).map(function(x){return '<option value="'+x[0]+'"'+(s.stimmung===x[0]?" selected":"")+'>'+h(x[1])+'</option>'}).join("")
+      +'</select></div>';
+    o+='<div class="szz p90" style="gap:7px;flex-wrap:wrap">'
+      +'<button class="knopf" onclick="szeneNeu(\''+s.id+'\','+(s.clip?"true":"false")+')">Bild neu</button>'
+      +'<button class="knopf" onclick="hochladen(\'szene\',\''+s.id+'\',\'bild\')">Eigenes Bild</button>'
+      +'<button class="knopf" onclick="hochladen(\'szene\',\''+s.id+'\',\'video\')">Eigener Clip</button>'
+      +'</div>';
+    if(s.modus==="avatare"||s.modus==="bild_ki"||s.clip)o+=clipZeile(s);
+    mehr+='<div class="szz"><span class="szh">Musik</span><input type="text" style="width:78px" placeholder="automatisch" value="'
+      +h(s.musik==="auto"?"":String(s.musik))+'" onchange="szeneSetz(\''+s.id+'\',\'musik\',this.value)"><span class="szh">% · leer = automatisch</span></div>';
+    if(!s.da)o+='<div class="szz"><span class="szh" style="color:#FFB454">Datei fehlt auf dem Server</span></div>';
+    if(mehr){
+      var mk="mehr_"+s.id;
+      o+='<details class="mehr" data-falt="'+mk+'" ontoggle="faltMerk(this)"'
+       +(faltOffen(mk,true)?' open':'')+'><summary>mehr einstellen</summary>'
+       +mehr+'</details>';
+    }
+    o+='</div>';
+  });
+  o+='<button class="knopf or" style="width:100%;margin-top:4px" onclick="hochladen(\'szene\')">+ Bild oder Clip</button></div>';
+  o+='<div class="karte p"><div class="hinw" style="padding:0">Die Szenen laufen in dieser Reihenfolge. '
+   +'Ist „Gesprochen“ an, dauert die Szene genau so lang wie ihr Satz. Ist es aus, gilt die Sekundenzahl.</div></div>';
+  return o;
+}
+
+
+/* ---------- Telegram (Patch S6) ---------- */
+function ladeTelegram(){return api("/api/telegram?k="+S.kanal).then(function(d){S.tg=d;zeichne()})}
+function tgKarte(){
+  var t=S.tg;
+  if(!t){ladeTelegram();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var o='<div class="karte p"><h2 class="kt">Telegram</h2>'
+   +'<div class="r" style="padding-top:0"><div><div class="lb">Stand</div>'
+   +'<div class="hint">'+(t.bereit?"Token und Chat hinterlegt":"noch nicht eingerichtet")+'</div></div>'
+   +'<span class="w '+(t.bereit?"gruen":"grau")+'" style="font-size:12px;font-weight:600">'
+   +(t.bereit?"bereit":"fehlt")+'</span></div>'
+   +'<input type="text" id="tgtok" class="breit" placeholder="'+(t.token?"Token ersetzen (leer = behalten)":"Bot-Token")+'" style="margin-bottom:8px">'
+   +'<input type="text" id="tgchat" class="breit" placeholder="Chat-ID" value="'+h(t.chat||"")+'" style="margin-bottom:8px">'
+   +'<input type="text" id="tgadr" class="breit" placeholder="Adresse des Dashboards" value="'+h(t.adresse||location.origin)+'" style="margin-bottom:12px">'
+   +'<div class="zw"><button class="knopf" onclick="tgTest()">Test senden</button>'
+   +'<button class="knopf or" onclick="tgSpeichern()">Speichern</button></div>'
+   +'<div class="hinw" style="margin-top:10px">Das fertige Video wird als Datei geschickt. '
+   +'Ab etwa 50 MB kommt stattdessen das Vorschaubild mit einer Zeile zum Herunterladen.</div></div>';
+  return o;
+}
+function tgSpeichern(){
+  api("/api/telegram?k="+S.kanal,{token:el("tgtok").value,chat:el("tgchat").value,adresse:el("tgadr").value})
+    .then(function(r){if(!r.ok)return melde(r.fehler||"ging nicht");ladeTelegram()});
+}
+function tgTest(){
+  api("/api/telegram?k="+S.kanal,{token:el("tgtok").value,chat:el("tgchat").value,adresse:el("tgadr").value})
+   .then(function(){return api("/api/telegram_test?k="+S.kanal,{})})
+   .then(function(r){ladeTelegram();melde(r.ok?"Testnachricht ist raus — schau in Telegram.":(r.fehler||"ging nicht"))});
+}
+
+
+/* ---------- Stimmen (Patch S7) ---------- */
+var STIMMUNG=[["ruhig","ruhig"],["sachlich","sachlich"],["normal","normal"],["lebendig","lebendig"],["dramatisch","dramatisch"]];
+var ENERGIE={ruhig:0.15,sachlich:0.35,normal:0.55,lebendig:0.75,dramatisch:0.92};
+function stimmungName(e){
+  e=Number(e); if(isNaN(e))e=0.6;
+  var beste="normal",ab=9;
+  for(var k in ENERGIE){var d=Math.abs(ENERGIE[k]-e); if(d<ab){ab=d;beste=k}}
+  return beste;
+}
+function stimmenListe(){return (S.einst.stimmen||[]).filter(function(x){return x&&x.name})}
+/* Alles zur Stimme steht an einer Stelle: im Reiter Avatare & Sprecher,
+   direkt unter denen, die damit reden. Unter Video & Ton stand frueher
+   dieselbe Karte ein zweites Mal - die ist raus. */
+function stimmenKarte(){
+  var li=stimmenListe(), aktiv=(S.einst.stimme_id||"");
+  var o='<div class="karte p"><h2 class="kt">Stimmen</h2>';
+  if(!li.length){
+    o+='<div class="hinw" style="padding:0;margin-bottom:10px">Noch kein Vorrat da. Der Knopf holt alle '
+     +'Stimmen von ElevenLabs — mit Namen, Alter und Akzent. Danach wählst du bei jedem Avatar und '
+     +'Sprecher oben eine aus.</div>';
+  }else{
+    o+='<div class="hinw" style="padding:0;margin-bottom:10px">Im Vorrat sind <b>'+li.length+' Stimmen</b>. '
+     +'Sie stehen in jeder Auswahl oben, Frauen zuerst, dann Männer. '
+     +'Eine Stimme darf mehrere bedienen.</div>'
+     +'<div class="szz"><span class="szh">Kanalstimme — spricht nur da, wo bei jemandem nichts eingestellt ist</span>'
+     +'<div style="display:flex;gap:7px;align-items:center">'
+     +'<select style="flex:1;min-width:0" onchange="stimmeAktivId(this.value)">'
+     +'<option value=""'+(aktiv?"":" selected")+'>keine</option>';
+    li.forEach(function(e){
+      o+='<option value="'+h(e.id)+'"'+(e.id&&e.id===aktiv?" selected":"")+'>'+h(e.name)+'</option>'});
+    o+='</select>'
+     +(aktiv?'<button class="knopf" style="padding:9px 13px" title="kurz anhören" '
+             +'onclick="stimmProbe(\''+h(aktiv)+'\',this)">▶</button>':'')
+     +'</div></div>';
+  }
+  o+=reihe("Grundstimmung",knoepfeStimmung(stimmungName(S.einst.stimme_energie)),
+           "wie lebendig gesprochen wird — gilt für alle Stimmen")
+   +'<button class="knopf or" style="width:100%;margin:9px 0 7px" onclick="stimmenHolen(this)">'
+   +'⬇ Stimmen von ElevenLabs holen</button>'
+   +'<button class="knopf" style="width:100%;margin:0 0 8px" onclick="stimmenHolen(this,\'deutsch\')">'
+   +'⬇ Deutsche Stimmen aus der Bibliothek</button>'
+   +'<div class="hinw" style="padding:0;margin-bottom:9px">Der obere Knopf holt die festen '
+   +'Standardstimmen — fast alles Engländer, die Deutsch mit Akzent sprechen. Der untere sucht in '
+   +'der Bibliothek nach <b>deutschen Sprechern</b>. Die stellen andere Leute ein; steht bei einer '
+   +'ein Tarif im Namen, ist sie nicht im Gratistarif. <b>Hör jede mit ▶ an, bevor du sie '
+   +'vergibst</b> — kommt kein Ton, geht sie über fal.ai nicht.</div>'
+   +falte("Vorrat ansehen und aufräumen",vorratListe(),false)
+   +'</div>';
+  return o;
+}
+function vorratListe(){
+  var li=stimmenListe();
+  var o='<div class="liste">';
+  if(!li.length)o+='<div class="leer">noch nichts drin</div>';
+  li.forEach(function(e,i){
+    o+='<div class="e"><div class="tx" onclick="stimmeBearbeiten('+i+')"><div class="ti">'+h(e.name)+'</div>'
+     +'<div class="me">'+h(e.id||"ohne ID")+'</div></div>'
+     +'<button class="knopf" style="padding:8px 12px" title="kurz anhören" '
+     +'onclick="stimmProbe(\''+h(e.id)+'\',this)">▶</button>'
+     +'<button class="ik rot" onclick="stimmeWeg('+i+',\''+h(e.name).replace(/'/g,"")+'\')">✕</button></div>';
+  });
+  o+='</div><button class="knopf" style="width:100%;margin-top:8px" onclick="stimmeNeu()">'
+   +'+ Stimme von Hand</button>'
+   +'<button class="knopf" style="width:100%;margin-top:7px" onclick="namenKuerzen(this)">'
+   +'Namen kürzen</button>'
+   +'<div class="szh" style="margin-top:6px">Kürzen wirft die Beschreibung aus dem Namen '
+   +'(„Laura - Enthusiast, Quirky…" wird „Laura"). Eigene Namen bleiben.</div>';
+  return o;
+}
+function namenKuerzen(knopf){
+  var alt=knopf?knopf.textContent:"";
+  if(knopf){knopf.disabled=true;knopf.textContent="…"}
+  api("/api/darsteller?k="+S.kanal,{aktion:"namen_kuerzen"}).then(function(r){
+    if(knopf){knopf.disabled=false;knopf.textContent=alt}
+    if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+    melde(r.text||"fertig");
+    api("/api/kanal?k="+S.kanal).then(function(x){S.einst=x;ladeDarsteller()});
+  },function(){if(knopf){knopf.disabled=false;knopf.textContent=alt}melde("ging nicht")});
+}
+/* Holt die Stimmenliste bei ElevenLabs und traegt sie beim Kanal ein.
+   Gespeichert wird die ID, der Name steht nur davor. */
+function stimmenHolen(knopf,quelle){
+  var alt=knopf?knopf.textContent:"";
+  if(knopf){knopf.disabled=true;knopf.textContent="hole Stimmen …"}
+  api("/api/darsteller?k="+S.kanal,{aktion:"stimmen_holen",quelle:quelle||"fest"}).then(function(r){
+    if(knopf){knopf.disabled=false;knopf.textContent=alt}
+    if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+    melde(r.text||"fertig");
+    api("/api/kanal?k="+S.kanal).then(function(x){S.einst=x;ladeDarsteller()});
+  },function(){
+    if(knopf){knopf.disabled=false;knopf.textContent=alt}
+    melde("ElevenLabs hat nicht geantwortet.");
+  });
+}
+function knoepfeStimmung(jetzt){
+  return '<div class="pills">'+STIMMUNG.map(function(o){
+    return '<button class="'+(jetzt===o[0]?"an":"")+'" onclick="setz(\'stimme_energie\','+ENERGIE[o[0]]+')">'+h(o[1])+'</button>'}).join("")+'</div>';
+}
+function stimmeForm(titel,i,e){
+  e=e||{};
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>'+h(titel)+'</h2>'
+   +'<input type="text" id="stn" class="breit" placeholder="Name, z.B. Erzähler oder Oma" value="'+h(e.name||"")+'" style="margin-bottom:8px">'
+   +'<input type="text" id="sti" class="breit" placeholder="Stimm-ID aus ElevenLabs" value="'+h(e.id||"")+'" style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="stimmeSpeichern('+i+')">Speichern</button></div></div></div>';
+}
+function stimmeNeu(){stimmeForm("Stimme",-1,{})}
+function stimmeBearbeiten(i){stimmeForm("Stimme ändern",i,stimmenListe()[i])}
+function stimmeSpeichern(i){
+  var n=(el("stn").value||"").trim(), id=(el("sti").value||"").trim();
+  if(!n)return melde("Name darf nicht leer sein.");
+  var li=stimmenListe().slice();
+  if(i<0)li.push({name:n,id:id}); else li[i]={name:n,id:id};
+  stimmenSichern(li,function(){zu()});
+}
+function stimmeWeg(i,n){
+  frage("Stimme löschen?","<b>"+h(n)+"</b><br><br>Der Eintrag wird entfernt.","Löschen",function(){
+    var li=stimmenListe().slice(); li.splice(i,1); stimmenSichern(li);},true);
+}
+function stimmeAktivId(id){
+  S.einst.stimme_id=String(id||"");
+  api("/api/kanal?k="+S.kanal,{stimme_id:S.einst.stimme_id}).then(zeichne);
+}
+function stimmenSichern(li,danach){
+  S.einst.stimmen=li;
+  api("/api/kanal?k="+S.kanal,{stimmen:li}).then(function(){if(danach)danach();zeichne()});
+}
+
+
+/* ---------- Masterprompt mit Abfrage (Patch S9) ---------- */
+function promptAendern(neu){
+  var alt=S.einst.prompt||"";
+  if(neu===alt)return;
+  var leer=!neu.trim();
+  var vorschau=leer?"<b>Der Masterprompt wird komplett geleert.</b>"
+    :"Neu:<br><br><i>"+h(neu.slice(0,180))+(neu.length>180?"…":"")+"</i>";
+  var text="Der Masterprompt bestimmt, wie Claude jedes Video für diesen Kanal schreibt.<br><br>"+vorschau;
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Masterprompt ändern?</h2>'
+   +'<p>'+text+'</p><div class="zw">'
+   +'<button class="knopf" id="pnein">Verwerfen</button>'
+   +'<button class="knopf '+(leer?"":"or")+'" id="pja"'
+   +(leer?' style="background:#9B2C3B;border-color:#9B2C3B;color:#fff;font-weight:700"':'')
+   +'>Speichern</button></div></div></div>';
+  el("pnein").onclick=function(){zu();zeichne()};
+  el("pja").onclick=function(){zu();setz("prompt",neu)};
+}
+function regelnAendern(neu){
+  var alt=S.einst.regeln||"";
+  if(neu===alt)return;
+  var leer=!neu.trim();
+  var vorschau=leer?"<b>Die Regeln werden komplett geleert.</b>"
+    :"Neu:<br><br><i>"+h(neu.slice(0,180))+(neu.length>180?"…":"")+"</i>";
+  var text="Die Regeln gehen bei jedem Schreiben mit an Claude, zusätzlich zum Masterprompt.<br><br>"+vorschau;
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Regeln ändern?</h2>'
+   +'<p>'+text+'</p><div class="zw">'
+   +'<button class="knopf" id="rnein">Verwerfen</button>'
+   +'<button class="knopf '+(leer?"":"or")+'" id="rja"'
+   +(leer?' style="background:#9B2C3B;border-color:#9B2C3B;color:#fff;font-weight:700"':'')
+   +'>Speichern</button></div></div></div>';
+  el("rnein").onclick=function(){zu();zeichne()};
+  el("rja").onclick=function(){zu();setz("regeln",neu)};
+}
+
+
+/* ---------- Charaktere (Patch S10) ---------- */
+function ladeFiguren(){return api("/api/figuren?k="+S.kanal).then(function(d){S.fig=d;zeichne()})}
+function figSetz(name,aktion,wert,datei){
+  var d={aktion:aktion,name:name};
+  if(wert!==undefined)d.wert=wert;
+  if(datei!==undefined)d.datei=datei;
+  return api("/api/figuren?k="+S.kanal,d).then(function(r){
+    if(!r.ok){melde(r.fehler||"ging nicht");return r}
+    return ladeFiguren().then(function(){return r})});
+}
+function figNeu(){
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Neue Figur</h2>'
+   +'<p>Der Name steht später im Szenen-Editor zur Auswahl.</p>'
+   +'<input type="text" id="fign" class="breit" placeholder="z.B. Oma, Monster, Maskottchen" style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="figAnlegen()">Anlegen</button></div></div></div>';
+}
+function figAnlegen(){
+  var n=(el("fign").value||"").trim();
+  if(!n)return melde("Name darf nicht leer sein.");
+  figSetz(n,"neu").then(function(r){if(r&&r.ok)zu()});
+}
+function figWeg(n){
+  frage("Figur löschen?","<b>"+h(n)+"</b><br><br>Die Figur und alle ihre Posen werden gelöscht.",
+    "Löschen",function(){figSetz(n,"weg")},true);
+}
+function poseWeg(n,d){
+  frage("Pose löschen?","Die Bilddatei wird gelöscht.","Löschen",function(){figSetz(n,"pose_weg",undefined,d)},true);
+}
+function poseFrei(n,d){
+  melde("Hintergrund wird entfernt…");
+  figSetz(n,"freistellen",undefined,d).then(function(r){if(r&&r.ok)zu()});
+}
+function poseHoch(n){
+  var i=document.createElement("input");
+  i.type="file"; i.accept="image/*";
+  i.onchange=function(){
+    var f=i.files&&i.files[0];if(!f)return;
+    if(f.size>20*1024*1024){melde("Bild zu groß — höchstens 20 MB.");return}
+    var pose=prompt("Name der Pose (z.B. winkt, zeigt, erstaunt)","Pose");
+    el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Lädt hoch</h2><p id="hpro">'+h(f.name)+' · 0 %</p></div></div>';
+    var x=new XMLHttpRequest();
+    x.open("POST","/api/hochladen?k="+encodeURIComponent(S.kanal)+"&zweck=figur&figur="
+      +encodeURIComponent(n)+"&pose="+encodeURIComponent(pose||"")+"&name="+encodeURIComponent(f.name));
+    x.upload.onprogress=function(e){if(e.lengthComputable&&el("hpro"))el("hpro").textContent=f.name+" · "+Math.round(e.loaded/e.total*100)+" %"};
+    x.onload=function(){zu();var r={};try{r=JSON.parse(x.responseText)}catch(err){}
+      if(!r.ok)return melde(r.fehler||"Hochladen ging nicht");ladeFiguren()};
+    x.onerror=function(){zu();melde("Hochladen fehlgeschlagen")};
+    x.send(f);
+  };
+  i.click();
+}
+/* Darsteller r2 */
+function ladeDarsteller(){return api("/api/darsteller?k="+S.kanal).then(function(d){S.ds=d;zeichne()})}
+
+function dsSetz(o){
+  return api("/api/darsteller?k="+S.kanal,o).then(function(r){
+    if(!r||!r.ok){melde((r&&r.fehler)||"ging nicht");return r}
+    return ladeDarsteller().then(function(){return r})});
+}
+
+function dsDabei(did,an){return dsSetz({aktion:"dabei",id:did,wert:!!an})}
+function dsFeld(did,feld,wert){return dsSetz({aktion:feld,id:did,wert:wert})}
+
+/* Ein Knopf. Dateiwaehler auf, Bilder markieren, fertig - ohne id legt
+   das erste Bild einen neuen Avatar an und benennt ihn nach der Datei. */
+function dsHoch(did){
+  var bmax=((S.ds||{}).bilder_max)||4, frei=bmax;
+  if(did){
+    var f=((S.ds||{}).darsteller||[]).filter(function(x){return x.id===did})[0];
+    if(f)frei=bmax-((f.bilder||[]).length);
+  }
+  if(frei<1)return melde("Dieser Avatar hat schon "+bmax+" Bilder.");
+  var i=document.createElement("input");
+  i.type="file"; i.accept="image/*"; i.multiple=true;
+  i.onchange=function(){
+    var dateien=[].slice.call(i.files||[]);
+    if(!dateien.length)return;
+    var uebrig=dateien.length-frei;
+    if(uebrig>0)dateien=dateien.slice(0,frei);
+    dsSchicken(dateien,did||"",0,dateien.length,uebrig>0?bmax:0);
+  };
+  i.click();
+}
+function dsNeu(){dsHoch("")}
+
+/* Schickt die Bilder nacheinander. Das erste bekommt die id zurueck, die
+   weiteren haengen sich an denselben Avatar. */
+function dsSchicken(dateien,did,nr,gesamt,zuviel){
+  if(nr>=dateien.length){
+    zu(); ladeDarsteller();
+    if(zuviel)melde("Mehr als "+zuviel+" Bilder nimmt das Modell nicht an — "
+      +"die übrigen habe ich weggelassen.");
+    return;
+  }
+  var f=dateien[nr];
+  if(f.size>90*1024*1024){zu();ladeDarsteller();
+    return melde("„"+f.name+"“ ist zu groß — höchstens 90 MB.")}
+  var wo=f.name+(gesamt>1?(" · Bild "+(nr+1)+" von "+gesamt):"");
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Lädt hoch</h2>'
+    +'<p id="dspro">'+h(wo)+' · 0 %</p></div></div>';
+  var x=new XMLHttpRequest();
+  x.open("POST","/api/hochladen?k="+encodeURIComponent(S.kanal)+"&zweck=darsteller"
+    +"&id="+encodeURIComponent(did)+"&name="+encodeURIComponent(f.name));
+  x.upload.onprogress=function(e){
+    if(e.lengthComputable&&el("dspro"))
+      el("dspro").textContent=wo+" · "+Math.round(e.loaded/e.total*100)+" %"};
+  x.onload=function(){
+    var r={};try{r=JSON.parse(x.responseText)}catch(err){}
+    if(!r.ok){zu();ladeDarsteller();return melde(r.fehler||"Hochladen ging nicht")}
+    dsSchicken(dateien,did||r.id||"",nr+1,gesamt,zuviel);
+  };
+  x.onerror=function(){zu();ladeDarsteller();
+    melde("Hochladen fehlgeschlagen — Verbindung weg?")};
+  x.send(f);
+}
+
+function dsWeg(did,name){
+  frage("Avatar löschen?","<b>"+h(name)+"</b><br><br>Die Bilder dieser Figur werden gelöscht.",
+    "Löschen",function(){dsSetz({aktion:"weg",id:did})},true);
+}
+function dsBildWeg(did,datei){dsSetz({aktion:"bild_weg",id:did,datei:datei})}
+function dsBildVor(did,datei){dsSetz({aktion:"bild_vor",id:did,datei:datei})}
+
+/* ---------- Abspann-Bibliothek (r6) ---------- */
+
+function ladeAbspann(){
+  return api("/api/abspann?k="+S.kanal).then(function(d){S.ab=d;zeichne()})
+}
+
+function abSetz(o){
+  return api("/api/abspann?k="+S.kanal,o).then(function(r){
+    if(!r||!r.ok){melde((r&&r.fehler)||"ging nicht");return r}
+    return ladeAbspann().then(function(){return r})});
+}
+
+function abWeg(eid,name){
+  frage("Abspann löschen?","<b>"+h(name)+"</b><br><br>Die Datei wird gelöscht.",
+    "Löschen",function(){abSetz({aktion:"weg",id:eid})},true);
+}
+
+function abHoch(){
+  var i=document.createElement("input");
+  i.type="file"; i.accept="image/*,video/*";
+  i.onchange=function(){
+    var f=i.files&&i.files[0];if(!f)return;
+    if(f.size>90*1024*1024){melde("Datei zu groß — höchstens 90 MB.");return}
+    el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Lädt hoch</h2>'
+      +'<p id="abpro">'+h(f.name)+' · 0 %</p></div></div>';
+    var x=new XMLHttpRequest();
+    x.open("POST","/api/hochladen?k="+encodeURIComponent(S.kanal)
+      +"&zweck=abspann&name="+encodeURIComponent(f.name));
+    x.upload.onprogress=function(e){
+      if(e.lengthComputable&&el("abpro"))
+        el("abpro").textContent=f.name+" · "+Math.round(e.loaded/e.total*100)+" %"};
+    x.onload=function(){zu();var r={};try{r=JSON.parse(x.responseText)}catch(err){}
+      if(!r.ok)return melde(r.fehler||"Hochladen ging nicht");ladeAbspann()};
+    x.onerror=function(){zu();melde("Hochladen fehlgeschlagen — Verbindung weg?")};
+    x.send(f);
+  };
+  i.click();
+}
+
+/* Welcher Abspann ans Video kommt - fest oder bei jedem Lauf ein anderer. */
+function abWahlZeile(d){
+  var li=d.eintraege||[], wahl=d.wahl||"";
+  var o='<div class="szz"><span class="szh">Welcher kommt ans Video</span>'
+   +'<select onchange="abSetz({aktion:\'waehlen\',wert:this.value})">'
+   +li.map(function(e){
+      return '<option value="'+h(e.id)+'"'+(wahl===e.id?" selected":"")+'>'+h(e.name)+'</option>'}).join("")
+   +'<option value="zufall"'+(wahl==="zufall"?" selected":"")+'>— bei jedem Video ein anderer —</option>'
+   +'</select></div>';
+  if(wahl==="zufall")
+    o+='<div class="szh" style="margin-top:6px">Gut zum Ausprobieren: drei Schluss&shy;aufforderungen '
+     +'zwanzig Videos lang laufen lassen und sehen, welche die meisten Abos bringt. '
+     +'Danach auf die Gewinnerin festschalten.</div>';
+  return o;
+}
+
+/* Im Reiter "Video machen" nur sichtbar, wenn es überhaupt etwas zu wählen gibt. */
+function tAbspannWahl(){
+  var d=S.ab;
+  if(!d){ladeAbspann();return ''}
+  if((d.eintraege||[]).length<2)return '';
+  return '<div class="karte">'+abWahlZeile(d)+'</div>';
+}
+
+function tAbspannBib(){
+  var d=S.ab;
+  if(!d){ladeAbspann();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var li=d.eintraege||[], wahl=d.wahl||"";
+  var o='<div class="karte p"><h2 class="kt">Abspann-Bibliothek</h2>'
+   +'<div class="hinw" style="padding:0;margin-bottom:4px">Zwei Sorten: <b>fertiges Video</b> — '
+   +'das läuft genau so lang, wie du es gemacht hast. Oder <b>Standbild</b> — da trägst du '
+   +'die Sekunden daneben ein.<br><br>'
+   +'Ist nichts hochgeladen, hängt auch nichts ans Video. Einen vom Code gebauten '
+   +'Schlusstext gibt es nicht mehr.</div>';
+  if(!li.length)
+    o+='<div class="leer" style="margin-top:9px">noch keiner hochgeladen — '
+     +'die Videos laufen dann ohne Abspann aus</div>';
+  li.forEach(function(e){
+    var dran=(wahl===e.id);
+    o+='<div class="szz" style="display:flex;align-items:center;gap:8px;margin-top:10px">'
+     /* Immer nur ein Standbild laden - nie das ganze Video. */
+     +'<img alt="" loading="lazy" src="/abspann_bild/'+encodeURIComponent(e.datei)+'?k='+S.kanal+'" '
+      +'style="width:46px;height:62px;object-fit:cover;border-radius:6px;background:#0A0C12;flex:0 0 46px'
+      +(dran?';outline:2px solid #24D3E8;outline-offset:-2px':'')+'">'
+     +'<div style="flex:1;min-width:0">'
+     +'<input type="text" class="breit" value="'+h(e.name)+'" '
+     +'onchange="abSetz({aktion:\'name\',id:\''+h(e.id)+'\',wert:this.value})">'
+     +'<div class="szh" style="margin-top:5px">'
+     +(e.art==="video"
+        ? ('Video · '+h(String(e.sekunden))+' Sek.')
+        : ('Standbild · <input type="text" style="width:50px" value="'+h(String(e.sekunden))+'" '
+           +'onchange="abSetz({aktion:\'sekunden\',id:\''+h(e.id)+'\',wert:this.value})"> Sek.'))
+     +'</div></div>'
+     +'<button class="ik rot" onclick="abWeg(\''+h(e.id)+'\',\''+h(e.name).replace(/'/g,"")+'\')">✕</button>'
+     +'</div>';
+  });
+  o+='<button class="knopf" style="width:100%;margin-top:12px" onclick="abHoch()">+ Abspann hochladen</button>';
+  if(li.length)o+='<div style="margin-top:11px">'+abWahlZeile(d)+'</div>';
+  return o+'</div>';
+}
+
+/* Stimme je Avatar oder Sprecher. Die Auswahl kommt aus der
+   Stimmenliste des Kanals; dieselbe Stimme darf mehrfach vergeben
+   werden. Der Knopf daneben spielt eine kurze Probe - einmal erzeugt,
+   danach aus dem Ordner. */
+function stimmZeile(f){
+  var liste=(S.ds&&S.ds.stimmliste)||[];
+  var jetzt=f.stimme||"";
+  var o='<div class="szz" style="margin-top:9px"><span class="szh">Stimme</span>'
+   +'<div style="display:flex;gap:7px;align-items:center">'
+   +'<select style="flex:1;min-width:0" onchange="dsStimme(\''+h(f.id)+'\',this.value)">'
+   +'<option value=""'+(jetzt?"":" selected")+'>Kanalstimme</option>';
+  var drin=false;
+  liste.forEach(function(e){
+    if(e[0]===jetzt)drin=true;
+    o+='<option value="'+h(e[0])+'"'+(e[0]===jetzt?" selected":"")+'>'+h(e[1])+'</option>';
+  });
+  if(jetzt&&!drin)
+    o+='<option value="'+h(jetzt)+'" selected>eigene ID</option>';
+  o+='</select>'
+   +'<button class="knopf" style="padding:9px 13px" title="kurz anhören" '
+   +'onclick="stimmProbe(\''+h(jetzt)+'\',this)">▶</button></div></div>';
+  if(!liste.length)
+    o+='<div class="szh" style="margin-top:5px;color:#FFB454">Noch keine Stimme da — '
+     +'hol sie dir mit dem Knopf unten in diesem Reiter.</div>';
+  return o;
+}
+function dsStimme(id,wert){
+  api("/api/darsteller?k="+S.kanal,{aktion:"stimme",id:id,wert:wert}).then(function(r){
+    if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+    ladeDarsteller();
+  });
+}
+var STIMMTON=null;
+/* Der Knopf blieb frueher auf "…" stehen: zurueckgesetzt wurde er nur,
+   wenn die Probe zu Ende lief. Beim Wechsel auf eine andere Stimme wurde
+   die alte nur angehalten - der alte Knopf hat das nie erfahren. Jetzt
+   merkt sich die Seite, welcher Knopf dran ist, und gibt ihn in jedem
+   Fall wieder frei: bei Ende, Abbruch, Fehler und nach 90 Sekunden. */
+var STIMMKNOPF=null, STIMMUHR=null;
+function stimmFrei(){
+  if(STIMMUHR){clearTimeout(STIMMUHR);STIMMUHR=null}
+  if(STIMMKNOPF){STIMMKNOPF.disabled=false;STIMMKNOPF.textContent="▶";STIMMKNOPF=null}
+}
+function stimmAus(){
+  if(STIMMTON){try{STIMMTON.onended=STIMMTON.onerror=STIMMTON.onpause=STIMMTON.onplaying=null;
+                   STIMMTON.pause()}catch(e){}}
+  STIMMTON=null;
+  stimmFrei();
+}
+function stimmProbe(sid,knopf){
+  /* Laeuft gerade diese Stimme, hoert der zweite Tipper auf. */
+  if(knopf&&knopf===STIMMKNOPF&&STIMMTON&&!STIMMTON.paused)return stimmAus();
+  stimmAus();
+  if(knopf){knopf.disabled=true;knopf.textContent="…";STIMMKNOPF=knopf}
+  var a=new Audio("/api/stimmprobe?k="+encodeURIComponent(S.kanal)
+                  +"&s="+encodeURIComponent(sid||"")+"&t="+Date.now());
+  STIMMTON=a;
+  a.onplaying=function(){if(STIMMKNOPF){STIMMKNOPF.disabled=false;STIMMKNOPF.textContent="■"}};
+  a.onended=stimmFrei;
+  a.onpause=stimmFrei;
+  a.onerror=function(){stimmFrei();melde("Die Probe ging nicht. Steht bei den Modellen eine Stimme?")};
+  STIMMUHR=setTimeout(function(){stimmAus();
+    melde("Die Probe hat zu lange gebraucht. Nochmal tippen.")},90000);
+  a.play().then(function(){}).catch(function(){stimmFrei();
+    melde("Der Browser hat das Abspielen abgelehnt. Nochmal tippen.")});
+}
+function sprecherNeu(){
+  el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Sprecher anlegen</h2>'
+   +'<p>Ein Sprecher redet nur und steht nie im Bild. Der Name gehört vor die Zeile '
+   +'im Sprechtext: <i>Sprecherin Frau: Am Morgen bebte die Erde.</i></p>'
+   +'<input type="text" id="spneu" class="breit" placeholder="z.B. Sprecherin Frau" '
+   +'style="margin-bottom:14px">'
+   +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
+   +'<button class="knopf or" onclick="sprecherSpeichern()">Anlegen</button></div></div></div>';
+}
+function sprecherSpeichern(){
+  var n=((el("spneu")||{}).value||"").trim();
+  if(!n)return melde("Name darf nicht leer sein.");
+  api("/api/darsteller?k="+S.kanal,{aktion:"sprecher_neu",name:n}).then(function(r){
+    zu();
+    if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
+    ladeDarsteller();
+  });
+}
+function tDarsteller(){
+  var d=S.ds;
+  if(!d){ladeDarsteller();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var alle=d.darsteller||[], max=d.max||3, anzahl=d.anzahl||0, bmax=d.bilder_max||4;
+  var liste=alle.filter(function(f){return f.art!=="sprecher"});
+  var sprecher=alle.filter(function(f){return f.art==="sprecher"});
+
+  var o='<div class="karte p"><h2 class="kt">Avatare &amp; Sprecher</h2>'
+   +'<div class="hinw" style="padding:0;margin-bottom:10px">'
+   +'Ein Avatar sind ein paar Bilder und ein Name — höchstens '+bmax+' Bilder, das erste ist '
+   +'das Frontalbild. Für ein Video hakst du an, wer mitspielt; gleichzeitig im Bild gehen '
+   +'höchstens '+max+'.<br><br>'
+   +'Die Bilder werden <b>nicht</b> ins Bild geklebt. Sie gehen als Referenz an das Modell, '
+   +'und das stellt die Figur selbst in die Szene. Darum dürfen sie einen Hintergrund haben.<br><br>'
+   +'Den Namen braucht das Modell nur, damit deine Regieanweisung „Mara zeigt nach oben" '
+   +'bei der richtigen Figur ankommt.</div>'
+   +'<div class="szz"><span class="szh">Für dieses Video dabei</span>'
+   +'<span style="font-weight:700;font-size:15px;color:'+(anzahl?'#24D3E8':'#8593AC')+'">'
+   +anzahl+' von '+max+'</span></div>';
+
+  if(d.bereit){
+    o+='<div class="hinw" style="padding:0;margin-top:10px"><b>Bereit.</b> '
+     +'Das Modell bekommt diesen Vorspann:<br>'+h(d.vorspann)+'</div>';
+  }else{
+    o+='<div class="hinw" style="padding:0;margin-top:10px;color:#FFB454">'+h(d.grund)+'</div>';
+  }
+  o+='<button class="knopf or" style="width:100%;margin-top:10px" onclick="dsNeu()">'
+   +'+ Avatar — Bilder aussuchen</button></div>';
+
+  if(!liste.length)
+    o+='<div class="karte p"><div class="leer">noch kein Avatar angelegt</div></div>';
+
+  liste.forEach(function(f){
+    var an=!!f.dabei, bilder=f.bilder||[];
+    o+='<div class="karte p'+(an?' mit':'')+'">'
+     +'<div class="kopf" style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
+     +'<h2 class="kt" style="flex:1;margin:0">'+h(f.name)+'</h2>'
+     +'<button class="sch'+(an?" an":"")+'" title="für dieses Video dabei" '
+     +'onclick="dsDabei(\''+h(f.id)+'\','+(an?"false":"true")+')"><i></i></button>'
+     +'<button class="ik rot" onclick="dsWeg(\''+h(f.id)+'\',\''+h(f.name).replace(/'/g,"")+'\')">✕</button></div>';
+
+    o+='<div style="display:flex;flex-wrap:wrap;gap:7px">';
+    bilder.forEach(function(b,bi){
+      o+='<div style="position:relative;flex:0 0 66px;width:66px;height:88px">'
+       +'<img alt="" src="/darsteller/'+encodeURIComponent(b.datei)+'?k='+S.kanal+'" '
+       +'title="'+(bi===0?'Frontalbild':'antippen: zum Frontalbild machen')+'" '
+       +'onclick="dsBildVor(\''+h(f.id)+'\',\''+h(b.datei)+'\')" '
+       +'style="width:66px;height:88px;object-fit:cover;border-radius:8px;background:#0A0C12;'
+       +'display:block;cursor:pointer;'+(bi===0?'outline:2px solid #24D3E8;outline-offset:-2px':'')+'">'
+       +(bi===0?'<div style="position:absolute;left:0;right:0;bottom:0;background:#24D3E8;color:#04161B;'
+               +'font-size:9.5px;font-weight:700;text-align:center;padding:2px 0;'
+               +'border-radius:0 0 8px 8px;pointer-events:none">FRONTAL</div>':'')
+       +'<button class="ik rot" title="Bild löschen" '
+       +'onclick="event.stopPropagation();dsBildWeg(\''+h(f.id)+'\',\''+h(b.datei)+'\')" '
+       +'style="position:absolute;top:-7px;right:-7px;width:23px;height:23px;'
+       +'border-radius:50%;font-size:11px;line-height:1;padding:0">✕</button>'
+       +'</div>';
+    });
+    if(!f.voll)
+      o+='<button class="knopf" style="flex:0 0 66px;width:66px;height:88px;font-size:12px" '
+       +'onclick="dsHoch(\''+h(f.id)+'\')">+ Bild</button>';
+    o+='</div>';
+
+    if(!bilder.length)
+      o+='<div class="szh" style="margin-top:7px">Das erste Bild ist das Frontalbild. Dann zwei, '
+       +'drei weitere <b>derselben Figur in derselben Kleidung</b> von der Seite und von hinten. '
+       +'Gemischte Kleidung lässt das Modell eine dritte Variante erfinden.</div>';
+
+    o+='<div class="szz" style="margin-top:11px"><span class="szh">Name</span>'
+     +'<input type="text" class="breit" value="'+h(f.name)+'" '
+     +'onchange="dsFeld(\''+h(f.id)+'\',\'name\',this.value)"></div>'
+     +stimmZeile(f)+'</div>';
+  });
+
+  if(liste.length)
+    o+='<div class="karte p"><div class="hinw" style="padding:0">'
+     +'<b>Andere Kleidung für eine spätere Folge?</b> Leg die Figur ein zweites Mal an — '
+     +'„Mara Feldjacke" — und hak die an. Ein Eintrag mehr in der Liste, dafür keine zweite Ebene.'
+     +'</div></div>';
+
+  o+='<div class="karte p"><h2 class="kt">Sprecher</h2>'
+   +'<div class="hinw" style="padding:0;margin-bottom:10px">Ein Sprecher hat keine Bilder und '
+   +'steht nie im Bild — er redet nur. Im Sprechtext schreibst du seinen Namen vor die Zeile, '
+   +'genau wie bei einem Avatar. Praktisch für eine Erzählstimme neben Mara und Jonas.</div>';
+  if(!sprecher.length)
+    o+='<div class="leer">noch kein Sprecher angelegt</div>';
+  sprecher.forEach(function(f){
+    o+='<div class="szn" style="margin-bottom:11px">'
+     +'<div class="kopf" style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+     +'<h2 class="kt" style="flex:1;margin:0">'+h(f.name)+'</h2>'
+     +'<button class="ik rot" onclick="dsWeg(\''+h(f.id)+'\',\''+h(f.name).replace(/'/g,"")+'\')">✕</button></div>'
+     +'<div class="szz"><span class="szh">Name</span>'
+     +'<input type="text" class="breit" value="'+h(f.name)+'" '
+     +'onchange="dsFeld(\''+h(f.id)+'\',\'name\',this.value)"></div>'
+     +stimmZeile(f)+'</div>';
+  });
+  o+='<button class="knopf or" style="width:100%;margin-top:4px" onclick="sprecherNeu()">'
+   +'+ Sprecher anlegen</button></div>';
+
+  o+=stimmenKarte();
+  return o;
+}
+
+function figBewegung(name,wert){
+  return api("/api/figuren?k="+S.kanal,{aktion:"bewegung",name:name,wert:wert}).then(function(r){
+    if(!r.ok)return melde(r.fehler||"ging nicht");ladeFiguren()});
+}
+function poseHochBewegt(n){
+  var i=document.createElement("input");
+  i.type="file"; i.accept=".mov,.webm,.mp4,.gif,video/*";
+  i.onchange=function(){
+    var f=i.files&&i.files[0];if(!f)return;
+    if(f.size>60*1024*1024){melde("Datei zu groß — höchstens 60 MB.");return}
+    var pose=prompt("Name der Bewegung (z.B. winkt, nickt, atmet)","Schleife");
+    el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Lädt hoch</h2><p id="hpro">'+h(f.name)+' · 0 %</p>'
+      +'<p class="hint">Wird danach in eine Schleife mit Transparenz umgewandelt.</p></div></div>';
+    var x=new XMLHttpRequest();
+    x.open("POST","/api/hochladen?k="+encodeURIComponent(S.kanal)+"&zweck=figur&figur="
+      +encodeURIComponent(n)+"&pose="+encodeURIComponent(pose||"")+"&name="+encodeURIComponent(f.name));
+    x.upload.onprogress=function(e){if(e.lengthComputable&&el("hpro"))el("hpro").textContent=f.name+" · "+Math.round(e.loaded/e.total*100)+" %"};
+    x.onload=function(){zu();var r={};try{r=JSON.parse(x.responseText)}catch(err){}
+      if(!r.ok){melde(r.fehler||"Hochladen ging nicht");return}
+      ladeFiguren()};
+    x.onerror=function(){zu();melde("Hochladen ging nicht")};
+    x.send(f);
+  };
+  i.click();
+}
+
+
+/* ---------- Suche (Patch P4) ---------- */
+/* [Was im Dashboard steht, Reiter, Suchwoerter dazu] */
+var SUCHE=[
+ ["Text","einst","einblendung text beschriftung folgen"],
+ ["Einblendung Anfang","einst","follow like abo cta aufforderung anfang hook"],
+ ["Einblendung Mitte","einst","follow like abo cta aufforderung mitte"],
+ ["Einblendung Ende","einst","follow like abo cta aufforderung ende abspann"],
+ ["Schrift","einst","untertitel schriftart font"],
+ ["Größe","einst","untertitel schriftgroesse gross klein"],
+ ["Höhe im Bild","einst","untertitel position hoehe unten oben"],
+ ["Wörter pro Zeile","einst","untertitel woerter zeile umbruch"],
+ ["Großbuchstaben","einst","untertitel caps grossschrift"],
+ ["Format","einst","9:16 4:5 1:1 16:9 hochkant quer tiktok instagram youtube seitenverhaeltnis"],
+ ["Bewegung im Bild","einst","ken burns zoom schwenk bewegung"],
+ ["Stärke","einst","bewegung staerke sanft stark"],
+ ["Anteil bewegter Szenen","einst","kling animation ki bewegt prozent anteil video"],
+ ["Bewegungs-Anweisung","einst","kling prompt kamerafahrt animation"],
+ ["Abbrechen","machen","stopp stoppen beenden abbrechen lauf anhalten geschichte"],
+ ["Tempo","einst","schnitt schnelligkeit einstellungen teilen erklaervideo"],
+ ["Bildstimmung","einst","look farbe korn filmkorn kalt warm hart farbkorrektur vignette tiefen"],
+ ["Musik an","einst","musik lied hintergrund an aus"],
+ ["Stimmen","einst","stimme id elevenlabs figur sprecher liste"],
+ ["Grundstimmung","einst","stimmung ruhig lebendig dramatisch energie"],
+ ["Stil-Anker","machen","stil anker gleich aussehen figur konsistent look"],
+ ["Deine Geschichte","machen","geschichte text story erzaehlung eigener text maerchen"],
+ ["Stil","machen","geschichte stil maerchen comic foto aquarell aussehen"],
+ ["Figur","machen","geschichte figur held charakter gleich konsistent"],
+ ["Wie das Video entsteht","machen","modus claude schreibt ich baue selbst szenen eigene bilder geschichte"],
+ ["Masterprompt","machen","prompt anweisung thema stil text rolle"],
+ ["Regeln","machen","regeln hook vorgaben verbote was nicht vorkommen darf"],
+ ["Sprache","machen","sprache deutsch englisch uebersetzung"],
+ ["Länge in Sekunden","einst","dauer laenge sekunden"],
+ ["Thema","machen","themen liste naechstes video"],
+ ["Szenen","machen","szenen editor eigene bilder clips reihenfolge"],
+ ["Lied hochladen","einst","musik eigenes lied song hochladen"],
+ ["Leise unter der Stimme","einst","musik lautstaerke leise ducking"],
+ ["Laut ohne Stimme","einst","musik lautstaerke laut vordergrund"],
+ ["Einblenden","einst","musik fade anfang einblenden"],
+ ["Ausblenden","einst","musik fade ende ausblenden abklingen"],
+ ["Bewegung","darsteller","figur statisch bewegt animiert atmen wippen schleife"],
+ ["Stimme","darsteller","figur stimme zuordnen elevenlabs"],
+ ["Kanalname","machen","name umbenennen kanal"],
+ ["Fertige Videos","machen","download herunterladen ansehen loeschen"],
+ ["Eingestellt","machen","uebersicht was eingestellt ist zusammenfassung"],
+ ["Telegram","einst","telegram bot chat benachrichtigung senden"],
+ ["Guthaben","einst","guthaben fal.ai kontostand credits"],
+ ["Was ein Video kostet","einst","preis kosten euro rechnung"],
+ ["Text","einst","modell api claude anthropic schluessel"],
+ ["Bild","einst","modell api flux imagen bilder schluessel"],
+ ["Avatare","darsteller","figuren darsteller mara jonas reporter archaeologin bilder kleidung dabei besetzung"],
+ ["Referenzclip","einst","kling reference to video modell clip szene schluessel fal"],
+ ["Clip erzeugen","machen","szene clip video kling referenz erzeugen"],
+ ["Was passiert in der Szene","machen","regie bewegung anweisung szene clip"],
+ ["Abspann","einst","schlusstafel ende teil 2 folgt folgen liken kommentieren"],
+ ["Abspann-Bibliothek","einst","abspann hochladen standbild video mehrere zufall auswahl"],
+ ["Sprechtempo","einst","woerter pro sekunde ruhig normal flott"]
+];
+var SUCHZIEL=null;
+
+function suchZu(){var e=el("sucherg");if(e)e.innerHTML=""}
+
+function suchTreffer(w){
+  var e=el("sucherg"); if(!e)return;
+  w=(w||"").trim().toLowerCase();
+  if(w.length<2){e.innerHTML="";return}
+  var namen={}; TABS.forEach(function(t){namen[t[0]]=t[1]});
+  var tr=SUCHE.filter(function(s){
+    return s[0].toLowerCase().indexOf(w)>=0 || s[2].indexOf(w)>=0;
+  }).slice(0,7);
+  if(!tr.length){e.innerHTML='<div><b>nichts gefunden</b><span>Versuch ein anderes Wort</span></div>';return}
+  e.innerHTML=tr.map(function(s,i){
+    return '<div onmousedown="suchGeh('+SUCHE.indexOf(s)+')" ontouchstart="suchGeh('+SUCHE.indexOf(s)+')">'
+      +'<b>'+h(s[0])+'</b><span>Reiter '+h(namen[s[1]]||s[1])+'</span></div>'}).join("");
+}
+
+function suchGeh(i){
+  var s=SUCHE[i]; if(!s)return;
+  suchZu();
+  var f=el("suchf"); if(f)f.value="";
+  SUCHZIEL=s[0];
+  if(S.tab!==s[1]){S.tab=s[1];laden().then(suchZeigen)}else{zeichne();suchZeigen()}
+}
+
+function suchZeigen(){
+  if(!SUCHZIEL)return;
+  var ziel=SUCHZIEL; SUCHZIEL=null;
+  setTimeout(function(){
+    var alle=document.querySelectorAll(".lb, .kt, .szh");
+    for(var i=0;i<alle.length;i++){
+      if((alle[i].textContent||"").trim()===ziel){
+        var k=alle[i].closest(".r")||alle[i].closest(".karte")||alle[i];
+        k.scrollIntoView({behavior:"smooth",block:"center"});
+        k.classList.add("treffer");
+        setTimeout(function(){k.classList.remove("treffer")},2100);
+        return;
+      }
+    }
+  },260);
+}
+
+
+/* ---------- Geschichte (Patch P9) ---------- */
+function ladeGeschichte(){return api("/api/geschichte?k="+S.kanal).then(function(d){S.gs=d;zeichne()})}
+
+function drehbuchKarte(g){
+  /* Zeigt je Szene, was der Bau daraus macht. Zerlegt wird auf dem
+     Server mit demselben Code, der spaeter wirklich baut - was hier
+     steht, wird also so gebaut. */
+  var li=(g&&g.drehbuch)||[];
+  if(!li.length)return '';
+  var o='<div class="karte p">'+kartenKopf("Drehbuch · "+li.length+" Szenen","drehbuch");
+  li.forEach(function(s,i){
+    o+='<div class="dz"><div class="dznr">Szene '+(i+1)+'</div>';
+    if(s.erzaehler)o+='<div class="dzz"><span>Erzähler</span>'+h(s.erzaehler)+'</div>';
+    if(s.avatar)o+='<div class="dzz av"><span>Avatar sagt</span>'+h(s.avatar)+'</div>';
+    if(s.bild)o+='<div class="dzz bi"><span>Bild</span>'+h(s.bild)+'</div>';
+    if(s.bewegung&&s.bewegung!==s.bild)o+='<div class="dzz be"><span>Bewegung</span>'+h(s.bewegung)+'</div>';
+    if(!s.erzaehler&&!s.avatar)o+='<div class="dzz"><span>kein Text</span>die Szene bleibt stumm</div>';
+    o+='</div>';
+  });
+  if(g.drehbuch_mehr)o+='<div class="hinw">… und '+g.drehbuch_mehr+' weitere</div>';
+  o+='<div class="hinw">Stimmt etwas nicht, ändere es oben im Textfeld — hier unten '
+   +'ändert sich es sofort mit. Erst der Knopf darunter kostet Geld.</div></div>';
+  return o;
+}
+
+function tGeschichte(){
+  var g=S.gs;
+  if(!g){ladeGeschichte();return '<div class="karte p"><div class="leer">lade…</div></div>'}
+  var laeuft=(S.daten.lauf||{}).laeuft;
+  var o='<div class="karte p"><h2 class="kt">Deine Geschichte</h2>'
+   +'<div style="display:flex;gap:7px;margin-bottom:9px">'
+   +'<input type="text" id="gsthema" class="breit" placeholder="Thema — leer nimmt das nächste aus der Liste" value="'
+   +h(S.einst.geschichte_thema||"")+'" onchange="setz(\'geschichte_thema\',this.value)">'
+   +'<button class="knopf or" id="gsknopf" onclick="textSchreiben()">Schreiben</button></div>'
+   +'<textarea id="gstext" style="min-height:190px" placeholder="Hier den ganzen Text einfügen.&#10;&#10;(Satz oder Absatz in Klammern wird ein Bild.)&#10;(Die nächste Klammer das nächste.)"'
+   +' onchange="setz(\'geschichte_text\',this.value)">'+h(S.einst.geschichte_text||"")+'</textarea>'
+   +'<div class="hinw" style="margin-top:8px">'
+   +(g.saetze?('Ergibt <b>'+g.saetze+' Szenen</b> · etwa '+Number(g.kosten||0).toFixed(2)+' € für die Bilder')
+            :'Noch kein Text. Schreib oder füg ihn oben ein und tipp daneben, dann wird gezählt.')
+   +'</div>'
+   +'<div class="hinw" style="padding-top:0">Klammern bestimmen die Szenen: alles zwischen ( und ) wird ein Bild. '
+   +'Ohne Klammern trennt eine Leerzeile, ohne beides wird Satz für Satz zerlegt.<br><br>'
+   +'<b>Schreiben</b> lässt die Text-KI eine Geschichte zum Thema verfassen, fertig mit Klammern '
+   +'und Regie. Lies drüber und ändere, was dir nicht passt, bevor du erzeugst.<br><br>'
+   +'In Anführungszeichen spricht die Figur. In eckigen Klammern steht die Regie: was zu sehen sein soll. Sie wird nicht gesprochen.</div>'
+   +'</div>';
+
+  o+=drehbuchKarte(g);
+  o+='<div class="karte p"><h2 class="kt">Wie es aussehen soll</h2>'
+   +reihe("Stil",wahl("geschichte_stil",S.einst.geschichte_stil||"",
+      (g.stile||[["","ohne Vorgabe"]])))
+   +'<div style="padding:11px 0 4px;border-top:1px solid #202636">'
+   +'<div class="lb" style="margin-bottom:6px">Stil-Anker</div>'
+   +'<textarea id="anker" style="min-height:74px" placeholder="gleiche Figur wie auf der Vorlage, gleiche Koerperform und Kopfgroesse, ganzer Koerper im Bild, weiches Studiolicht, keine Schrift auf der Kleidung"'
+   +' onchange="p86Feld(\'stil_zusatz\',\'Stil-Anker\',\'anker\',this.value)">'+h(S.einst.stil_zusatz||"")+'</textarea>'
+   +'<div style="display:flex;gap:8px;margin-top:8px">'
+   +'<button class="knopf" id="ankbtn" onclick="ankerVorschlag()">Vorschlag einsetzen</button></div>'
+   +'<div class="hinw">Geht an jedes einzelne Bild mit. Damit sieht Szene 9 aus wie Szene 1.</div>'
+   +'</div>'
+   +'</div>';
+
+  if(!g.bereit)
+    o+='<div class="karte p"><div class="spaeter">'+h(g.grund||"Bildmodell fehlt")+' — unter KI &amp; Technik beim Slot „Bild" eintragen.</div></div>';
+  else if(laeuft)
+    o+='<button class="knopf" style="width:100%;margin-bottom:6px" disabled>läuft …</button>'
+     +'<button class="knopf rot" style="width:100%;margin-bottom:10px" onclick="geschichteAbbrechen()">Abbrechen</button>';
+  else
+    o+='<button class="knopf or" style="width:100%;margin-bottom:10px"'
+     +' onclick="geschichteStart()">Bilder jetzt erzeugen lassen</button>';
+
+  if(laeuft||((S.daten.lauf||{}).zeilen||[]).length)
+    o+='<div class="karte p"><h2 class="kt">Was gerade passiert</h2><div class="log">'
+     +((S.daten.lauf||{}).zeilen||[]).map(h).join("<br>")+'</div>'
+     +(laeuft?'<button class="knopf rot" style="width:100%;margin-top:10px" onclick="geschichteAbbrechen()">Abbrechen</button>':'')
+     +'</div>';
+  return o;
+}
+
+function geschichteStart(){
+  var t=(S.einst.geschichte_text||"").trim();
+  if(!t)return melde("Erst die Geschichte einfügen.");
+  frage("Bilder erzeugen?","Das kostet etwa <b>"+Number((S.gs||{}).kosten||0).toFixed(2)+" €</b> und legt die bisherigen Szenen dieses Kanals neu an.","Los",
+    function(){api("/api/geschichte_start?k="+S.kanal,{}).then(function(r){
+      if(!r.ok)return melde(r.text||"ging nicht");
+      laden();setTimeout(ladeGeschichte,1500);
+    })});
+}
+
+
+/* ---------- Videoart als Voreinstellung (Patch P10) ---------- */
+function ladeArten(){return api("/api/arten?k="+S.kanal).then(function(d){S.arten=d;zeichne()})}
+
+
+function artSetzen(n){
+  api("/api/voreinstellung?k="+S.kanal,{name:n}).then(function(r){
+    if(!r.ok)return melde(r.fehler||"ging nicht");
+    S.arten=null;laden();
+  });
+}
+
+var SPRACHEN=[["de","Deutsch"],["en","Englisch"],["es","Spanisch"],["fr","Französisch"],["it","Italienisch"]];
+function sprachName(c){for(var i=0;i<SPRACHEN.length;i++)if(SPRACHEN[i][0]===c)return SPRACHEN[i][1];return c||"—"}
+
+function geschichteAbbrechen(){
+  frage("Lauf stoppen?","Die schon fertigen Bilder bleiben erhalten. Die restlichen werden nicht mehr erzeugt.","Stoppen",
+    function(){api("/api/stop",{}).then(function(){laden();setTimeout(function(){S.gs=null;ladeGeschichte()},900)})},true);
+}
+
+
+function p86Kurz(s){
+  s=String(s||"");
+  return s.length>190?h(s.slice(0,190))+"\u2026":h(s);
+}
+
+function p86Zurueck(id,feld){
+  var f=el(id);
+  if(f)f.value=S.einst[feld]||"";
+}
+
+function p86Feld(feld,titel,id,neu){
+  var alt=S.einst[feld]||"";
+  if(neu===alt)return;
+  var text;
+  if(!String(neu).trim())
+    text="<b>"+h(titel)+" wird komplett geleert.</b><br><br>Bisher:<br><br><i>"+p86Kurz(alt)+"</i>";
+  else if(!alt.trim())
+    text="Neu:<br><br><i>"+p86Kurz(neu)+"</i>";
+  else
+    text="Bisher:<br><br><i>"+p86Kurz(alt)+"</i><br><br>Neu:<br><br><i>"+p86Kurz(neu)+"</i>";
+  text="Das geht an jedes einzelne Bild mit.<br><br>"+text;
+  el("dialog").innerHTML='<div class="dim" onclick="if(event.target===this){zu();p86Zurueck(\''
+   +id+'\',\''+feld+'\')}"><div class="dlg"><h2>'+h(titel)+' \u00e4ndern?</h2>'
+   +'<p>'+text+'</p><div class="zw">'
+   +'<button class="knopf" id="p86nein">Verwerfen</button>'
+   +'<button class="knopf or" id="p86ja">\u00dcbernehmen</button>'
+   +'</div></div></div>';
+  el("p86nein").onclick=function(){zu();p86Zurueck(id,feld)};
+  el("p86ja").onclick=function(){zu();setz(feld,neu)};
+}
+
+function p86Vorschlag(feld,titel,id,wert,warnung){
+  var alt=S.einst[feld]||"";
+  if(alt.trim()===wert.trim())return melde("Der Vorschlag steht schon drin.");
+  function setze(){var f=el(id);if(f)f.value=wert;setz(feld,wert)}
+  if(!alt.trim()){setze();return}
+  frage(titel+": Vorschlag einsetzen?",
+    (warnung?"<b>"+h(warnung)+"</b><br><br>":"")
+    +"Dein bisheriger Text wird dabei <b>\u00fcberschrieben</b> und ist weg.<br><br>"
+    +"Bisher:<br><br><i>"+p86Kurz(alt)+"</i><br><br>"
+    +"Vorschlag:<br><br><i>"+p86Kurz(wert)+"</i>",
+    "\u00dcberschreiben",setze,true);
+}
+
+function ankerVorschlag(){
+  /* Der alte feste Vorschlag war fuer die aufgeklebten Figuren
+     geschrieben, die es nicht mehr gibt. Jetzt kommt er passend zum
+     Masterprompt des Kanals. */
+  var b=el("ankbtn");
+  if(b){b.disabled=true;b.textContent="fragt nach…"}
+  api("/api/stil_vorschlag?k="+S.kanal,{}).then(function(r){
+    if(b){b.disabled=false;b.textContent="Vorschlag einsetzen"}
+    if(!r||!r.ok||!r.text)return melde((r&&r.fehler)||"Kein Vorschlag bekommen");
+    p86Vorschlag("stil_zusatz","Stil-Anker","anker",r.text,"");
+  }).catch(function(e){
+    if(b){b.disabled=false;b.textContent="Vorschlag einsetzen"}
+    melde("Die Anfrage kam nicht durch: "+(e&&e.message?e.message:"unbekannt"));
+  });
+}
+
+
+
+
+/* Die Szenen der letzten Geschichte stehen sonst unter der neuen weiter -
+   samt Clips, fuer die schon bezahlt wurde. Vor dem Schreiben wird
+   deshalb gefragt, und dann werden sie geleert. */
+function textSchreiben(){
+  var weiter=function(){
+    var li=((S.szenen||{}).szenen)||[];
+    if(!li.length)return textSchreibenLos();
+    var mitClip=li.filter(function(s){return s.clip}).length;
+    frage("Neue Geschichte schreiben?",
+      "Aus der letzten Geschichte stehen noch <b>"+li.length+" Szenen</b> da"
+      +(mitClip?(", davon <b>"+mitClip+" mit fertigem Clip</b>"):"")+".<br><br>"
+      +"Die werden vorher geleert — sonst hängen sie unter der neuen Geschichte."
+      +(mitClip?"<br><br><span style=\"color:#FFB454\">Die fertigen Clips sind damit weg. "
+                +"Willst du sie behalten, brich ab und sichere sie zuerst.</span>":""),
+      "Leeren und schreiben",function(){
+        api("/api/szenen?k="+S.kanal,{aktion:"alle_weg"}).then(function(){
+          ladeSzenen(); textSchreibenLos();
+        },function(){melde("Die alten Szenen ließen sich nicht leeren.")});
+      },true);
+  };
+  if(!S.szenen&&typeof ladeSzenen==="function")ladeSzenen().then(weiter,weiter);
+  else weiter();
+}
+function textSchreibenLos(){
+  var b=el("gsknopf"); if(!b)return;
+  var thema=(el("gsthema")||{}).value||"";
+  b.disabled=true; b.textContent="schreibt…";
+  api("/api/vorschlag?k="+S.kanal,{thema:thema}).then(function(r){
+    b.disabled=false; b.textContent="Schreiben";
+    if(!r||!r.ok)return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
+    var d={geschichte_teil:0};
+    if(r.thema&&r.thema_aus_liste)d.geschichte_thema=r.thema;
+    d.geschichte_serie="";
+    d.geschichte_text=r.text;
+    var f=el("gstext"); if(f)f.value=d.geschichte_text;
+    setzViele(d).then(function(){
+      melde((r.titel?r.titel+" · ":"")+r.szenen+" Szenen geschrieben. Lies drüber, dann erzeugen.");
+    });
+  }).catch(function(){
+    b.disabled=false; b.textContent="Schreiben";
+    melde("Verbindung abgebrochen. Das Schreiben dauert bis zu zwei Minuten.");
+  });
+}
+
+
+
+/* ---------- Start ---------- */
+try{var _t=(location.search.match(/[?&]tab=([a-z]+)/)||[])[1];if(_t)S.tab=_t}catch(e){}
+api("/api/schluessel")
+ .then(function(s){S.schluessel=s;return laden()})
+ .then(function(){setInterval(function(){if((S.daten.lauf||{}).laeuft)laden()},4000)});
+</script>
+</body>
+</html>
