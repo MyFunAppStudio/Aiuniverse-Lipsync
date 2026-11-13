@@ -1755,8 +1755,9 @@ function clipAbfrage(s,sek,preis,schon){
 }
 function nurMuender(id){
   frage("Nur die Münder neu?",
-    "Der vorhandene Clip bleibt. Es wird nicht noch einmal animiert. "
-    +"Nur die Münder werden neu gesetzt.",
+    "Der Szenenclip wird nicht neu gemalt. Pro Person geht nur ihr Kopf "
+    +"mit ihrer Stimme an Kling. Wer beim Sprechen nicht im Bild ist, "
+    +"wird ausgelassen und nicht berechnet.",
     "Münder neu",function(){
       api("/api/szene_clip?k="+encodeURIComponent(S.kanal),{sid:id,nur_mund:true}).then(function(r){
         if(!r||!r.ok)return melde((r&&r.fehler)||"ging nicht");
