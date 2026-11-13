@@ -2208,11 +2208,11 @@ def slot_bereit(key, slot, *teile):
 # das Gemaelde ist. Der Anker muss also fotorealistisch sein - und er
 # gilt fuer das HINTERGRUNDBILD, in das Kling die Avatare setzt.
 # Darum: Vordergrund frei lassen, damit die Figuren Platz haben.
-G7_ANKER = ("photorealistic cinematic film still, shot on 35mm, natural daylight, "
-            "the event itself fills the frame, people and action clearly visible, "
-            "a strip of open ground only at the lower left for one person to stand, "
-            "sharp detail on the action, "
-            "no text, no letters, no numbers")
+G7_ANKER = ("photorealistic cinematic action still, shot on 35mm, "
+            "the most intense second of the event, people charging firing "
+            "and riding, dust smoke fire and flags, dramatic low sunlight, "
+            "high contrast, sharp, a strip of open ground only at the lower "
+            "left, no text, no letters, no numbers")
 
 
 def stil_vorschlag(key):

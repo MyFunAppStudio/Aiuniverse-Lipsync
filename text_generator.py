@@ -781,11 +781,12 @@ Englisch und schreib sie AUSFUEHRLICH. Kurze Beschreibungen geben
 beliebige Bilder.
 
 DIE SZENE, NICHT EIN DING DANEBEN
-Zeig, was im Satz passiert. Geht es um eine Schlacht, sieht man den Krieg:
-Soldaten, Reihen, Reiterei, Rauch, Fahnen. Nicht einen leeren Weg, nicht
-nur Matsch, nicht nur Himmel. Jede Szene ein anderer Moment: Aufmarsch,
-Feuer, Attacke, das Eintreffen der Verstaerkung, der Rueckzug. Dieselbe
-Matschstrasse zweimal ist verboten.
+Jedes Bild ist der haerteste Moment der Szene, eingefroren. Cool, laut,
+in Bewegung. Geht es um Krieg, sieht man den Kampf: Leute feuern, reiten
+an, stuermen, Fahnen, Rauch, Feuer, Staub. Nicht eine ruhige Landschaft,
+nicht einen leeren Weg, nicht Soldaten die nur herumstehen.
+Jede Szene ein anderer Schlag: Attacke, Salve, Aufmarsch im Lauf,
+Verstaerkung die ins Feld bricht, Rueckzug unter Feuer.
 Halbtotale aus Augenhoehe. Die Handelnden sind gross genug, dass man
 Uniform und was sie tun erkennt. Keine Luftaufnahme, kein Panorama,
 keine Grossaufnahme von einem Gegenstand.
@@ -821,11 +822,11 @@ Kleidung von heute.
 Kein Blut, keine Leichen, keine Verstuemmelung.
 
 DREI BEISPIELE IN DER RICHTIGEN LAENGE
-[BILD: medium shot at eye level, infantry in dark blue coats kneeling and firing across a field at dawn, a troop of cavalry charging through white powder smoke on the right, a farmhouse burning behind them, open muddy grass only in the lower left, heavy grey clouds]
+[BILD: medium shot at eye level, cavalry in dark coats charging straight at a line of infantry who are kneeling and firing, sabres raised, flags snapping, a shell burst of orange fire and black smoke on the right, low hard sunlight, dust, open ground only in the lower left]
 
-[BILD: medium shot at eye level, a column of infantry in red coats marching onto the field with flags and drums, ranks already formed and waiting ahead of them, low sun, dust, open ground only in the lower left]
+[BILD: medium shot at eye level, infantry in red coats running through waist-high wheat with bayonets leveled, drums and flags behind them, cannon smoke rolling across the field, horses breaking through on the right, dramatic backlight, open ground only in the lower left]
 
-[BILD: medium shot at eye level from a stone quay at sunrise, sailors hauling ropes as three wooden ships come alongside the pier, barrels and crates on the dock, orange light, open flagstones only in the lower left]
+[BILD: medium shot at eye level, sailors hauling a cannon aboard as three wooden warships fire a broadside across the water, white smoke, torn sails, orange muzzle flashes, spray, open planks only in the lower left]
 
 BEWEGUNG
 Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.

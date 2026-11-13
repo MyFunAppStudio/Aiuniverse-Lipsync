@@ -424,6 +424,12 @@ def bildprompt(satz, stil="", figur_name="", zusatz=""):
     if (zusatz or "").strip():
         teile.append(zusatz.strip())
     teile.append(P84_SAUBER)
+    teile.append(
+        "cinematic action still, the most intense second frozen in motion, "
+        "people charging, firing or riding, dust, smoke, fire and flags, "
+        "dramatic low sunlight, high contrast, sharp, cool and violent, "
+        "not a quiet landscape, not an empty road, not anyone standing still, "
+        "open ground only in the lower left")
     return ", ".join(teile)
 
 
