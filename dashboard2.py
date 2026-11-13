@@ -2769,8 +2769,9 @@ M6_HINTERGRUND = ("Only the far background moves: smoke drifts, flags and "
 M6_VERBOTE = ("The camera is locked. No dolly, no push in, no pull back, "
               "no orbit, no crane, no zoom. "
               "From the first frame to the last, both people stay fully "
-              "inside the frame, chest up, faces large. The camera never "
-              "walks past them and never leaves them behind. "
+              "inside the frame, from the waist up, with open sky and "
+              "landscape around them. They never grow until they fill the "
+              "picture, and the camera never walks past them. "
               "They stay on the spot - no walking, no grabbing, no sitting "
               "down, no pointing, no waving, no gesturing at the camera. "
               "Arms hang at their sides. "
@@ -2805,8 +2806,8 @@ def _m6_handlung(namen, regie):
     wer = _m4_liste(namen)
     if regie:
         saetze = []
-        for st in re.split(r"(?<=[.!?])\s+", regie.strip()):
-            if re.search(r"kamera|camera|dolly|zoom|fahrt", st, re.I):
+        for st in _r5_re.split(r"(?<=[.!?])\s+", regie.strip()):
+            if _r5_re.search(r"kamera|camera|dolly|zoom|fahrt", st, _r5_re.I):
                 continue
             if st.strip():
                 saetze.append(st.strip())
@@ -2841,16 +2842,18 @@ def _r5_prompt(k, kanal, s):
         vorspann += " "
     teile = [vorspann,
              _m6_wieviele(namen),
-             "Both people are framed from the chest up, side by side, large in the shot. "
-             "Each face is big and sharp, lips and eyes easy to read. "
-             "The battle stays visible behind their heads, not instead of them. "
+             "Both people are shown from the waist up, side by side in the lower "
+             "two thirds. They do not fill the frame. Sky, smoke and the "
+             "battle stay visible above and beside them. Each face is still "
+             "large enough that the mouth can be read. "
              "Both heads face the camera the whole time and never turn away. "
              "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s is framed from the chest up, large in the shot. "
-             "The face is big and sharp, lips and eyes easy to read, and the "
-             "scene stays visible behind the head. The head faces the camera "
-             "the whole time. The mouth stays closed. No pointing. " % namen[0],
+             "%s is shown from the waist up in the lower two thirds, not "
+             "filling the frame. The scene stays visible above and beside "
+             "them. The face is still large enough that the mouth can be "
+             "read. The head faces the camera the whole time. The mouth "
+             "stays closed. No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
