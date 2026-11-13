@@ -832,13 +832,9 @@ Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.
 Sie sagt, was sich ruehrt. Auf Deutsch, hoechstens zwanzig Woerter.
 Drei Teile, immer in dieser Reihenfolge:
 
-1. DIE FIGUREN. Stehen in dieser Szene Figuren im Bild (siehe "wer"),
-   schreib hinein, was sie tun, waehrend sie reden: zeigt hinunter ins
-   Tal, deutet auf die Reihen, dreht sich zum anderen, breitet die Arme
-   aus, schuettelt den Kopf. Sie sollen nicht herumstehen wie
-   hingestellt. Aber: nicht gehen, nicht greifen, nicht hinsetzen,
-   nichts aufheben - sie bleiben auf der Stelle, sonst wird der Koerper
-   Matsch. Ist "wer" leer, laesst du diesen Teil weg.
+1. DIE FIGUREN. Der Erklaerende bleibt stehen und gestikuliert mit
+   einer Hand zur Handlung neben ihm, so als wuerde er sie erklaeren.
+   Er laeuft nicht auf die Kamera zu und winkt nicht ins Objektiv.
 2. DER HINTERGRUND. Was dort passiert, passend zum Satz. Bei Krieg:
    die Reihen feuern, die Reiterei reitet an, Rauch zieht, Fahnen gehen
    vor. Nicht nur Gras im Wind und nicht nur ein leerer Weg.

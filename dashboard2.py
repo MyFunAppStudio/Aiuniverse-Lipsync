@@ -2833,9 +2833,9 @@ def _m6_handlung(namen, regie):
     wenn_zwei = ("They stand still and look into the camera. Mouths closed, "
                  "no speech, no pointing. "
                  if len(namen) > 1
-                 else "%s stands on the left, looks into the camera, and may shift slightly. Mouth closed. " % wer)
+                 else "%s stays on the left, gestures toward the battle, and does not walk toward the camera. Mouth closed. " % wer)
     return (wenn_zwei + "Ignore any instruction to talk, to move the lips, "
-            "to point, or to move the camera. "
+            "or to move the camera. A hand gesture toward the scene is wanted. "
             + ((regie.strip() + " ") if regie else ""))
 
 
@@ -2861,25 +2861,25 @@ def _r5_prompt(k, kanal, s):
              "Both heads face the camera the whole time and never turn away. "
              "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s stands on the left third, a step further back than a full-frame "
-             "figure, so the scene behind stays visible. Full figure, head "
-             "to boots, but clearly smaller than the picture. Face still "
-             "readable. They shift their weight and move one hand. They do "
-             "not walk away and stay fully in frame. The camera stays "
-             "locked. The mouth stays closed. No pointing. " % namen[0],
+             "%s stands on the left, smaller, about two steps further back. "
+             "The battle is larger than they are. Full figure, face readable. "
+             "They stay on that spot and never walk toward the camera. "
+             "They gesture with one or both hands toward the action beside "
+             "them, the way someone explains what is happening. Not a wave "
+             "at the lens. The head stays toward the camera. The camera "
+             "stays locked. The mouth stays closed. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND if len(namen) > 1 else
-             "Troops, horses and smoke in the scene keep moving: ranks advance, "
-             "cavalry rides, powder smoke drifts. Not an empty path. "
-             "The explainer in front may only shift slightly. ",
+             "The battle stays in motion the whole shot: soldiers advance, "
+             "horses move, smoke and fire shift. Not a still photograph. "
+             "The explainer gestures toward that action and does not walk. ",
              " ",
              M6_VERBOTE if len(namen) > 1 else
              "The camera is locked. No dolly, no push in, no pull back, "
              "no orbit, no zoom. Do not place the person in the center and "
              "do not enlarge them until they cover the landscape. "
-             "They stay on the left side, a step further back, smaller than "
-             "the last shot, landscape larger than they are. "
-             "No walking away, no sitting, no pointing, no waving. "
+             "They stay on the left, smaller, and do not walk toward the camera. "
+             "A hand gesture toward the battle is wanted. No wave at the lens. "
              "The mouth stays closed: no talking, no lip movement, no teeth. "
              "Speech is added later. "
              "Anyone already visible in @Image1 is a different person: "
