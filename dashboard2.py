@@ -2861,13 +2861,12 @@ def _r5_prompt(k, kanal, s):
              "Both heads face the camera the whole time and never turn away. "
              "Mouths stay closed. Nobody points. "
              if len(namen) > 1 else
-             "%s stands on the left third, not in the center, far enough back "
-             "that the battlefield fills most of the picture. Full figure, "
-             "head to boots, face still readable but not a close-up. "
-             "They may shift their weight and move one hand a little. "
-             "They do not walk, do not turn away, and stay fully in frame "
-             "the whole time. The camera stays locked. The mouth stays closed. "
-             "No pointing. " % namen[0],
+             "%s stands on the left third, a step further back than a full-frame "
+             "figure, so the scene behind stays visible. Full figure, head "
+             "to boots, but clearly smaller than the picture. Face still "
+             "readable. They shift their weight and move one hand. They do "
+             "not walk away and stay fully in frame. The camera stays "
+             "locked. The mouth stays closed. No pointing. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND if len(namen) > 1 else
              "Troops, horses and smoke in the scene keep moving: ranks advance, "
@@ -2878,8 +2877,8 @@ def _r5_prompt(k, kanal, s):
              "The camera is locked. No dolly, no push in, no pull back, "
              "no orbit, no zoom. Do not place the person in the center and "
              "do not enlarge them until they cover the landscape. "
-             "They stay on the left side, full figure, landscape larger "
-             "than they are. A small weight shift is allowed. "
+             "They stay on the left side, a step further back, smaller than "
+             "the last shot, landscape larger than they are. "
              "No walking away, no sitting, no pointing, no waving. "
              "The mouth stays closed: no talking, no lip movement, no teeth. "
              "Speech is added later. "
