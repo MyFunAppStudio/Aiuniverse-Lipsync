@@ -13,8 +13,8 @@ ZEICHEN_PRO_SEKUNDE = 9.0  # ZPS_KORRIGIERT (vorher 15.0)  # gesprochene Zeichen
 def _claude_anfrage(prompt, max_tokens=20000, kanal=None):
     """Fragt Claude ueber die API. Key kommt aus dem Dashboard."""
     api = einstellungen.aktive_api(kanal, "text") if kanal else None
-    schluessel = (api or {}).get("key") or config.ANTHROPIC_KEY
-    basis = (api or {}).get("url") or "https://api.anthropic.com"
+    schluessel = ((api or {}).get("key") or config.ANTHROPIC_KEY or "").strip()
+    basis = ((api or {}).get("url") or "https://api.anthropic.com").strip()
     if not schluessel:
         raise RuntimeError("Kein Anthropic-Key im Dashboard eingetragen (Kanal -> APIs -> TEXT)")
     modelle = ["claude-sonnet-4-5", "claude-opus-4-5", "claude-haiku-4-5",
@@ -43,7 +43,7 @@ def _claude_anfrage(prompt, max_tokens=20000, kanal=None):
         except urllib.error.HTTPError as f:
             leib = f.read().decode()[:200]
             letzter = f"{f.code}: {leib}"
-            if f.code in (404, 400):
+            if f.code in (404, 400, 503):
                 continue
             raise RuntimeError(f"Anthropic Fehler {letzter}")
     raise RuntimeError(f"Kein Modell nutzbar. Letzter Fehler: {letzter}")
