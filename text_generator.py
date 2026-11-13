@@ -1060,7 +1060,8 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         if stufen and gesamt > 0:
             bisher = max(3, int(minuten * k.get("bilder_pro_minute", 6)))
             je_bisher = gesamt / bisher
-            stufe = min(stufen, key=lambda x: abs(x - je_bisher))
+            laenger = [x for x in stufen if x >= 10]
+            stufe = min(laenger) if laenger else max(stufen)
             szenen = max(3, int(round(gesamt / stufe)))
             # +0.4, weil der Bau die Szenenzahl mit int() abschneidet
             k["bilder_pro_minute"] = (szenen + 0.4) / max(0.01, minuten)
