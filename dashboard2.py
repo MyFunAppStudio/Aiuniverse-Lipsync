@@ -2767,13 +2767,14 @@ def _r5_prompt(k, kanal, s):
         vorspann += " "
     teile = [vorspann,
              _m6_wieviele(namen),
-             "They stand life-size in the foreground, shown from the waist up, "
-             "faces toward the camera and large enough to see the mouth, "
-             "but they do not fill the frame and the scene behind them stays visible. "
+             "Both people are fully inside the frame from head to boots, small in the "
+             "lower third. Sky and the battle fill the upper two thirds. "
+             "The camera stays wide, never zooms toward their faces, and "
+             "never crops them at the left or right edge. "
              if len(namen) > 1 else
-             "%s stands life-size in the foreground, shown from the waist up, "
-             "face toward the camera and large enough to see the mouth, "
-             "but does not fill the frame. The scene behind stays visible. " % namen[0],
+             "%s is fully inside the frame from head to boots, small in the "
+             "lower third. Sky and the scene fill the upper two thirds. "
+             "The camera stays wide and never zooms toward the face. " % namen[0],
              _m6_handlung(namen, _r5_regie(s, kanal)),
              M6_HINTERGRUND, " ", M6_VERBOTE]
     return "".join(t for t in teile if t).replace("  ", " ").strip()
