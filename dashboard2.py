@@ -2763,20 +2763,22 @@ def _r5_figuren(k, s=None):
 # Fehlt in der Szene eine Anweisung, wird eine gebaut - stehen und
 # reden ist keine Regie.
 
-M6_HINTERGRUND = ("The background never freezes: smoke and dust drift, the "
-                  "crowds and troops keep moving, flags, grass and cloth move "
-                  "in the wind, clouds slide across the sky.")
+M6_HINTERGRUND = ("Only the far background moves: smoke drifts, flags and "
+                  "grass move in the wind. The people in front do not.")
 
-M6_VERBOTE = ("They stay on the spot - no walking, no grabbing, no sitting "
+M6_VERBOTE = ("The camera is locked. No dolly, no push in, no pull back, "
+              "no orbit, no crane, no zoom. "
+              "From the first frame to the last, both people stay fully "
+              "inside the frame, chest up, faces large. The camera never "
+              "walks past them and never leaves them behind. "
+              "They stay on the spot - no walking, no grabbing, no sitting "
               "down, no pointing, no waving, no gesturing at the camera. "
               "Arms hang at their sides. "
               "Mouths stay closed for the whole shot: no talking, no lip "
-              "movement, no teeth, no open mouth, no smile that opens the "
-              "lips. Speech is added later and must not be animated here. "
+              "movement, no teeth, no open mouth. Speech is added later. "
               "Anyone already visible in @Image1 is a different person: "
-              "keep them in their place, at their own size, doing what they "
-              "were doing, and never turn them into an @Element person. "
-              "One single camera move for the whole shot. "
+              "keep them in their place and never turn them into an @Element "
+              "person. "
               "No text, no letters, no logos, no watermark.")
 
 
@@ -2801,18 +2803,27 @@ def _m6_wieviele(namen):
 def _m6_handlung(namen, regie):
     """Was die Figuren tun. Steht nichts in der Szene, wird es gebaut."""
     wer = _m4_liste(namen)
+    if regie:
+        saetze = []
+        for st in re.split(r"(?<=[.!?])\s+", regie.strip()):
+            if re.search(r"kamera|camera|dolly|zoom|fahrt", st, re.I):
+                continue
+            if st.strip():
+                saetze.append(st.strip())
+        regie = " ".join(saetze)
     hat_namen = any(n.lower() in (regie or "").lower() for n in namen)
     if regie and hat_namen:
         grund = regie.strip()
         if grund[-1] not in ".!?":
             grund += "."
-        return (grund + " Mouths stay closed, nobody talks, nobody points. ")
+        return (grund + " Mouths stay closed. The camera stays locked and "
+                "both people stay in frame the whole time. ")
     wenn_zwei = ("They stand still and look into the camera. Mouths closed, "
                  "no speech, no pointing. "
                  if len(namen) > 1
                  else "%s stands still, looks into the camera, mouth closed. " % wer)
     return (wenn_zwei + "Ignore any instruction to talk, to move the lips, "
-            "or to point. "
+            "to point, or to move the camera. "
             + ((regie.strip() + " ") if regie else ""))
 
 
