@@ -95,7 +95,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         return _test_paket(kanal)
 
     laenge = einstellungen.laenge_in_minuten(kanal)
-    anzahl_bilder = max(3, int(laenge * kanal["bilder_pro_minute"]))
+    anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
 
     prompt = f"""{lade_prompt(kanal)}
 
@@ -1058,11 +1058,14 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         gesamt = minuten * 60.0
         stufen = _t7_stufen(k)
         if stufen and gesamt > 0:
-            bisher = max(3, int(minuten * k.get("bilder_pro_minute", 6)))
-            je_bisher = gesamt / bisher
-            laenger = [x for x in stufen if x >= 10]
-            stufe = min(laenger) if laenger else max(stufen)
-            szenen = max(3, int(round(gesamt / stufe)))
+            bisher = max(1, int(round(minuten * k.get("bilder_pro_minute", 6))))
+            je_bisher = gesamt / max(1, bisher)
+            # 10 Sekunden je Szene. Nicht die nächste Riesenstufe
+            # nehmen, nur weil sie groesser als 10 ist.
+            nahe = [x for x in stufen if 6 <= x <= 12]
+            stufe = (min(nahe, key=lambda x: abs(x - 10)) if nahe
+                     else min(stufen, key=lambda x: abs(x - 10)))
+            szenen = max(1, int(round(gesamt / stufe)))
             # +0.4, weil der Bau die Szenenzahl mit int() abschneidet
             k["bilder_pro_minute"] = (szenen + 0.4) / max(0.01, minuten)
             # Etwas Reserve: die Stimme haelt sich nicht exakt an die
