@@ -1,4 +1,4 @@
-"""AiUniverse Dashboard 2 - Server und Schnittstellen. Port 8091."""
+"""AiUniverse-Lipsync Dashboard. Eigener Port, damit das alte Dashboard auf 8091 weiterlaeuft."""
 import json, mimetypes, os, re, shutil, subprocess, sys, time, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs, unquote
@@ -11,7 +11,7 @@ import abspann
 import darsteller
 import einstellungen, kanaele, vorlagen, themen
 
-PORT = 8091
+PORT = int(os.environ.get("PORT", "8092"))
 VIDEOS = os.path.join(BASIS, "fertige_videos")
 REGELN = os.path.join(BASIS, "regeln")
 HTML = os.path.join(BASIS, "dashboard2.html")

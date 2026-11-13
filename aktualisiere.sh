@@ -6,19 +6,25 @@
 #  startet das Dashboard neu. Das ist der einzige Befehl, den du nach
 #  einer Aenderung brauchst:
 #
-#      sh /root/aiuniverse/aktualisiere.sh
+#      sh /root/aiuniverse-lipsync/aktualisiere.sh
 #
-#  Deine Schluessel und Einstellungen in regeln/ und deine Bilder und
-#  Videos in eigene/ werden dabei NICHT angefasst. Die liegen gar nicht
+#  Das alte AiUniverse unter /root/aiuniverse wird nicht angefasst.
+#  Schluessel und Einstellungen in regeln/ und Bilder in eigene/
+#  dieser Kopie werden dabei NICHT angefasst. Die liegen gar nicht
 #  im Repo.
 # ===================================================================
-B=/root/aiuniverse
+B=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+DIENST=dashboard2-lipsync
 cd "$B" || { echo "ACHT  $B gibt es nicht."; exit 1; }
+if [ "$B" = "/root/aiuniverse" ]; then
+  echo "ACHT  Das ist das laufende AiUniverse. Diese Fassung gehoert nach /root/aiuniverse-lipsync."
+  exit 1
+fi
 
 laeuft() {
-  pgrep -f "aiuniverse/geschichte_lauf.py" >/dev/null 2>&1 && return 0
-  pgrep -f "aiuniverse/lauf.py" >/dev/null 2>&1 && return 0
-  pgrep -f "aiuniverse/erstelle_video.py" >/dev/null 2>&1 && return 0
+  pgrep -f "$B/geschichte_lauf.py" >/dev/null 2>&1 && return 0
+  pgrep -f "$B/lauf.py" >/dev/null 2>&1 && return 0
+  pgrep -f "$B/erstelle_video.py" >/dev/null 2>&1 && return 0
   return 1
 }
 if laeuft; then
@@ -59,7 +65,7 @@ if [ -n "$attrappen" ]; then
   echo "ACHT  In diesen Dateien stecken Testnachbauten statt echter Technik:"
   for z in $attrappen; do echo "      $z"; done
   echo "      Nichts uebernommen. Zurueck auf den vorherigen Stand mit:"
-  echo "      cd /root/aiuniverse && git reset --hard $alt && systemctl restart dashboard2"
+  echo "      cd $B && git reset --hard $alt && systemctl restart $DIENST"
   git reset --hard "$alt" --quiet
   exit 1
 fi
@@ -78,9 +84,10 @@ fi
 echo "OK    keine Attrappen"
 echo
 echo "--- Probe: laedt noch alles? ---"
-python3 - <<'PYENDE'
-import sys
-sys.path.insert(0, "/root/aiuniverse")
+python3 - <<PYENDE
+import os, sys
+os.environ.setdefault("B", "$B")
+sys.path.insert(0, os.environ["B"])
 fehlt = []
 for m in ["einstellungen", "schluessel", "szenen", "darsteller", "figuren",
           "geschichte", "bilder", "animation", "szenen_video", "text_generator",
@@ -99,15 +106,15 @@ PYENDE
 if [ $? -ne 0 ]; then
   echo
   echo "ACHT  Etwas stimmt nicht. Zurueck auf den vorherigen Stand mit:"
-  echo "      cd /root/aiuniverse && git reset --hard $alt && systemctl restart dashboard2"
+  echo "      cd $B && git reset --hard $alt && systemctl restart $DIENST"
   exit 1
 fi
 
 if laeuft; then
   echo "INFO  inzwischen laeuft etwas - Dashboard wird NICHT neu gestartet."
 else
-  systemctl restart dashboard2 2>/dev/null && echo "OK    Dashboard neu gestartet" \
-    || echo "INFO  bitte selbst neu starten: systemctl restart dashboard2"
+  systemctl restart "$DIENST" 2>/dev/null && echo "OK    Dashboard neu gestartet" \
+    || echo "INFO  bitte selbst neu starten: systemctl restart $DIENST"
 fi
 
 echo
@@ -115,4 +122,4 @@ echo "=========== FERTIG ==========="
 echo "Seite im Browser neu laden."
 echo
 echo "Falls doch etwas klemmt, zurueck auf vorher:"
-echo "  cd /root/aiuniverse && git reset --hard $alt && systemctl restart dashboard2"
+echo "  cd $B && git reset --hard $alt && systemctl restart $DIENST"

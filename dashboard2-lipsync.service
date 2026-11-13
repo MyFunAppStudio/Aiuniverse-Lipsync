@@ -1,0 +1,13 @@
+[Unit]
+Description=AiUniverse Lipsync Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/aiuniverse-lipsync
+ExecStart=/usr/bin/python3 /root/aiuniverse-lipsync/dashboard2.py
+Environment=PORT=8092
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

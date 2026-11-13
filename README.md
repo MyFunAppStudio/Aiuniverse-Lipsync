@@ -13,16 +13,24 @@ und Kamera bleiben vom Szenenclip.
 
 Wer im Text zuerst spricht, steht links. Der zweite rechts.
 
-Auf dem Server, einmal:
+Parallel zum laufenden AiUniverse, einmal. `/root/aiuniverse` und Dienst
+`dashboard2` bleiben, wie sie sind. Nicht `git remote set-url` im alten
+Ordner ausfuehren.
 
 ```sh
-cd /root/aiuniverse
-git remote set-url origin https://github.com/MyFunAppStudio/Aiuniverse-Lipsync.git
+git clone https://github.com/MyFunAppStudio/Aiuniverse-Lipsync.git /root/aiuniverse-lipsync
+cp -a /root/aiuniverse/regeln /root/aiuniverse-lipsync/regeln
+cp -a /root/aiuniverse/.env /root/aiuniverse-lipsync/.env
+cp -a /root/aiuniverse/eigene /root/aiuniverse-lipsync/eigene
 pip3 install opencv-python-headless
-sh /root/aiuniverse/aktualisiere.sh
+cp /root/aiuniverse-lipsync/dashboard2-lipsync.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now dashboard2-lipsync
 ```
 
-Schluessel und Bilder in `regeln/` und `eigene/` bleiben liegen.
+Dashboard der Kopie: Port **8092**. Das alte bleibt auf 8091.
+Danach nur noch `sh /root/aiuniverse-lipsync/aktualisiere.sh`.
+Das Skript bricht ab, wenn es versehentlich in `/root/aiuniverse` liegt.
 Der Slot "Lippen auf den Clip" darf leer bleiben: genommen wird dann
 sync-lipsync mit dem fal-Schluessel des Referenzclips. Wer lieber Kling
 Lip-Sync will, traegt dort `fal-ai/kling-video/lipsync/audio-to-video` ein.
@@ -32,15 +40,15 @@ Lip-Sync will, traegt dort `fal-ai/kling-video/lipsync/audio-to-video` ein.
 Automatische Videoproduktion auf eigenem Server. Erzeugt aus einem Thema
 Text, Szenenbilder, Clips, Stimme und ein fertiges Video im Hochformat.
 
-Laeuft auf einem Ubuntu-Server unter `/root/aiuniverse`, bedient wird es
-ueber ein Dashboard im Browser auf Port 8091.
+Die Kopie laeuft unter `/root/aiuniverse-lipsync` auf Port 8092.
+Das alte Programm bleibt unter `/root/aiuniverse` auf Port 8091.
 
 ## Aktualisieren
 
-Auf dem Server:
+Nur die Kopie:
 
 ```sh
-sh /root/aiuniverse/aktualisiere.sh
+sh /root/aiuniverse-lipsync/aktualisiere.sh
 ```
 
 Holt die neueste Fassung, prueft sie und startet das Dashboard neu.
