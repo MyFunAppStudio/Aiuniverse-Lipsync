@@ -812,11 +812,23 @@ def fuer_anzeige(kanal):
 # ---------- Nachtrag r10: alle Szenen auf einmal weg ----------
 
 def r10_alle_weg(kanal):
-    """Leert die Szenenliste. Die Dateien bleiben im Ordner liegen."""
+    """Leert die Szenen und loescht ihre Bilder und Clips.
+
+    Vorher blieben die Dateien im Ordner. Die Szene mit dem bezahlten
+    Clip stand nach dem naechsten Schreiben wieder da.
+    """
     d = laden(kanal)
+    namen = []
+    for s in d.get("szenen") or []:
+        for feld in ("datei", "clip"):
+            if s.get(feld):
+                namen.append(s.get(feld))
+        namen.extend(s.get("bild_alt") or [])
+        namen.extend(s.get("clip_alt") or [])
     n = len(d.get("szenen") or [])
     d["szenen"] = []
     speichern(kanal, d)
+    _r6_aufraeumen(kanal, namen)
     return {"ok": True, "weg": n}
 
 

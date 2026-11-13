@@ -2834,6 +2834,7 @@ function textSchreibenLos(){
     d.geschichte_text=r.text;
     var f=el("gstext"); if(f)f.value=d.geschichte_text;
     setzViele(d).then(function(){
+      if(typeof ladeSzenen==="function")ladeSzenen();
       melde((r.titel?r.titel+" · ":"")+r.szenen+" Szenen geschrieben. Lies drüber, dann erzeugen.");
     });
   }).catch(function(){
