@@ -526,28 +526,42 @@ def erzeuge_referenz(kanal, hintergrund, figuren, prompt, sekunden, ziel,
     seite = format_seite or "9:16"
 
     start, letzter_fehler = None, ""
+    # Kling macht sonst selbst eine Stimme und bewegt den Mund dazu.
+    # Erst mit ausgeschaltetem Ton und verbotenem Mund, dann ohne diese
+    # Felder, falls das Modell sie nicht kennt.
     for als_text in (True, False):
-        koerper = ref_koerper(hintergrund, figuren, prompt, sekunden, seite,
-                              dauer_als_text=als_text)
-        try:
-            start = _hole(basis, key, koerper, zeit=180)
-            break
-        except urllib.error.HTTPError as f:
-            roh = ""
+        for ton_aus in (True, False):
+            koerper = ref_koerper(hintergrund, figuren, prompt, sekunden, seite,
+                                  dauer_als_text=als_text)
+            if ton_aus:
+                koerper["generate_audio"] = False
+                koerper["negative_prompt"] = (
+                    "talking, speaking, moving lips, open mouth, singing, "
+                    "chewing, teeth, morphing face, distorted hands")
+                koerper["cfg_scale"] = 0.7
             try:
-                roh = f.read().decode("utf-8", "replace")[:300]
-            except Exception:
-                pass
-            letzter_fehler = "%s %s" % (f.code, roh)
-            if f.code == 422 and als_text:
-                # Manche Modelle wollen die Dauer als Zahl statt als Text
-                sag("Dauer als Text abgelehnt, versuche es als Zahl")
-                continue
-            sag("Abgelehnt (%s). %s" % (f.code, roh[:200]))
-            return None
-        except Exception as f:
-            sag("Keine Verbindung: %s" % f)
-            return None
+                start = _hole(basis, key, koerper, zeit=180)
+                break
+            except urllib.error.HTTPError as f:
+                roh = ""
+                try:
+                    roh = f.read().decode("utf-8", "replace")[:300]
+                except Exception:
+                    pass
+                letzter_fehler = "%s %s" % (f.code, roh)
+                if f.code == 422 and ton_aus:
+                    sag("Ton aus abgelehnt, nochmal ohne diesen Schalter")
+                    continue
+                if f.code == 422 and als_text:
+                    sag("Dauer als Text abgelehnt, versuche es als Zahl")
+                    break
+                sag("Abgelehnt (%s). %s" % (f.code, roh[:200]))
+                return None
+            except Exception as f:
+                sag("Keine Verbindung: %s" % f)
+                return None
+        if start is not None:
+            break
     if start is None:
         sag("Abgelehnt: %s" % letzter_fehler[:200])
         return None
