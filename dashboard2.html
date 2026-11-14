@@ -1269,7 +1269,7 @@ function schluesselSpeichern(slot){
 /* ---------- Modelle (Patch M1) ---------- */
 var SLOTNAME={ref:"Clips mit Avataren",text:"Drehbuch",bilder:"Bilder",stimme:"Stimme",video:"Bild bewegen",musik:"Musik",sound:"Geräusche",avatar:"Avatar (einer spricht)",multi:"Zwei Sprechende",lippen:"Lippen auf den Clip"}
 /* Was das Modell TUT, nicht wie es heisst. */
-var SLOTWOZU={ref:"baut aus Bild und Figuren den Clip. Die Münder setzt danach ein eigener Schritt.",text:"schreibt Text, Titel und Beschreibungen",bilder:"malt das Bild zu jeder Szene",stimme:"spricht den Text",video:"animiert ein Bild ohne Figuren",musik:"nur wenn du kein eigenes Lied hochlädst",sound:"Geräusche",avatar:"altes Lippensync aus einem Standbild, eine Person",multi:"altes Lippensync aus einem Standbild, zwei Personen",lippen:"setzt die Münder auf den fertigen Kling- oder MiniMax-Clip. Leer lassen geht: dann wird fal-ai/sync-lipsync/v2 mit dem fal-Schlüssel genommen."};
+var SLOTWOZU={ref:"baut aus Bild, Avatar und Satz den Clip. Bei einer x.ai-Adresse spricht das Modell selbst.",text:"schreibt Text, Titel und Beschreibungen",bilder:"malt das Bild zu jeder Szene",stimme:"spricht den Text",video:"animiert ein Bild ohne Figuren",musik:"nur wenn du kein eigenes Lied hochlädst",sound:"Geräusche",avatar:"altes Lippensync aus einem Standbild, eine Person",multi:"altes Lippensync aus einem Standbild, zwei Personen",lippen:"setzt die Münder auf den fertigen Kling- oder MiniMax-Clip. Leer lassen geht: dann wird fal-ai/sync-lipsync/v2 mit dem fal-Schlüssel genommen."};
 var EINHEIT={ref:"je Sekunde",text:"je Video",bilder:"je Bild",stimme:"je Sekunde",video:"je Sekunde",musik:"je Stueck",sound:"je Stueck",avatar:"je Sekunde",multi:"je Sekunde",lippen:"je Sekunde"};
 var BEISPIEL={text:"0.02",bilder:"0.04",stimme:"0.008",video:"0.09",musik:"0.01",sound:"0.01",avatar:"0.05",multi:"0.05",lippen:"0.05"};
 var ADRESSE={bilder:"fal-ai/flux-pro/v1.1",
@@ -1285,12 +1285,9 @@ function ladeModelle(){return api("/api/modelle?k="+S.kanal).then(function(m){S.
 function refAnleitung(wieviele){
   if(wieviele)return '';
   return '<div class="hinw" style="padding:0;margin:0 0 10px">'
-   +'<b>Noch nichts eingetragen.</b> Tipp unten auf <b>+ Eigenes Modell</b> und trag ein:<br><br>'
-   +'Name <b>Kling Referenz</b><br>'
-   +'Adresse <b>fal-ai/kling-video/o3/standard/reference-to-video</b><br>'
-   +'Preis <b>0.112</b> je Sekunde<br>'
-   +'Schlüssel leer lassen — der von fal.ai wird mitbenutzt.<br><br>'
-   +'Ohne das bleibt der Knopf <b>Clip</b> bei jeder Szene grau.</div>';
+   +'<b>Noch nichts eingetragen.</b> Tipp unten auf <b>+ Eigenes Modell</b>.<br>'
+   +'Name, Adresse und Preis <b>0,08</b> je Sekunde stehen schon drin. '
+   +'Nur den xAI-Schlüssel einfügen und speichern.</div>';
 }
 
 /* Eine Zeile, die auf einen Blick zeigt, was eingerichtet ist und was fehlt. */
@@ -1390,7 +1387,11 @@ function modellFormular(titel,s,i,e){
    +'<div class="zw"><button class="knopf" onclick="zu()">Abbrechen</button>'
    +'<button class="knopf or" onclick="modellSpeichern(\''+s+'\','+i+')">Speichern</button></div></div></div>';
 }
-function modellNeu(s){modellFormular("Eigenes Modell",s,-1,{})}
+function modellNeu(s){
+  var e={};
+  if(s==="ref")e={name:"Grok Video",url:"https://api.x.ai/v1/videos/generations",preis:"0.08"};
+  modellFormular("Eigenes Modell",s,-1,e);
+}
 function modellBearbeiten(s,i){modellFormular("Modell ändern",s,i,((S.modelle.apis||{})[s]||[])[i])}
 function modellSpeichern(s,i){
   var d={slot:s,aktion:(i<0?"neu":"speichern"),i:i,

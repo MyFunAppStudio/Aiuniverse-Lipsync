@@ -410,10 +410,13 @@ def ref_bereit(kanal):
 
 def ref_preis(kanal, sekunden=5.0):
     e = ref_slot(kanal) or {}
+    roh = str(e.get("preis") if e.get("preis") is not None else "").strip().replace(",", ".")
     try:
-        je_sek = float(str(e.get("preis")).replace(",", "."))
+        je_sek = float(roh) if roh else None
     except Exception:
-        je_sek = 0.112
+        je_sek = None
+    if je_sek is None:
+        je_sek = 0.08 if grok_ist(e.get("url")) else 0.112
     return round(max(0.0, je_sek) * max(1.0, float(sekunden)), 4)
 
 
@@ -1288,7 +1291,7 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         "reference_images": [{"url": _daten_uri(p)} for p in bilder[:2]],
         "duration": dauer,
         "aspect_ratio": format_seite or "9:16",
-        "resolution": "720p",
+        "resolution": "480p",
         "generate_audio": True,
     }
     sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:2]))
