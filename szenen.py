@@ -441,18 +441,34 @@ def r3_szene(kanal, sid):
     return d["szenen"][i] if i >= 0 else None
 
 
-def r3_clip_dauer(s):
-    """Wie lang der Clip werden soll. Kling nimmt 5 oder 10, nicht 9."""
+def r3_clip_dauer(s, frei=False):
+    """Wie lang der Clip werden soll.
+
+    Kling bleibt bei 5 oder 10. Grok nimmt jede ganze Sekunde von 4 bis 15,
+    die an der Szene steht. 0 heisst: so lang wie der Satz.
+    """
     try:
         w = float(s.get("sekunden") or 0)
     except Exception:
         w = 0.0
     if w <= 0:
         w = float(geschaetzte_sekunden(s.get("text", "")))
-    # 9 schneidet den letzten Satz ab. Alles ueber 5 wird die lange Stufe.
+    if frei:
+        return int(max(4, min(15, round(w))))
     if w > 5:
         return 10
     return 5
+
+
+def _r3_grok(kanal):
+    """Ob dieser Kanal die Clips bei Grok bestellt."""
+    try:
+        import animation
+        import einstellungen
+        d = dict(einstellungen.laden().get(kanal) or {})
+        return animation.grok_ist((animation.ref_slot(d) or {}).get("url"))
+    except Exception:
+        return False
 
 
 def fuer_anzeige(kanal):
@@ -464,7 +480,7 @@ def fuer_anzeige(kanal):
         s["clip"] = q.get("clip", "")
         s["clip_stand"] = q.get("clip_stand", "")
         s["clip_text"] = q.get("clip_text", "")
-        s["clip_dauer"] = r3_clip_dauer(q) if q else 5
+        s["clip_dauer"] = r3_clip_dauer(q, _r3_grok(kanal)) if q else 5
     return d
 
 

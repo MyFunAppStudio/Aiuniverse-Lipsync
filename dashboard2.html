@@ -1609,13 +1609,29 @@ function szeneZurueck(sid,welche,datei){
     });
 }
 
+function clipSek(id,n){
+  if(n<4)n=4;
+  if(n>15)n=15;
+  szeneSetz(id,"sekunden",n);
+}
+function clipLaenge(s){
+  var url=((R6.stand||{}).ref_url||"");
+  if(url.indexOf("api.x.ai")<0&&url.indexOf("grok-imagine")<0)return "";
+  var n=s.clip_dauer||10;
+  return '<div class="szz" style="margin-bottom:6px"><span class="szh">Cliplänge</span>'
+   +'<div class="stufen">'
+   +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n-1)+')">&minus;</button>'
+   +'<span class="stufwert">'+n+'<i>s</i></span>'
+   +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n+1)+')">+</button>'
+   +'</div></div>';
+}
 function clipZeile(s){
   var st=clipStand(s.id)||{}, clip=st.clip||s.clip||"", stand=st.stand||s.clip_stand||"";
   var txt=st.text||s.clip_text||"", hier=clipLaeuftHier(s.id);
   var laeuft=(R6.stand||{}).laeuft;
   /* Die Regie steht oben im Feld "Animationsanweisung". Frueher stand
      sie hier ein zweites Mal - zwei Felder fuer denselben Wert. */
-  var o='';
+  var o=clipLaenge(s);
   if(s.clip_veraltet)
     o+='<div class="szz" style="display:block;color:#FFB454"><b>Der Clip ist noch vom alten Bild.</b>'
      +'<div class="szh">Du hast das Bild danach ausgetauscht. Erzeuge den Clip neu, '

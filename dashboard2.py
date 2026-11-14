@@ -1715,7 +1715,8 @@ def _r5_einen(k, sid):
     if not figuren and not hintergrund:
         return False, "Diese Szene hat weder Hintergrundbild noch Besetzung"
 
-    dauer = szenen.r3_clip_dauer(s)
+    grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
+    dauer = szenen.r3_clip_dauer(s, grok)
     prompt = _r5_prompt(k, kanal, s)
     ziel = os.path.join(szenen.ordner(k),
                         "clip_%s_%s.mp4" % (re.sub(r"[^A-Za-z0-9]+", "", str(sid))[:12],
@@ -1897,7 +1898,8 @@ def r5_clip_stand(k):
     bereit, grund = animation.ref_bereit(kanal)
     dsok, dsgrund = darsteller.bereit(k)
     offen = [s for s in d["szenen"] if _r6_offen(s)]
-    sek = sum(szenen.r3_clip_dauer(s) for s in offen)
+    frei = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
+    sek = sum(szenen.r3_clip_dauer(s, frei) for s in offen)
     return {"laeuft": laeuft, "lauf": e, "szenen": szn,
             "bereit": bool(bereit and dsok),
             "grund": grund if not bereit else ("" if dsok else dsgrund),
@@ -2953,7 +2955,9 @@ def r5_clip_stand(k):
         # Zeichnen der Seite.
         gemerkt = animation.m9_laden().get((e.get("url") or "").strip().lower())
         laengen = animation.m9_zahlen(gemerkt or {})
-        if laengen:
+        if animation.grok_ist(e.get("url")):
+            raus["stufen"] = []
+        elif laengen:
             raus["stufen"] = laengen
         elif animation.m7_ist_h3(e.get("url")):
             raus["stufen"] = list(getattr(animation, "M7_STUFEN", []) or [])
@@ -3006,7 +3010,9 @@ def preis_szenen(key, d):
                 continue                      # fertig und schon bezahlt
             if (s.get("modus") or "") not in ("avatare", "bild_ki"):
                 continue                      # Standbild kostet nichts
-            dauer = _m11_stufe(werte, szenen.r3_clip_dauer(s))
+            frei = animation.grok_ist(e.get("url"))
+            dauer = (szenen.r3_clip_dauer(s, True) if frei
+                     else _m11_stufe(werte, szenen.r3_clip_dauer(s)))
             offen += 1
             sekunden += dauer
             summe += dauer * je_sek
