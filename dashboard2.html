@@ -1623,7 +1623,11 @@ function clipLaenge(s){
    +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n-1)+')">&minus;</button>'
    +'<span class="stufwert">'+n+'<i>s</i></span>'
    +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n+1)+')">+</button>'
-   +'</div></div>';
+   +'</div></div>'
+   +'<label class="hak"><input type="checkbox"'+(s.fest?" checked":"")
+   +' onchange="szeneSetz(\''+s.id+'\',\'fest\',this.checked)">Produktbild bleibt liegen</label>'
+   +'<div class="szh" style="margin:2px 0 8px">Nur der Avatar wird animiert und darübergelegt. '
+   +'Das hochgeladene Bild wird nicht neu gemalt. Es muss hochkant sein, 9:16.</div>';
 }
 function clipZeile(s){
   var st=clipStand(s.id)||{}, clip=st.clip||s.clip||"", stand=st.stand||s.clip_stand||"";

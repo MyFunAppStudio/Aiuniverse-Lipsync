@@ -1236,7 +1236,7 @@ def grok_ist(url):
 
 
 def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
-                 format_seite="9:16", melden=None):
+                 format_seite="9:16", melden=None, fest=False):
     """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
 
     So ist der Clip entstanden, der auf Deutsch gesprochen und den Mund
@@ -1263,7 +1263,11 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 break
         if bilder:
             break
-    if hintergrund and os.path.exists(hintergrund):
+    if fest:
+        if not bilder:
+            sag("Kein Avatar. Fuer ein festes Produktbild muss einer angehakt sein.")
+            return None
+    elif hintergrund and os.path.exists(hintergrund):
         bilder.append(hintergrund)
     if not bilder:
         sag("Weder Avatar noch Szenenbild")
@@ -1276,15 +1280,29 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         dauer = int(max(4, min(15, round(float(sekunden or 10)))))
     except Exception:
         dauer = 10
-    wer = "die Person aus <IMAGE_0>"
-    szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
-    prompt = (
-        "%s steht links in %s auf einem Stein, ganz zu sehen, Gesicht zur "
-        "Kamera. Der Hintergrund bleibt in Bewegung. Die Person sagt mit einer "
-        "angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
-        "Der Mund bewegt sich zu den Woertern und ist danach zu. "
-        "Keine Untertitel, keine Schrift."
-        % (wer, szene, spruch.replace('"', "'")))
+    if fest:
+        # Nur die Person, auf einer Farbe, die sich danach ausstanzen laesst.
+        # Das Produktbild geht hier nicht mit, sonst malt Grok es neu.
+        bilder = bilder[:1]
+        prompt = (
+            "<IMAGE_0> ist die Person. Nur diese eine Person, sonst nichts im Bild. "
+            "Sie steht mittig, ganz zu sehen, von Kopf bis Schuh, Gesicht zur Kamera. "
+            "Der gesamte Hintergrund ist eine vollkommen flache Farbe Magenta, "
+            "ohne Boden, ohne Schatten, ohne Verlauf und ohne Gegenstand. "
+            "Die Person sagt mit einer angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
+            "Der Mund bewegt sich zu den Woertern und ist danach zu. "
+            "Keine Untertitel, keine Schrift."
+            % spruch.replace('"', "'"))
+    else:
+        wer = "die Person aus <IMAGE_0>"
+        szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
+        prompt = (
+            "%s steht links in %s auf einem Stein, ganz zu sehen, Gesicht zur "
+            "Kamera. Der Hintergrund bleibt in Bewegung. Die Person sagt mit einer "
+            "angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
+            "Der Mund bewegt sich zu den Woertern und ist danach zu. "
+            "Keine Untertitel, keine Schrift."
+            % (wer, szene, spruch.replace('"', "'")))
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,
@@ -1358,3 +1376,53 @@ def _grok_video(antwort):
     if isinstance(v, str):
         return v
     return antwort.get("url") or ""
+
+
+def fest_legen(clip, hintergrund, ziel=None):
+    """Legt den Avatar auf das unveraenderte Bild.
+
+    Grok liefert die Person auf flachem Magenta. Diese Farbe wird
+    ausgestanzt, die Person kleiner unten links auf das Produktbild
+    gesetzt. Der Ton der Person bleibt. Das Produktbild wird nicht
+    neu gemalt.
+    """
+    import subprocess
+    ziel = ziel or clip
+    if not clip or not os.path.exists(clip):
+        return False
+    if not hintergrund or not os.path.exists(hintergrund):
+        return False
+    roh = clip + ".fest-roh.mp4"
+    try:
+        if os.path.abspath(clip) == os.path.abspath(ziel):
+            os.replace(clip, roh)
+            quelle = roh
+        else:
+            quelle = clip
+        # Person etwa halb so hoch wie das Bild, unten links, damit das
+        # Produkt in der Mitte frei bleibt.
+        filt = (
+            "[0:v][1:v]scale2ref[bg][fg];"
+            "[fg]format=rgba,colorkey=0xFF00FF:0.30:0.08,scale=iw*0.46:-1[person];"
+            "[bg][person]overlay=x=W*0.06:y=H-h-H*0.04:format=auto,format=yuv420p[v]"
+        )
+        r = subprocess.run(
+            ["ffmpeg", "-y", "-loglevel", "error",
+             "-loop", "1", "-i", hintergrund, "-i", quelle,
+             "-filter_complex", filt,
+             "-map", "[v]", "-map", "1:a?",
+             "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+             "-c:a", "aac", "-b:a", "160k", ziel],
+            capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(ziel) or os.path.getsize(ziel) < 1000:
+            print("[Grok] Festlegen gescheitert:", (r.stderr or "")[-300:])
+            if os.path.exists(roh):
+                os.replace(roh, clip)
+            return False
+        return True
+    finally:
+        if os.path.exists(roh):
+            try:
+                os.remove(roh)
+            except Exception:
+                pass

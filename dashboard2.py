@@ -1739,10 +1739,24 @@ def _r5_einen(k, sid):
                 _R5_LAEUFT[k]["text"] = t
 
     szenen.r3_stand_setzen(k, sid, "laeuft", "wird geschickt")
-    if animation.grok_ist((animation.ref_slot(kanal) or {}).get("url")):
+    grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
+    if grok and s.get("fest") and not hintergrund:
+        szenen.r3_stand_setzen(k, sid, "fehler", "Produktbild fehlt")
+        return False, "Produktbild fehlt"
+    if grok:
         pfad = animation.erzeuge_grok(
             kanal, hintergrund, figuren, _r5_spruch(s), dauer, ziel,
-            kanal.get("format") or "9:16", melden)
+            kanal.get("format") or "9:16", melden, fest=bool(s.get("fest")))
+        if pfad and s.get("fest"):
+            if not hintergrund:
+                szenen.r3_stand_setzen(k, sid, "fehler", "Produktbild fehlt")
+                return False, "Produktbild fehlt"
+            melden("Avatar wird auf das Bild gelegt")
+            if not animation.fest_legen(ziel, hintergrund):
+                szenen.r3_stand_setzen(
+                    k, sid, "fehler",
+                    "Der Avatar liess sich nicht auf das Bild legen")
+                return False, "Festlegen gescheitert"
     else:
         pfad = animation.erzeuge_referenz(kanal, hintergrund, figuren, prompt,
                                           dauer, ziel,

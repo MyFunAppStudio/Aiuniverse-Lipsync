@@ -208,6 +208,8 @@ def aendern(kanal, sid, feld, wert):
             d["szenen"][i]["sekunden"] = max(0.0, min(120.0, float(str(wert).replace(",", "."))))
         except Exception:
             d["szenen"][i]["sekunden"] = 0
+    elif feld == "fest":
+        d["szenen"][i]["fest"] = wert is True or str(wert).strip().lower() in ("1", "true", "ja", "on")
     else:
         return {"ok": False, "fehler": "Feld unbekannt"}
     speichern(kanal, d)
@@ -744,6 +746,7 @@ def fuer_anzeige(kanal):
         s["clip_alt"] = q.get("clip_alt", [])
         s["clip_veraltet"] = bool(q.get("clip_veraltet"))
         s["eigener_clip"] = bool(q.get("eigener_clip"))
+        s["fest"] = bool(q.get("fest"))
         s["braucht_clip"] = r6_braucht_clip(q) if q else False
     d["modi"] = [list(x) for x in R6_MODI]
     d["sprichtarten"] = [list(x) for x in R6_SPRICHT]
