@@ -1327,7 +1327,7 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             if p and os.path.exists(p):
                 personen.append((f, p))
                 break
-        if len(personen) >= 3:
+        if len(personen) >= 4:
             break
     bilder = [p for _f, p in personen]
     if fest:
@@ -1372,13 +1372,14 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             teile.append("<IMAGE_%d> ist die Szene hinter ihnen." % len(personen))
         if len(personen) == 2:
             teile.append(
-                "Beide stehen nebeneinander in der Mitte, ganz zu sehen, "
-                "Gesicht zur Kamera. Sie sind die Hauptsache, die Szene bleibt dahinter.")
+                "Beide stehen nebeneinander in der Mitte, ganz zu sehen. "
+                "Sie sind die Hauptsache, die Szene bleibt dahinter.")
         else:
             teile.append(
-                "Alle drei stehen nebeneinander in der Mitte, ganz zu sehen, "
-                "Gesicht zur Kamera. Sie sind die Hauptsache, die Szene bleibt dahinter.")
-        teile.append("Sie gehen nicht weg und drehen sich nicht um.")
+                "Alle %d stehen nebeneinander in der Mitte, ganz zu sehen. "
+                "Sie sind die Hauptsache, die Szene bleibt dahinter."
+                % len(personen))
+        teile.append("Sie bleiben in der Gruppe und laufen nicht aus dem Bild.")
         for name, zeile in _grok_dialog(spruch, personen):
             figur = None
             for f, _p in personen:
@@ -1389,8 +1390,8 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
                 % (name or "Die Person", _grok_stimme(figur), zeile))
         teile.append(
-            "Immer nur der Mund dessen, der gerade spricht. "
-            "Wer zuhoert, haelt den Mund zu. "
+            "Es spricht immer nur einer. Die anderen lachen, schauen hin "
+            "oder zeigen auf ihn, reden aber nicht mit. "
             "Keine Untertitel, keine Schrift.")
         prompt = " ".join(teile)
     else:

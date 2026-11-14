@@ -38,7 +38,7 @@ EIGENE = os.path.join(BASIS, "eigene")
 BILD_ARTEN = (".jpg", ".jpeg", ".png", ".webp")
 BILDER_MAX = 4          # je Avatar, das Modell nimmt nicht mehr
 KANTE_MAX = 1024        # laengste Kante, damit die Anfrage klein bleibt
-BESETZUNG_MAX = 3       # gleichzeitig im Bild; vier Referenzen minus Hintergrund
+BESETZUNG_MAX = 4       # gleichzeitig im Bild; Grok nimmt deutlich mehr Referenzen
 
 ALTE_PLAETZE = ["a", "b"]   # nur noch zum Umziehen ganz alter Dateien
 
@@ -427,8 +427,7 @@ def dabei_setzen(kanal, did, an):
                 "%s hat noch kein Bild. Lad erst eins hoch." % f["name"]}
     if len(d["besetzung"]) >= BESETZUNG_MAX:
         return {"ok": False, "fehler":
-                "Hoechstens %d Avatare gleichzeitig - das Videomodell nimmt "
-                "mit dem Hintergrundbild nur vier Referenzen." % BESETZUNG_MAX}
+                "Hoechstens %d Avatare gleichzeitig im Bild." % BESETZUNG_MAX}
     d["besetzung"].append(f["id"])
     speichern(kanal, d)
     return {"ok": True}
