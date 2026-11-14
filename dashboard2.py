@@ -2879,6 +2879,10 @@ def _r5_prompt(k, kanal, s):
     if vorspann and not vorspann.endswith(" "):
         vorspann += " "
     teile = [vorspann,
+             "Do not read any text. Do not speak. Do not lipsync. "
+             "The mouth stays closed for the whole shot: no lip movement, "
+             "no teeth, no open mouth. Dialogue is spoken later by another "
+             "model. You only move the hands and the background. ",
              _m6_wieviele(namen),
              "Both people stand a few steps further back, fully visible from "
              "head to boots, side by side. The landscape is the larger part "

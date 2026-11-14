@@ -376,16 +376,18 @@ def auswahl(plan, anteil):
 # ---------- Nachtrag r4: Referenzmodus ----------
 
 R4_SLOT = "ref"
-R4_STILL = ("The people stay in the foreground and hold their position while "
-            "they explain; they do not walk around. One single camera move "
-            "for the whole shot. No text, no letters, no logos, no watermark.")
+R4_STILL = ("Do not read any text and do not speak. The mouth stays closed. "
+            "No lipsync. The people hold their position. "
+            "No text, no letters, no logos, no watermark.")
 
 # Kommt nur an den Clip, wenn in der Szene jemand mit Namen redet.
 # Die Lippen setzt danach lippen.py. Bis dahin bleiben die Muender zu,
 # sonst kaempft der eingesetzte Mund mit einem schon geoeffneten.
-LIPPEN_STILL = ("Mouths stay closed and relaxed for the whole shot. "
+LIPPEN_STILL = ("Do not read the scene and do not lipsync. "
+                "Mouths stay closed and relaxed for the whole shot. "
                 "Nobody speaks. No lip movement, no talking, no open mouths, "
-                "no teeth. Dialogue is added afterwards.")
+                "no teeth. The spoken sentence is not part of this job. "
+                "Dialogue is added afterwards by another model.")
 
 
 def ref_slot(kanal):
