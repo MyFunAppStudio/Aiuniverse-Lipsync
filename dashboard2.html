@@ -1609,33 +1609,65 @@ function szeneZurueck(sid,welche,datei){
     });
 }
 
-function satzSekunden(text){
+function satzTempo(){
+  var t=Number((S.einst||{}).woerter_pro_sekunde);
+  return (t&&t>=1)?t:2.5;
+}
+function satzPuffer(){
+  var n=(S.einst||{}).nachlauf;
+  if(n===undefined||n===null||n==="")return 0.9;
+  n=Number(n);
+  if(isNaN(n))return 0.9;
+  return Math.max(0,Math.min(5,n));
+}
+function wortzahl(text){
   var t=String(text||"").replace(/\[[^\]]*\]/g," ");
-  var w=t.trim()?t.trim().split(/\s+/).length:0;
-  if(!w)return 0;
-  return Math.round((w/2.6+0.6)*10)/10;
+  var auf=t.indexOf("[");
+  if(auf>=0)t=t.slice(0,auf);
+  t=t.trim();
+  return t?t.split(/\s+/).length:0;
+}
+function clipBedarf(text){
+  var w=wortzahl(text), rate=satzTempo(), puff=satzPuffer();
+  var spricht=w?w/rate:0;
+  var gesamt=spricht+puff;
+  var passt=w>0&&gesamt<=15.05;
+  var dauer=passt?Math.max(4,Math.min(15,Math.ceil(gesamt-1e-9))):0;
+  return {woerter:w,spricht:Math.round(spricht*10)/10,puffer:puff,
+          gesamt:Math.round(gesamt*10)/10,passt:passt,dauer:dauer};
 }
 function satzHinweis(text){
-  var sek=satzSekunden(text);
-  if(!sek)return "Noch kein Satz.";
-  var w=String(text||"").replace(/\[[^\]]*\]/g," ").trim().split(/\s+/).length;
-  var zahl=String(sek).replace(".",",");
-  if(sek>15)return w+" Wörter, etwa "+zahl+" Sekunden. Für den Avatar zu lang. Der Clip wird auf 15 Sekunden gekürzt.";
-  var best=Math.max(4,Math.min(15,Math.round(sek)));
-  return w+" Wörter, etwa "+zahl+" Sekunden. Der Clip wird "+best+" Sekunden.";
+  var b=clipBedarf(text);
+  if(!b.woerter)return "Noch kein Satz.";
+  var zahl=function(x){return String(x).replace(".",",")};
+  if(!b.passt)return b.woerter+" Wörter, etwa "+zahl(b.spricht)+" s plus "
+    +zahl(b.puffer)+" s Puffer. Das sind "+zahl(b.gesamt)+" s und damit zu lang. "
+    +"Erzeugen ist gesperrt. Kürze den Text oder hänge einen zweiten Clip an.";
+  return b.woerter+" Wörter, etwa "+zahl(b.spricht)+" s, plus "+zahl(b.puffer)
+    +" s Puffer. Der Clip wird "+b.dauer+" Sekunden.";
 }
 function satzZeigen(ta){
   var z=ta.parentNode&&ta.parentNode.querySelector(".satzzeit");
   if(z)z.textContent=satzHinweis(ta.value);
 }
-function clipSoll(s){
+function istGrok(){
   var url=((R6.stand||{}).ref_url||"");
-  var grok=url.indexOf("api.x.ai")>=0||url.indexOf("grok-imagine")>=0;
-  if(grok&&!s.laenge_fest){
-    var sek=satzSekunden(s.text||"");
-    if(sek)return Math.max(4,Math.min(15,Math.round(sek)));
+  return url.indexOf("api.x.ai")>=0||url.indexOf("grok-imagine")>=0;
+}
+function clipSoll(s){
+  if(istGrok()&&!s.laenge_fest){
+    var b=clipBedarf(s.text||"");
+    if(b.passt)return b.dauer;
+    return 0;
   }
   return s.clip_dauer||10;
+}
+function clipZuLang(s){
+  if(!istGrok())return false;
+  var b=clipBedarf(s.text||"");
+  if(!b.passt)return true;
+  if(s.laenge_fest&&Number(s.sekunden)+0.05<b.gesamt)return true;
+  return false;
 }
 function clipSek(id,n){
   if(n<4)n=4;
@@ -1685,7 +1717,7 @@ function clipZeile(s){
      +'<video src="/eigen/'+encodeURIComponent(clip)+'?k='+S.kanal+'" controls playsinline muted '
      +'style="width:100%;max-height:300px;border-radius:9px;background:#000;display:block"></video>'
      +'<div style="display:flex;gap:7px;margin-top:7px">'
-     +'<button class="knopf" style="flex:1"'+(laeuft?' disabled':'')
+     +'<button class="knopf" style="flex:1"'+((laeuft||clipZuLang(s))?' disabled':'')
      +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',true)">Clip neu machen</button>'
      +'<button class="knopf" onclick="clipWeg(\''+s.id+'\')">Verwerfen</button>'
      +'</div>'
@@ -1697,9 +1729,11 @@ function clipZeile(s){
     return o;
   }
   o+='<div class="szz p62" style="display:block">'
-   +'<button class="knopf" style="width:100%"'+(laeuft?' disabled':'')
+   +(clipZuLang(s)?'<div class="szh" style="margin-bottom:6px;color:#FFB454">Erzeugen ist gesperrt. '
+     +'Der Satz plus Puffer passt nicht in 15 Sekunden. Kürze den Text oder teile ihn auf.</div>':'')
+   +'<button class="knopf" style="width:100%"'+((laeuft||clipZuLang(s))?' disabled':'')
    +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',false)">Clip erzeugen'
-   +(clipSoll(s)?(' · '+clipSoll(s)+' s'):'')+'</button>';
+   +(clipZuLang(s)?'':(clipSoll(s)?(' · '+clipSoll(s)+' s'):''))+'</button>';
   if(stand==="fehler"&&txt)
     o+='<div class="szh" style="margin-top:5px;color:#FFB454">'+h(txt)+'</div>';
   o+='</div>';

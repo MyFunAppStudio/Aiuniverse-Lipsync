@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Eigene Szenen je Kanal: Bilder, Clips, Texte, eigenes Lied."""
-import json, os, re, time
+import json, os, re, time, math
 
 BASIS = os.path.dirname(os.path.abspath(__file__))
 REGELN = os.path.join(BASIS, "regeln")
@@ -319,6 +319,39 @@ def _p50_ohne_regie(text):
 
 def geschaetzte_sekunden(text):
     return _p50_sek_alt(_p50_ohne_regie(text))
+
+
+def wortzahl(text):
+    """Gesprochene Wörter. Klammern fürs Bild zählen nicht mit."""
+    return len([w for w in re.split(r"\s+", (_p50_ohne_regie(text) or "").strip()) if w])
+
+
+def clip_bedarf(text, tempo=2.5, puffer=0.9, grenze=15):
+    """Ob der Satz samt Puffer in einen Grok-Clip passt.
+
+    Die Wörter sind gezählt. Die Sekunden sind eine Schätzung aus dem
+    Sprechtempo. Der Puffer muss nach dem letzten Wort noch übrig sein.
+    Passt das nicht, wird nichts bestellt und nichts abgeschnitten.
+    """
+    try:
+        rate = float(str(tempo).replace(",", "."))
+    except Exception:
+        rate = 2.5
+    if rate < 1:
+        rate = 2.5
+    try:
+        puff = max(0.0, min(5.0, float(str(puffer).replace(",", "."))))
+    except Exception:
+        puff = 0.9
+    worte = wortzahl(text)
+    spricht = (worte / rate) if worte else 0.0
+    gesamt = spricht + puff
+    passt = bool(worte) and gesamt <= float(grenze) + 0.05
+    dauer = int(math.ceil(gesamt - 1e-9)) if passt else 0
+    if passt:
+        dauer = max(4, min(int(grenze), dauer))
+    return {"woerter": worte, "spricht": round(spricht, 1), "puffer": round(puff, 1),
+            "gesamt": round(gesamt, 1), "passt": passt, "dauer": dauer}
 
 
 # ---------- Nachtrag p90: Datei einer Szene tauschen ----------

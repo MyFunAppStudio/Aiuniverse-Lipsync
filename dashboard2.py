@@ -1716,7 +1716,33 @@ def _r5_einen(k, sid):
         return False, "Diese Szene hat weder Hintergrundbild noch Besetzung"
 
     grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
-    dauer = szenen.r3_clip_dauer(s, grok)
+    if grok:
+        bedarf = szenen.clip_bedarf(
+            s.get("text") or "",
+            kanal.get("woerter_pro_sekunde") or 2.5,
+            kanal.get("nachlauf", 0.9))
+        if not bedarf["passt"]:
+            grund = ("Text zu lang: %d Wörter, etwa %.1f s plus %.1f s Puffer. "
+                     "Das sind mehr als 15 s. Kürze den Satz oder teile ihn "
+                     "auf einen zweiten Clip. Es wird nichts erzeugt."
+                     % (bedarf["woerter"], bedarf["spricht"], bedarf["puffer"]))
+            szenen.r3_stand_setzen(k, sid, "fehler", grund)
+            return False, grund
+        if s.get("laenge_fest"):
+            try:
+                gewaehlt = float(s.get("sekunden") or 0)
+            except Exception:
+                gewaehlt = 0
+            if gewaehlt + 0.05 < bedarf["gesamt"]:
+                grund = ("Die Cliplänge ist kürzer als der Satz plus Puffer "
+                         "(%.1f s). Nichts erzeugt." % bedarf["gesamt"])
+                szenen.r3_stand_setzen(k, sid, "fehler", grund)
+                return False, grund
+            dauer = int(max(4, min(15, round(gewaehlt))))
+        else:
+            dauer = bedarf["dauer"]
+    else:
+        dauer = szenen.r3_clip_dauer(s, False)
     prompt = _r5_prompt(k, kanal, s)
     ziel = os.path.join(szenen.ordner(k),
                         "clip_%s_%s.mp4" % (re.sub(r"[^A-Za-z0-9]+", "", str(sid))[:12],
