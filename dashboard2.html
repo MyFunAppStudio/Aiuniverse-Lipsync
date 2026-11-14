@@ -2423,12 +2423,21 @@ function tAbspannBib(){
    werden. Der Knopf daneben spielt eine kurze Probe - einmal erzeugt,
    danach aus dem Ordner. */
 function grokArt(f){
-  return '<div class="szf" style="margin-top:10px"><span class="szh">Stimme für Grok</span>'
-   +'<input type="text" class="breit" placeholder="tief, ruhig, etwas heiser" value="'+h(f.klang||"")+'" '
-   +'onchange="dsFeld(\''+h(f.id)+'\',\'klang\',this.value)"></div>'
-   +'<div class="szf"><span class="szh">Verhalten</span>'
-   +'<input type="text" class="breit" placeholder="zeigt mit der Hand, bleibt stehen" value="'+h(f.verhalten||"")+'" '
-   +'onchange="dsFeld(\''+h(f.id)+'\',\'verhalten\',this.value)"></div>';
+  var liste=["","tief","hoch","hell","rau","tief und rau","hell und klar","weich",
+    "grollend","kräftig","leise","flüsternd","alt und brüchig","jung und hell",
+    "ruhig und sachlich","schnell und aufgeregt","durchgeknallt"];
+  var jetzt=f.klang||"";
+  var o='<div class="szf" style="margin-top:10px"><span class="szh">Stimme für Grok</span>'
+   +'<select class="breit" style="width:100%;text-align:left" onchange="dsFeld(\''+h(f.id)+'\',\'klang\',this.value)">'
+   +'<option value=""'+(jetzt?"":" selected")+'>angenehm</option>';
+  var drin=!jetzt;
+  liste.forEach(function(x){
+    if(!x)return;
+    if(x===jetzt)drin=true;
+    o+='<option value="'+h(x)+'"'+(x===jetzt?" selected":"")+'>'+h(x)+'</option>';
+  });
+  if(!drin)o+='<option value="'+h(jetzt)+'" selected>'+h(jetzt)+'</option>';
+  return o+'</select></div>';
 }
 function stimmZeile(f){
   var liste=(S.ds&&S.ds.stimmliste)||[];
