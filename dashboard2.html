@@ -592,6 +592,33 @@ function setz(feld,wert,zahlFeld){
 }
 
 /* ---------- Reiter ---------- */
+function tAktiv(){
+  /* Vor dem Schreiben: welche Avatare der Schalter anhat. Die Text-KI
+     nimmt genau diese, und pro Szene nur einen davon. */
+  if(!S.ds){ladeDarsteller();
+    return '<div class="karte p"><div class="leer">lade Avatare…</div></div>'}
+  var an=(S.ds.darsteller||[]).filter(function(f){
+    return f.dabei && f.art!=="sprecher"});
+  var name=function(id){
+    var li=S.ds.stimmliste||[];
+    for(var i=0;i<li.length;i++) if(li[i][0]===id) return li[i][1];
+    return id?id:"keine Stimme gewählt";
+  };
+  var o='<div class="karte p"><h2 class="kt">Aktiv vor dem Schreiben</h2>';
+  if(!an.length){
+    o+='<div class="hinw" style="padding:0;color:#FFB454">Niemand angehakt. '
+     +'Im Reiter Avatare den Schalter anmachen. Sonst schreibt die Szene ohne Figur.</div>';
+  }else{
+    o+='<div class="hinw" style="padding:0 0 8px">Pro Szene ist nur einer im Bild und spricht. '
+     +'Sind mehrere an, kommt in der nächsten Szene der andere, aus seiner Blickrichtung.</div>';
+    an.forEach(function(f){
+      o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
+       +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
+    });
+  }
+  return o+'</div>';
+}
+
 function tStartKopf(){
   /* Nur noch, was du vor jedem einzelnen Video anfasst. Der Kanalname
      steht bei den Kanaelen, Masterprompt und Regeln in den
@@ -708,9 +735,9 @@ function tStart(){
 }
 
 function tMachen(){
-  /* Der Ablauf von oben nach unten: was gebaut wird, woraus, dann die
-     Szenen mit ihren Clips, dann was gerade laeuft und was fertig ist. */
-  return tWie()+tStartKopf()+tAbspannWahl()+tPrompt()+tLauf()+tVideos();
+  /* Der Ablauf von oben nach unten: was gebaut wird, wer angehakt ist,
+     woraus, dann die Szenen mit ihren Clips. */
+  return tWie()+tAktiv()+tStartKopf()+tAbspannWahl()+tPrompt()+tLauf()+tVideos();
 }
 
 function tDarstellerSeite(){
