@@ -1666,7 +1666,7 @@ function istGrok(){
   return url.indexOf("api.x.ai")>=0||url.indexOf("grok-imagine")>=0;
 }
 function clipSoll(s){
-  if(istGrok()&&!s.laenge_fest){
+  if(istGrok()){
     var b=clipBedarf(s.text||"");
     if(b.passt)return b.dauer;
     return 0;
@@ -1675,27 +1675,12 @@ function clipSoll(s){
 }
 function clipZuLang(s){
   if(!istGrok())return false;
-  var b=clipBedarf(s.text||"");
-  if(!b.passt)return true;
-  if(s.laenge_fest&&Number(s.sekunden)+0.05<b.gesamt)return true;
-  return false;
-}
-function clipSek(id,n){
-  if(n<4)n=4;
-  if(n>15)n=15;
-  szeneSetz(id,"sekunden",n);
+  return !clipBedarf(s.text||"").passt;
 }
 function clipLaenge(s){
   var url=((R6.stand||{}).ref_url||"");
   if(url.indexOf("api.x.ai")<0&&url.indexOf("grok-imagine")<0)return "";
-  var n=clipSoll(s);
-  return '<div class="szz" style="margin-bottom:6px"><span class="szh">Cliplänge</span>'
-   +'<div class="stufen">'
-   +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n-1)+')">&minus;</button>'
-   +'<span class="stufwert">'+n+'<i>s</i></span>'
-   +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n+1)+')">+</button>'
-   +'</div></div>'
-   +'<label class="hak"><input type="checkbox"'+(s.fest?" checked":"")
+  return '<label class="hak"><input type="checkbox"'+(s.fest?" checked":"")
    +' onchange="szeneSetz(\''+s.id+'\',\'fest\',this.checked)">Produktbild bleibt liegen</label>'
    +'<div class="szh" style="margin:2px 0 8px">Nur der Avatar wird animiert und darübergelegt. '
    +'Das hochgeladene Bild wird nicht neu gemalt. Es muss hochkant sein, 9:16.</div>';

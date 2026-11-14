@@ -1728,19 +1728,7 @@ def _r5_einen(k, sid):
                      % (bedarf["woerter"], bedarf["spricht"], bedarf["puffer"]))
             szenen.r3_stand_setzen(k, sid, "fehler", grund)
             return False, grund
-        if s.get("laenge_fest"):
-            try:
-                gewaehlt = float(s.get("sekunden") or 0)
-            except Exception:
-                gewaehlt = 0
-            if gewaehlt + 0.05 < bedarf["gesamt"]:
-                grund = ("Die Cliplänge ist kürzer als der Satz plus Puffer "
-                         "(%.1f s). Nichts erzeugt." % bedarf["gesamt"])
-                szenen.r3_stand_setzen(k, sid, "fehler", grund)
-                return False, grund
-            dauer = int(max(4, min(15, round(gewaehlt))))
-        else:
-            dauer = bedarf["dauer"]
+        dauer = bedarf["dauer"]
     else:
         dauer = szenen.r3_clip_dauer(s, False)
     prompt = _r5_prompt(k, kanal, s)
