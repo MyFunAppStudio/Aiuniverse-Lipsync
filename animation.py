@@ -1251,6 +1251,56 @@ def _grok_art(figuren):
     return " ".join(teile)
 
 
+def _grok_stimme(figur):
+    klang = " ".join(str((figur or {}).get("klang") or "").split())[:160].replace('"', "'")
+    if klang:
+        return "mit %s Stimme" % klang.rstrip(".")
+    return "mit einer angenehmen Stimme"
+
+
+def _grok_dialog(satz, personen):
+    """'Name:' gehoert dieser Person, auch mitten im Text. Ohne Namen spricht die erste."""
+    namen = []
+    for f, _p in personen:
+        n = " ".join(str(f.get("name") or "").split())
+        if n:
+            namen.append(n)
+    text = " ".join(str(satz or "").split()).replace('"', "'")
+    if not text:
+        return []
+    if not namen:
+        return [("", text)]
+    marken = sorted(namen, key=len, reverse=True)
+    tief = text.lower()
+    funde, i = [], 0
+    while i < len(text):
+        getroffen = ""
+        for name in marken:
+            kopf = name.lower() + ":"
+            if tief.startswith(kopf, i) and (i == 0 or text[i - 1] == " "):
+                getroffen = name
+                break
+        if getroffen:
+            funde.append((i, getroffen))
+            i += len(getroffen) + 1
+        else:
+            i += 1
+    if not funde:
+        return [(namen[0], text)]
+    zeilen = []
+    if funde[0][0] > 0:
+        davor = text[:funde[0][0]].strip(" :")
+        if davor:
+            zeilen.append((namen[0], davor))
+    for n, (pos, name) in enumerate(funde):
+        start = pos + len(name) + 1
+        ende = funde[n + 1][0] if n + 1 < len(funde) else len(text)
+        stueck = text[start:ende].strip(" :")
+        if stueck:
+            zeilen.append((name, stueck))
+    return zeilen
+
+
 def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                  format_seite="9:16", melden=None, fest=False):
     """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
@@ -1271,22 +1321,25 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
     if not key:
         sag("Kein xAI-Schluessel. Unter Clips mit Avataren eintragen.")
         return None
-    bilder = []
+    personen = []
     for f in figuren or []:
         for p in (f.get("bilder") or []):
             if p and os.path.exists(p):
-                bilder.append(p)
+                personen.append((f, p))
                 break
-        if bilder:
+        if len(personen) >= 3:
             break
+    bilder = [p for _f, p in personen]
     if fest:
-        if not bilder:
-            sag("Kein Avatar. Fuer ein festes Produktbild muss einer angehakt sein.")
-            return None
+        bilder = bilder[:1]
+        personen = personen[:1]
     elif hintergrund and os.path.exists(hintergrund):
         bilder.append(hintergrund)
     if not bilder:
-        sag("Weder Avatar noch Szenenbild")
+        if fest:
+            sag("Kein Avatar. Fuer ein festes Produktbild muss einer angehakt sein.")
+        else:
+            sag("Weder Avatar noch Szenenbild")
         return None
     spruch = " ".join((satz or "").split())
     if not spruch:
@@ -1310,6 +1363,36 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             "Der Mund bewegt sich zu den Woertern und ist danach zu. "
             "Keine Untertitel, keine Schrift."
             % (_grok_art(figuren), spruch.replace('"', "'")))
+    elif len(personen) >= 2:
+        teile = []
+        for i, (f, _p) in enumerate(personen):
+            name = " ".join(str(f.get("name") or "").split()) or ("Person %d" % (i + 1))
+            teile.append("<IMAGE_%d> ist %s." % (i, name.replace('"', "'")))
+        if len(bilder) > len(personen):
+            teile.append("<IMAGE_%d> ist die Szene hinter ihnen." % len(personen))
+        if len(personen) == 2:
+            teile.append(
+                "Beide stehen nebeneinander in der Mitte, ganz zu sehen, "
+                "Gesicht zur Kamera. Sie sind die Hauptsache, die Szene bleibt dahinter.")
+        else:
+            teile.append(
+                "Alle drei stehen nebeneinander in der Mitte, ganz zu sehen, "
+                "Gesicht zur Kamera. Sie sind die Hauptsache, die Szene bleibt dahinter.")
+        teile.append("Sie gehen nicht weg und drehen sich nicht um.")
+        for name, zeile in _grok_dialog(spruch, personen):
+            figur = None
+            for f, _p in personen:
+                if " ".join(str(f.get("name") or "").split()).lower() == name.lower():
+                    figur = f
+                    break
+            teile.append(
+                "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
+                % (name or "Die Person", _grok_stimme(figur), zeile))
+        teile.append(
+            "Immer nur der Mund dessen, der gerade spricht. "
+            "Wer zuhoert, haelt den Mund zu. "
+            "Keine Untertitel, keine Schrift.")
+        prompt = " ".join(teile)
     else:
         wer = "die Person aus <IMAGE_0>"
         szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
@@ -1327,13 +1410,13 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,
-        "reference_images": [{"url": _daten_uri(p)} for p in bilder[:2]],
+        "reference_images": [{"url": _daten_uri(p)} for p in bilder[:14]],
         "duration": dauer,
         "aspect_ratio": format_seite or "9:16",
         "resolution": "480p",
         "generate_audio": True,
     }
-    sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:2]))
+    sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:14]))
     try:
         start = _grok_holen("https://api.x.ai/v1/videos/generations", key, koerper, 180)
     except urllib.error.HTTPError as f:
