@@ -1224,3 +1224,134 @@ def erzeuge_multi(kanal, bild_pfad, ton_links, ton_rechts, ziel, prompt="",
                               prompt, melden)
     finally:
         globals()["_daten_uri"] = alt
+
+
+def grok_ist(url):
+    """True, wenn der Clip von Grok kommen soll und nicht von Kling."""
+    u = (url or "").lower()
+    return "api.x.ai" in u or "grok-imagine" in u
+
+
+def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
+                 format_seite="9:16", melden=None):
+    """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
+
+    So ist der Clip entstanden, der auf Deutsch gesprochen und den Mund
+    dazu bewegt hat. Kling bekommt den Satz nicht, Grok schon.
+    """
+    def sag(t):
+        print("[Grok] %s" % t)
+        if melden:
+            try:
+                melden(t)
+            except Exception:
+                pass
+
+    e = ref_slot(kanal) or {}
+    key = schluessel.fuer(kanal, e)
+    if not key:
+        sag("Kein xAI-Schluessel. Unter Clips mit Avataren eintragen.")
+        return None
+    bilder = []
+    for f in figuren or []:
+        for p in (f.get("bilder") or []):
+            if p and os.path.exists(p):
+                bilder.append(p)
+                break
+        if bilder:
+            break
+    if hintergrund and os.path.exists(hintergrund):
+        bilder.append(hintergrund)
+    if not bilder:
+        sag("Weder Avatar noch Szenenbild")
+        return None
+    spruch = " ".join((satz or "").split())
+    if not spruch:
+        sag("Kein Sprechtext")
+        return None
+    try:
+        dauer = int(max(4, min(15, round(float(sekunden or 10)))))
+    except Exception:
+        dauer = 10
+    wer = "die Person aus <IMAGE_0>"
+    szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
+    prompt = (
+        "%s steht links in %s auf einem Stein, ganz zu sehen, Gesicht zur "
+        "Kamera. Der Hintergrund bleibt in Bewegung. Die Person sagt mit einer "
+        "angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
+        "Der Mund bewegt sich zu den Woertern und ist danach zu. "
+        "Keine Untertitel, keine Schrift."
+        % (wer, szene, spruch.replace('"', "'")))
+    koerper = {
+        "model": "grok-imagine-video-1.5",
+        "prompt": prompt,
+        "reference_images": [{"url": _daten_uri(p)} for p in bilder[:2]],
+        "duration": dauer,
+        "aspect_ratio": format_seite or "9:16",
+        "resolution": "720p",
+        "generate_audio": True,
+    }
+    sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:2]))
+    try:
+        start = _grok_holen("https://api.x.ai/v1/videos/generations", key, koerper, 180)
+    except urllib.error.HTTPError as f:
+        roh = ""
+        try:
+            roh = f.read().decode("utf-8", "replace")[:300]
+        except Exception:
+            pass
+        sag("Abgelehnt (%s). %s" % (f.code, roh[:200]))
+        return None
+    except Exception as f:
+        sag("Keine Verbindung: %s" % f)
+        return None
+    rid = (start or {}).get("request_id") or (start or {}).get("id") or ""
+    fertig = start if _grok_video(start) else None
+    if not fertig and not rid:
+        sag("Keine Auftragsnummer: %s" % str(start)[:160])
+        return None
+    t0 = time.time()
+    while fertig is None and time.time() - t0 < WARTE_MAX:
+        time.sleep(TAKT)
+        try:
+            st = _grok_holen("https://api.x.ai/v1/videos/%s" % rid, key, None, 40)
+        except Exception as f:
+            sag("Status nicht lesbar: %s" % f)
+            continue
+        lage = str((st or {}).get("status") or "").lower()
+        if lage in ("done", "completed", "succeeded", "success"):
+            fertig = st
+            break
+        if lage in ("failed", "error", "expired", "cancelled"):
+            sag("Grok abgebrochen: %s" % str(st)[:200])
+            return None
+        sag(lage or "laeuft")
+    if not fertig:
+        sag("Zeit abgelaufen")
+        return None
+    url = _grok_video(fertig)
+    if not url:
+        sag("Kein Video in der Antwort")
+        return None
+    return _laden(url, ziel)
+
+
+def _grok_holen(url, key, koerper, zeit):
+    daten = json.dumps(koerper).encode("utf-8") if koerper is not None else None
+    a = urllib.request.Request(url, data=daten)
+    a.add_header("Authorization", "Bearer " + key)
+    if daten is not None:
+        a.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(a, timeout=zeit) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+def _grok_video(antwort):
+    if not isinstance(antwort, dict):
+        return ""
+    v = antwort.get("video") or {}
+    if isinstance(v, dict) and v.get("url"):
+        return v["url"]
+    if isinstance(v, str):
+        return v
+    return antwort.get("url") or ""

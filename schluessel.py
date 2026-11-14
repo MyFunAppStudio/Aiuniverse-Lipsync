@@ -18,6 +18,7 @@ ANBIETER = [("fal", ("fal.run", "fal-ai", "fal.ai")),
             ("replicate", ("replicate",)),
             ("anthropic", ("anthropic", "claude")),
             ("openai", ("openai", "api.openai")),
+            ("xai", ("api.x.ai", "x.ai")),
             ("freesound", ("freesound",))]
 
 

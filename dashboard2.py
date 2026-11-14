@@ -1686,6 +1686,12 @@ def _r5_figuren(k, s=None):
             for x in darsteller.besetzung(k, _r5_wer(s))]
 
 
+def _r5_spruch(s):
+    """Nur der gesprochene Satz, ohne Bild- und Bewegungsklammern."""
+    text = _R5_KLAMMER.sub(" ", (s or {}).get("text") or "")
+    return " ".join(text.split())
+
+
 def _r5_einen(k, sid):
     """Erzeugt den Clip einer Szene. (ok, Text)."""
     import animation
@@ -1732,9 +1738,14 @@ def _r5_einen(k, sid):
                 _R5_LAEUFT[k]["text"] = t
 
     szenen.r3_stand_setzen(k, sid, "laeuft", "wird geschickt")
-    pfad = animation.erzeuge_referenz(kanal, hintergrund, figuren, prompt,
-                                      dauer, ziel,
-                                      kanal.get("format") or "9:16", melden)
+    if animation.grok_ist((animation.ref_slot(kanal) or {}).get("url")):
+        pfad = animation.erzeuge_grok(
+            kanal, hintergrund, figuren, _r5_spruch(s), dauer, ziel,
+            kanal.get("format") or "9:16", melden)
+    else:
+        pfad = animation.erzeuge_referenz(kanal, hintergrund, figuren, prompt,
+                                          dauer, ziel,
+                                          kanal.get("format") or "9:16", melden)
     if not pfad or not os.path.exists(ziel):
         grund = (letzte["text"] or "").strip()
         if grund in ("", "wird geschickt"):
@@ -1745,7 +1756,8 @@ def _r5_einen(k, sid):
     if not r.get("ok"):
         szenen.r3_stand_setzen(k, sid, "fehler", r.get("fehler") or "nicht angenommen")
         return False, r.get("fehler") or "nicht angenommen"
-    _r5_ohne_klington(ziel)
+    if not animation.grok_ist((animation.ref_slot(kanal) or {}).get("url")):
+        _r5_ohne_klington(ziel)
     szenen.r3_stand_setzen(k, sid, "fertig", "%d Sekunden" % dauer)
     return True, os.path.basename(ziel)
 
@@ -3147,6 +3159,9 @@ def _r5_einen(k, sid):
     Darum werden die Lippen danach auf die Tonspuren gesetzt. Klappt das
     nicht, bleibt der Szenenclip, und der Grund steht an der Szene.
     """
+    import animation
+    if animation.grok_ist((animation.ref_slot(_r5_kanal(k)) or {}).get("url")):
+        return _m15_einen_alt(k, sid)
     ok, name = _m15_einen_alt(k, sid)
     if not ok:
         return ok, name
