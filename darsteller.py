@@ -476,7 +476,9 @@ def besetzung(kanal, nur=None):
                   if os.path.exists(datei_pfad(kanal, n))]
         if not bilder:
             continue
-        raus.append({"id": f["id"], "name": f["name"], "bilder": bilder})
+        raus.append({"id": f["id"], "name": f["name"], "bilder": bilder,
+                     "klang": f.get("klang") or "",
+                     "verhalten": f.get("verhalten") or ""})
     return raus
 
 
@@ -564,13 +566,14 @@ _d2_aendern_alt = aendern
 
 
 def aendern(kanal, did, feld, wert):
-    if feld != "stimme":
+    if feld not in ("stimme", "klang", "verhalten"):
         return _d2_aendern_alt(kanal, did, feld, wert)
     d = laden(kanal)
     f = _finde(d, did)
     if f is None:
         return {"ok": False, "fehler": "Eintrag unbekannt"}
-    f["stimme"] = str(wert or "").strip()[:80]
+    grenze = 80 if feld == "stimme" else 160
+    f[feld] = " ".join(str(wert or "").split())[:grenze]
     speichern(kanal, d)
     return {"ok": True}
 
@@ -630,7 +633,7 @@ def _d8_roh(kanal):
         if not isinstance(f, dict):
             continue
         satz = {}
-        for feld in ("stimme", "art"):
+        for feld in ("stimme", "art", "klang", "verhalten"):
             if f.get(feld):
                 satz[feld] = f[feld]
         if not satz:

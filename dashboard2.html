@@ -2422,6 +2422,14 @@ function tAbspannBib(){
    Stimmenliste des Kanals; dieselbe Stimme darf mehrfach vergeben
    werden. Der Knopf daneben spielt eine kurze Probe - einmal erzeugt,
    danach aus dem Ordner. */
+function grokArt(f){
+  return '<div class="szf" style="margin-top:10px"><span class="szh">Stimme für Grok</span>'
+   +'<input type="text" class="breit" placeholder="tief, ruhig, etwas heiser" value="'+h(f.klang||"")+'" '
+   +'onchange="dsFeld(\''+h(f.id)+'\',\'klang\',this.value)"></div>'
+   +'<div class="szf"><span class="szh">Verhalten</span>'
+   +'<input type="text" class="breit" placeholder="zeigt mit der Hand, bleibt stehen" value="'+h(f.verhalten||"")+'" '
+   +'onchange="dsFeld(\''+h(f.id)+'\',\'verhalten\',this.value)"></div>';
+}
 function stimmZeile(f){
   var liste=(S.ds&&S.ds.stimmliste)||[];
   var jetzt=f.stimme||"";
@@ -2573,6 +2581,7 @@ function tDarsteller(){
     o+='<div class="szz" style="margin-top:11px"><span class="szh">Name</span>'
      +'<input type="text" class="breit" value="'+h(f.name)+'" '
      +'onchange="dsFeld(\''+h(f.id)+'\',\'name\',this.value)"></div>'
+     +grokArt(f)
      +stimmZeile(f)+'</div>';
   });
 

@@ -1682,7 +1682,8 @@ def _r5_prompt(k, kanal, s):
 
 
 def _r5_figuren(k, s=None):
-    return [{"name": x["name"], "bilder": x["bilder"]}
+    return [{"name": x["name"], "bilder": x["bilder"],
+             "klang": x.get("klang") or "", "verhalten": x.get("verhalten") or ""}
             for x in darsteller.besetzung(k, _r5_wer(s))]
 
 
@@ -2297,9 +2298,8 @@ _d3_schreiben_alt = darsteller_schreiben
 
 def darsteller_schreiben(key, b):
     a = b.get("aktion") or ""
-    if a == "stimme":
-        return darsteller.aendern(key, str(b.get("id") or ""), "stimme",
-                                  b.get("wert"))
+    if a in ("stimme", "klang", "verhalten"):
+        return darsteller.aendern(key, str(b.get("id") or ""), a, b.get("wert"))
     if a == "sprecher_neu":
         return darsteller.sprecher_anlegen(key, b.get("name") or "")
     return _d3_schreiben_alt(key, b)
@@ -2316,6 +2316,8 @@ def darsteller_lesen(key):
             q = roh.get(f.get("id")) or {}
             f["stimme"] = q.get("stimme") or ""
             f["art"] = q.get("art") or "avatar"
+            f["klang"] = q.get("klang") or ""
+            f["verhalten"] = q.get("verhalten") or ""
         # Die Stimmen des Kanals als Auswahl, ohne die IDs preiszugeben
         kanal = einstellungen.laden().get(key) or {}
         d["stimmliste"] = [[(e.get("id") or "").strip(),

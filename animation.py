@@ -1235,6 +1235,22 @@ def grok_ist(url):
     return "api.x.ai" in u or "grok-imagine" in u
 
 
+def _grok_art(figuren):
+    """Stimme und Verhalten, so wie sie am Avatar stehen. Sonst unverändert."""
+    f = (figuren or [None])[0] or {}
+    klang = " ".join(str(f.get("klang") or "").split())[:160].replace('"', "'")
+    art = " ".join(str(f.get("verhalten") or "").split())[:160].replace('"', "'")
+    teile = []
+    if klang:
+        teile.append("Die Stimme ist %s." % klang.rstrip("."))
+    else:
+        teile.append("Die Stimme ist angenehm.")
+    if art:
+        art = art[0].upper() + art[1:]
+        teile.append(art if art[-1] in ".!?" else art + ".")
+    return " ".join(teile)
+
+
 def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                  format_seite="9:16", melden=None, fest=False):
     """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
@@ -1289,20 +1305,22 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             "Sie steht mittig, ganz zu sehen, von Kopf bis Schuh, Gesicht zur Kamera. "
             "Der gesamte Hintergrund ist eine vollkommen flache Farbe Magenta, "
             "ohne Boden, ohne Schatten, ohne Verlauf und ohne Gegenstand. "
-            "Die Person sagt mit einer angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
+            "%s "
+            "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
             "Der Mund bewegt sich zu den Woertern und ist danach zu. "
             "Keine Untertitel, keine Schrift."
-            % spruch.replace('"', "'"))
+            % (_grok_art(figuren), spruch.replace('"', "'")))
     else:
         wer = "die Person aus <IMAGE_0>"
         szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
         prompt = (
             "%s steht links in %s auf einem Stein, ganz zu sehen, Gesicht zur "
-            "Kamera. Der Hintergrund bleibt in Bewegung. Die Person sagt mit einer "
-            "angenehmen Stimme genau diesen Satz und sonst nichts: \"%s\" "
+            "Kamera. Der Hintergrund bleibt in Bewegung. "
+            "%s "
+            "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
             "Der Mund bewegt sich zu den Woertern und ist danach zu. "
             "Keine Untertitel, keine Schrift."
-            % (wer, szene, spruch.replace('"', "'")))
+            % (wer, szene, _grok_art(figuren), spruch.replace('"', "'")))
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,
