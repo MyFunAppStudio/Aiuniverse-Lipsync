@@ -112,7 +112,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens 9 Sekunden. Der Clip ist 10 Sekunden und kann nicht laenger. Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen auf Englisch. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Der Rest ist das Ereignis. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, a flat ankle-high empty stone slab in the lower left, not a boulder".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
+Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen auf Englisch. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Die Handlung ist in der Mitte und rechts, nicht links vorne. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, a flat ankle-high empty stone slab in the lower left, not a boulder".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -804,13 +804,15 @@ SECHS DINGE GEHOEREN IN JEDE BESCHREIBUNG
    Jeeps, Lastwagen, Asphalt.
 5. Blickwinkel: from eye level. In the lower left a flat stone slab,
    empty, only ankle-high, not a boulder and not a tall pedestal,
-   nothing and nobody standing on it. The action is everywhere else.
+   nothing and nobody standing on it. The action fills the center and
+   the right side, not the lower left.
 6. Ein oder zwei Einzelheiten: broken fence, drums, a farmhouse, flags.
 
 Der Avatar kommt spaeter auf diese flache Platte. Darum steht dort niemand
 und nichts. Sie ist nur knoechelhoch, damit er nicht ueber der Szene
-schwebt. Ueberall sonst sind die Leute, um die es geht. Bei Krieg
-immer Soldaten oder Schiffe im Bild, nie nur Landschaft.
+schwebt. Die Leute und die Handlung sind in der Mitte und rechts, nie
+auf der Platte links. Bei Krieg immer Soldaten oder Schiffe im Bild,
+nie nur Landschaft.
 
 WAS NIE INS BILD KOMMT
 Keine Schrift, keine Buchstaben, keine Zahlen, keine Wappen mit Text,
