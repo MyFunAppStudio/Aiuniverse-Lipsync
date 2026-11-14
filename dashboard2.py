@@ -2182,7 +2182,9 @@ def r5_clip_stand(k):
         url = (e.get("url") or "").strip()
         raus["ref_name"] = (e.get("name") or "").strip()
         raus["ref_url"] = url
-        raus["ref_passt"] = (G6_RICHTIG in url.lower()) if url else None
+        raus["ref_passt"] = True if (
+            animation.grok_ist(url) or G6_RICHTIG in url.lower()) else (
+            False if url else None)
     except Exception as f:
         print("[Referenz] Modell nicht lesbar:", f)
     return raus
