@@ -716,7 +716,7 @@ def _fuer_kling(video, ziel):
         skala = 1920.0 / max(b, h)
     nb = max(2, int(round(b * skala)) // 2 * 2)
     nh = max(2, int(round(h * skala)) // 2 * 2)
-    t = min(9.8, max(2.0, float(dauer)))
+    t = min(10.0, max(2.0, float(dauer)))
     r = _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
                "-t", "%.2f" % t, "-vf", "scale=%d:%d" % (nb, nh), "-an",
                "-c:v", "libx264", "-pix_fmt", "yuv420p", str(ziel)])
@@ -759,10 +759,14 @@ def _kling_ganz(kanal, video, audio, ziel, sag):
 
 
 def _ton_drauf(video, ton, ziel):
-    """Die Charlotte-Aufnahme ersetzt den Ton, den Kling mitliefert."""
+    """Die Charlotte-Aufnahme ersetzt den Ton. Das Bild bleibt in voller Laenge."""
+    info = masse(video)
+    sek = info[3] if info else 10.0
     r = _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video),
-               "-i", str(ton), "-map", "0:v:0", "-map", "1:a:0",
-               "-c:v", "copy", "-c:a", "aac", "-shortest", str(ziel)])
+               "-i", str(ton),
+               "-filter_complex", "[1:a]apad,atrim=0:%.3f[a]" % sek,
+               "-map", "0:v:0", "-map", "[a]",
+               "-c:v", "copy", "-c:a", "aac", "-t", "%.3f" % sek, str(ziel)])
     if r.returncode != 0 or not os.path.exists(ziel):
         return None
     return str(ziel)

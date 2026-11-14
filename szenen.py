@@ -442,14 +442,17 @@ def r3_szene(kanal, sid):
 
 
 def r3_clip_dauer(s):
-    """Wie lang der Clip werden soll. Kling nimmt 3 bis 15 ganze Sekunden."""
+    """Wie lang der Clip werden soll. Kling nimmt 5 oder 10, nicht 9."""
     try:
         w = float(s.get("sekunden") or 0)
     except Exception:
         w = 0.0
     if w <= 0:
         w = float(geschaetzte_sekunden(s.get("text", "")))
-    return int(max(3, min(10, round(w))))
+    # 9 schneidet den letzten Satz ab. Alles ueber 5 wird die lange Stufe.
+    if w > 5:
+        return 10
+    return 5
 
 
 def fuer_anzeige(kanal):
