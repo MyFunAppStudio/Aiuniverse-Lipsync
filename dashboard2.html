@@ -1609,6 +1609,34 @@ function szeneZurueck(sid,welche,datei){
     });
 }
 
+function satzSekunden(text){
+  var t=String(text||"").replace(/\[[^\]]*\]/g," ");
+  var w=t.trim()?t.trim().split(/\s+/).length:0;
+  if(!w)return 0;
+  return Math.round((w/2.6+0.6)*10)/10;
+}
+function satzHinweis(text){
+  var sek=satzSekunden(text);
+  if(!sek)return "Noch kein Satz.";
+  var w=String(text||"").replace(/\[[^\]]*\]/g," ").trim().split(/\s+/).length;
+  var zahl=String(sek).replace(".",",");
+  if(sek>15)return w+" Wörter, etwa "+zahl+" Sekunden. Für den Avatar zu lang. Der Clip wird auf 15 Sekunden gekürzt.";
+  var best=Math.max(4,Math.min(15,Math.round(sek)));
+  return w+" Wörter, etwa "+zahl+" Sekunden. Der Clip wird "+best+" Sekunden.";
+}
+function satzZeigen(ta){
+  var z=ta.parentNode&&ta.parentNode.querySelector(".satzzeit");
+  if(z)z.textContent=satzHinweis(ta.value);
+}
+function clipSoll(s){
+  var url=((R6.stand||{}).ref_url||"");
+  var grok=url.indexOf("api.x.ai")>=0||url.indexOf("grok-imagine")>=0;
+  if(grok&&!s.laenge_fest){
+    var sek=satzSekunden(s.text||"");
+    if(sek)return Math.max(4,Math.min(15,Math.round(sek)));
+  }
+  return s.clip_dauer||10;
+}
 function clipSek(id,n){
   if(n<4)n=4;
   if(n>15)n=15;
@@ -1617,7 +1645,7 @@ function clipSek(id,n){
 function clipLaenge(s){
   var url=((R6.stand||{}).ref_url||"");
   if(url.indexOf("api.x.ai")<0&&url.indexOf("grok-imagine")<0)return "";
-  var n=s.clip_dauer||10;
+  var n=clipSoll(s);
   return '<div class="szz" style="margin-bottom:6px"><span class="szh">Cliplänge</span>'
    +'<div class="stufen">'
    +'<button type="button" class="stuf" onclick="clipSek(\''+s.id+'\','+(n-1)+')">&minus;</button>'
@@ -1658,7 +1686,7 @@ function clipZeile(s){
      +'style="width:100%;max-height:300px;border-radius:9px;background:#000;display:block"></video>'
      +'<div style="display:flex;gap:7px;margin-top:7px">'
      +'<button class="knopf" style="flex:1"'+(laeuft?' disabled':'')
-     +' onclick="clipNeu(\''+s.id+'\','+(s.clip_dauer||0)+',true)">Clip neu machen</button>'
+     +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',true)">Clip neu machen</button>'
      +'<button class="knopf" onclick="clipWeg(\''+s.id+'\')">Verwerfen</button>'
      +'</div>'
      +'<button class="knopf" style="width:100%;margin-top:7px"'+(laeuft?' disabled':'')
@@ -1670,8 +1698,8 @@ function clipZeile(s){
   }
   o+='<div class="szz p62" style="display:block">'
    +'<button class="knopf" style="width:100%"'+(laeuft?' disabled':'')
-   +' onclick="clipNeu(\''+s.id+'\','+(s.clip_dauer||0)+',false)">Clip erzeugen'
-   +(s.clip_dauer?(' · '+s.clip_dauer+' s'):'')+'</button>';
+   +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',false)">Clip erzeugen'
+   +(clipSoll(s)?(' · '+clipSoll(s)+' s'):'')+'</button>';
   if(stand==="fehler"&&txt)
     o+='<div class="szh" style="margin-top:5px;color:#FFB454">'+h(txt)+'</div>';
   o+='</div>';
@@ -1890,7 +1918,9 @@ function tSzenen(){
      +vor
      +versionen(s,"bild")
      +'<div class="szf"><span class="szh">Sprechtext</span>'
-     +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea></div>'
+     +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." '
+     +'oninput="satzZeigen(this)" onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea>'
+     +'<div class="szh satzzeit">'+satzHinweis(s.text||"")+'</div></div>'
      +'<div class="szf"><span class="szh">Bildbeschreibung</span>'
      +'<textarea placeholder="Was auf dem Bild zu sehen ist. Leer = aus dem Sprechtext." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
      +'<div class="szf"><span class="szh">Animationsanweisung</span>'

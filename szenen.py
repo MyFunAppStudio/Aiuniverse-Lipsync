@@ -159,6 +159,8 @@ def aendern(kanal, sid, feld, wert):
         return {"ok": False, "fehler": "Szene unbekannt"}
     if feld == "text":
         d["szenen"][i]["text"] = str(wert or "")
+        d["szenen"][i]["laenge_fest"] = False
+        d["szenen"][i]["sekunden"] = 0
     elif feld in ("gesprochen", "untertitel"):
         d["szenen"][i][feld] = bool(wert)
     elif feld == "bewegung":
@@ -206,8 +208,10 @@ def aendern(kanal, sid, feld, wert):
     elif feld == "sekunden":
         try:
             d["szenen"][i]["sekunden"] = max(0.0, min(120.0, float(str(wert).replace(",", "."))))
+            d["szenen"][i]["laenge_fest"] = True
         except Exception:
             d["szenen"][i]["sekunden"] = 0
+            d["szenen"][i]["laenge_fest"] = False
     elif feld == "fest":
         d["szenen"][i]["fest"] = wert is True or str(wert).strip().lower() in ("1", "true", "ja", "on")
     else:
@@ -453,7 +457,7 @@ def r3_clip_dauer(s, frei=False):
         w = float(s.get("sekunden") or 0)
     except Exception:
         w = 0.0
-    if w <= 0:
+    if w <= 0 or not s.get("laenge_fest"):
         w = float(geschaetzte_sekunden(s.get("text", "")))
     if frei:
         return int(max(4, min(15, round(w))))
@@ -747,6 +751,7 @@ def fuer_anzeige(kanal):
         s["clip_veraltet"] = bool(q.get("clip_veraltet"))
         s["eigener_clip"] = bool(q.get("eigener_clip"))
         s["fest"] = bool(q.get("fest"))
+        s["laenge_fest"] = bool(q.get("laenge_fest"))
         s["braucht_clip"] = r6_braucht_clip(q) if q else False
     d["modi"] = [list(x) for x in R6_MODI]
     d["sprichtarten"] = [list(x) for x in R6_SPRICHT]
