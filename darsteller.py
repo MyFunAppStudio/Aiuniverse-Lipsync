@@ -226,7 +226,8 @@ def anlegen(kanal, name, rolle=""):
     if name.lower() in vorhanden:
         return {"ok": False, "fehler": "Gibt es schon"}
     did = _neue_id(set(f["id"] for f in d["darsteller"]))
-    d["darsteller"].append({"id": did, "name": name, "bilder": []})
+    d["darsteller"].append({"id": did, "name": name, "bilder": [],
+                            "art": "avatar"})
     speichern(kanal, d)
     return {"ok": True, "id": did, "name": name}
 
@@ -237,7 +238,8 @@ def anlegen_fuer_datei(kanal, dateiname):
     vorhanden = set(f["name"].lower() for f in d["darsteller"])
     name = _name_aus_datei(dateiname, vorhanden)
     did = _neue_id(set(f["id"] for f in d["darsteller"]))
-    d["darsteller"].append({"id": did, "name": name, "bilder": []})
+    d["darsteller"].append({"id": did, "name": name, "bilder": [],
+                            "art": "avatar"})
     speichern(kanal, d)
     return {"ok": True, "id": did, "name": name}
 
@@ -373,6 +375,7 @@ def bild_dazu(kanal, did, datei):
         return {"ok": False, "fehler": "Die Datei liegt nicht im Avatarordner"}
     if n not in f["bilder"]:
         f["bilder"].append(n)
+    f["art"] = "avatar"
     speichern(kanal, d)
     return {"ok": True, "datei": n}
 
@@ -658,6 +661,11 @@ def laden(kanal):
                 or nach_name.get(str(f.get("name") or "").strip().lower()) or {})
         for feld, wert in satz.items():
             f[feld] = wert
+        # Der erste Speichervorgang hat neue Avatare als Sprecher markiert,
+        # noch bevor das Bild da war. Mit Bildern gehoeren sie in die
+        # Avatarliste, nicht nach unten zu den Sprechern.
+        if f.get("bilder") and f.get("art") == "sprecher":
+            f["art"] = "avatar"
     # Der Vorgaenger hat die Besetzung gefiltert, als art noch geraten war:
     # ein Avatar ohne Bilder galt dort als Sprecher und flog raus. Darum
     # wird sie hier aus der Datei nachgezogen, jetzt mit dem richtigen art.

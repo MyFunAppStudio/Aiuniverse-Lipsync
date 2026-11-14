@@ -6,7 +6,7 @@ BASIS = os.path.dirname(os.path.abspath(__file__))
 REGELN = os.path.join(BASIS, "regeln")
 EIGENE = os.path.join(BASIS, "eigene")
 
-BILD_ARTEN = (".jpg", ".jpeg", ".png", ".webp")
+BILD_ARTEN = (".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif")
 CLIP_ARTEN = (".mp4", ".mov", ".m4v", ".webm")
 TON_ARTEN = (".mp3", ".wav", ".m4a", ".aac", ".ogg")
 
