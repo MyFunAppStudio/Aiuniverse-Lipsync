@@ -112,7 +112,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens 9 Sekunden. Der Clip ist 10 Sekunden und kann nicht laenger. Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen auf Englisch. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: nur unten links ein Streifen Boden frei, der Rest ist das Ereignis. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, muddy grass only in the lower left".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
+Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen auf Englisch. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links ein leeres steinernes Podest, gross genug fuer eine Person, sonst niemand darauf. Der Rest ist das Ereignis. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, a plain empty stone pedestal in the lower left".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -797,17 +797,19 @@ SECHS DINGE GEHOEREN IN JEDE BESCHREIBUNG
 2. Was passiert, konkret: nicht "soldiers" und nicht "a muddy path",
    sondern "infantry in blue coats kneeling and firing, horses charging
    past them through smoke". Die Handlung fuellt die Mitte und die
-   rechte Seite. Nur unten links bleibt Boden frei.
+   rechte Seite. Unten links nur ein leeres Steinsockel-Podest, niemand
+   darauf.
 3. Tageszeit, Licht, Wetter.
 4. Epoche an Kleidung und Bauten, nie als Jahreszahl. Keine Autos,
    Jeeps, Lastwagen, Asphalt.
-5. Blickwinkel: from eye level. Open ground only in the lower left,
-   the action everywhere else.
+5. Blickwinkel: from eye level. In the lower left a plain stone pedestal,
+   empty, big enough for one person, nothing and nobody standing on it.
+   The action is everywhere else.
 6. Ein oder zwei Einzelheiten: broken fence, drums, a farmhouse, flags.
 
-Der Avatar kommt spaeter unten links dazu. Darum dort kein Gedraenge.
-Ueberall sonst sind die Leute, um die es geht. Bei Krieg immer Soldaten
-im Bild, nie nur Landschaft.
+Der Avatar kommt spaeter auf dieses Podest. Darum steht dort niemand
+und nichts. Ueberall sonst sind die Leute, um die es geht. Bei Krieg
+immer Soldaten oder Schiffe im Bild, nie nur Landschaft.
 
 WAS NIE INS BILD KOMMT
 Keine Schrift, keine Buchstaben, keine Zahlen, keine Wappen mit Text,
@@ -822,20 +824,21 @@ Kleidung von heute.
 Kein Blut, keine Leichen, keine Verstuemmelung.
 
 DREI BEISPIELE IN DER RICHTIGEN LAENGE
-[BILD: medium shot at eye level, cavalry in dark coats charging straight at a line of infantry who are kneeling and firing, sabres raised, flags snapping, a shell burst of orange fire and black smoke on the right, low hard sunlight, dust, open ground only in the lower left]
+[BILD: medium shot at eye level, cavalry in dark coats charging straight at a line of infantry who are kneeling and firing, sabres raised, flags snapping, a shell burst of orange fire and black smoke on the right, low hard sunlight, dust, a plain empty stone pedestal in the lower left]
 
-[BILD: medium shot at eye level, infantry in red coats running through waist-high wheat with bayonets leveled, drums and flags behind them, cannon smoke rolling across the field, horses breaking through on the right, dramatic backlight, open ground only in the lower left]
+[BILD: medium shot at eye level, infantry in red coats running through waist-high wheat with bayonets leveled, drums and flags behind them, cannon smoke rolling across the field, horses breaking through on the right, dramatic backlight, a plain empty stone pedestal in the lower left]
 
-[BILD: medium shot at eye level, sailors hauling a cannon aboard as three wooden warships fire a broadside across the water, white smoke, torn sails, orange muzzle flashes, spray, open planks only in the lower left]
+[BILD: medium shot at eye level, sailors hauling a cannon aboard as three wooden warships fire a broadside across the water, white smoke, torn sails, orange muzzle flashes, spray, a plain empty stone pedestal on the near shore in the lower left]
 
 BEWEGUNG
 Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.
 Sie sagt, was sich ruehrt. Auf Deutsch, hoechstens zwanzig Woerter.
 Drei Teile, immer in dieser Reihenfolge:
 
-1. DIE FIGUREN. Der Erklaerende bleibt stehen und gestikuliert mit
-   einer Hand zur Handlung neben ihm, so als wuerde er sie erklaeren.
-   Er laeuft nicht auf die Kamera zu und winkt nicht ins Objektiv.
+1. DIE FIGUREN. Der Erklaerende steht mit beiden Fuessen auf dem
+   Steinsockel. Nur die Haende zeigen zur Handlung. Der Koerper dreht
+   sich hoechstens ein wenig. Der Kopf bleibt zur Kamera. Der Mund
+   bleibt zu. Er laeuft nicht und winkt nicht ins Objektiv.
 2. DER HINTERGRUND. Was dort passiert, passend zum Satz. Bei Krieg:
    die Reihen feuern, die Reiterei reitet an, Rauch zieht, Fahnen gehen
    vor. Nicht nur Gras im Wind und nicht nur ein leerer Weg.
@@ -844,7 +847,7 @@ Drei Teile, immer in dieser Reihenfolge:
 3. Die Kamera bleibt stehen. Keine Fahrt, kein Zoom, kein Schwenk.
    Der Erklaerende bleibt von vorne im Bild.
 
-Mit Figuren: [BEWEGUNG: Mara bleibt stehen und schaut in die Kamera, Rauch zieht ueber das Feld, die Reihen schieben sich vor]
+Mit Figuren: [BEWEGUNG: Mara steht auf dem Podest, nur die Haende zeigen zum Feuer, der Mund bleibt zu, Rauch zieht, die Schiffe brennen]
 
 Ohne Figuren: [BEWEGUNG: Kamera faehrt langsam zurueck, Rauch zieht ueber das Feld]"""
 

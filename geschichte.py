@@ -429,7 +429,7 @@ def bildprompt(satz, stil="", figur_name="", zusatz=""):
         "people charging, firing or riding, dust, smoke, fire and flags, "
         "dramatic low sunlight, high contrast, sharp, cool and violent, "
         "not a quiet landscape, not an empty road, not anyone standing still, "
-        "open ground only in the lower left")
+        "a plain empty stone pedestal in the lower left, nothing on it")
     return ", ".join(teile)
 
 
