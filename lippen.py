@@ -489,7 +489,7 @@ def _eintrag(kanal):
     return {"url": STANDARD_URL, "key": key}
 
 
-def _fal_clip(kanal, video, audio, ziel, sag):
+def _fal_clip(kanal, video, audio, ziel, sag, sync_mode="cut_off"):
     """Kopfclip plus Tonspur an das Lippenmodell. Pfad oder None."""
     import animation
     import schluessel
@@ -510,7 +510,7 @@ def _fal_clip(kanal, video, audio, ziel, sag):
         koerper = {"video_url": vurl, "audio_url": aurl}
     else:
         koerper = {"video_url": vurl, "audio_url": aurl,
-                   "model": "lipsync-2", "sync_mode": "cut_off"}
+                   "model": "lipsync-2", "sync_mode": sync_mode or "cut_off"}
     try:
         start = animation._hole(basis, key, koerper, zeit=120)
     except urllib.error.HTTPError as f:
@@ -579,7 +579,7 @@ def _sichtbare(k, s):
     return [x["name"] for x in darsteller.besetzung(k, nur)]
 
 
-def _stuecke(k, kanal, s, ordner):
+def _stuecke(k, kanal, s, ordner, erzwingen=None):
     """Gesprochene Zeilen als Dateien, Regieanweisungen ausgelassen."""
     import medien
     import szenen_video as sv
@@ -591,7 +591,9 @@ def _stuecke(k, kanal, s, ordner):
         if not (wort or "").strip():
             continue
         ziel = os.path.join(ordner, "zeile_%02d.mp3" % i)
-        if not wer:
+        if erzwingen:
+            wer = erzwingen
+        elif not wer:
             sichtbar = _sichtbare(k, s)
             if len(sichtbar) == 1:
                 wer = sichtbar[0]
@@ -778,10 +780,10 @@ def _eine_einstellung(k, sid, kanal, s, clip, name, sag):
     arbeit = tempfile.mkdtemp(prefix="eine_")
     try:
         sag("Stimme fuer %s" % name)
-        stuecke = _stuecke(k, kanal, s, arbeit)
+        stuecke = _stuecke(k, kanal, s, arbeit, erzwingen=name)
         if not stuecke:
             return False, "Stimme liess sich nicht erzeugen"
-        sag("Clip fuer Kling-Lippen")
+        sag("ElevenLabs-Stimme fuer %s" % name)
         passend = _fuer_kling(clip, os.path.join(arbeit, "mass.mp4"))
         if not passend:
             return False, "Clip passt nicht zu Kling-Lippen"
@@ -794,12 +796,13 @@ def _eine_einstellung(k, sid, kanal, s, clip, name, sag):
             return False, "Tonspur liess sich nicht anpassen"
         endname = "clip_%s_%s_rede.mp4" % (_dateiname(name), time.strftime("%H%M%S"))
         ziel = os.path.join(szenen.ordner(k), endname)
-        sag("%s redet" % name)
-        rohvideo = os.path.join(arbeit, "kling.mp4")
-        fertig = _kling_ganz(kanal, passend, ton, rohvideo, sag)
-        if not fertig or not os.path.exists(rohvideo):
-            return False, "Kling-Lippen hat kein Video geliefert"
-        if not _ton_drauf(rohvideo, ton, ziel):
+        sag("%s redet, ElevenLabs" % name)
+        rohvideo = os.path.join(arbeit, "sync.mp4")
+        fertig = _fal_clip(kanal, passend, ton, rohvideo, sag, sync_mode="silence")
+        quelle = rohvideo if fertig and os.path.exists(rohvideo) else passend
+        if quelle is passend:
+            sag("Lippenmodell ging nicht, die ElevenLabs-Stimme kommt trotzdem drauf")
+        if not _ton_drauf(quelle, ton, ziel):
             return False, "Stimme liess sich nicht auf den Clip legen"
         gesetzt = szenen.r3_clip_setzen(k, sid, endname)
         if not gesetzt.get("ok"):
@@ -857,12 +860,14 @@ def nachziehen(k, sid, melden=None):
     sichtbar = _sichtbare(k, s)
     def _dabei(n):
         return any(n.strip().lower() == x.strip().lower() for x in sichtbar)
-    redner = [n for n in redner if _dabei(n)]
-    if not redner:
+    passende = [n for n in redner if _dabei(n)]
+    if len(passende) == 1:
+        name = passende[0]
+    elif len(sichtbar) == 1:
+        name = sichtbar[0]
+    else:
         return None, ""
-    if len(redner) != 1:
-        return None, ""
-    return _eine_einstellung(k, sid, kanal, s, clip, redner[0], sag)
+    return _eine_einstellung(k, sid, kanal, s, clip, name, sag)
 
     arbeit = tempfile.mkdtemp(prefix="lippen_")
     try:

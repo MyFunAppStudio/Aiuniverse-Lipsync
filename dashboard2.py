@@ -1745,8 +1745,26 @@ def _r5_einen(k, sid):
     if not r.get("ok"):
         szenen.r3_stand_setzen(k, sid, "fehler", r.get("fehler") or "nicht angenommen")
         return False, r.get("fehler") or "nicht angenommen"
+    _r5_ohne_klington(ziel)
     szenen.r3_stand_setzen(k, sid, "fertig", "%d Sekunden" % dauer)
     return True, os.path.basename(ziel)
+
+
+def _r5_ohne_klington(ziel):
+    """Kling spricht oft selbst mit. Diese Stimme darf nicht im Clip bleiben."""
+    import subprocess
+    stumm = ziel + ".stumm.mp4"
+    r = subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-i", ziel, "-an",
+         "-c:v", "copy", stumm],
+        capture_output=True, text=True)
+    if r.returncode == 0 and os.path.exists(stumm) and os.path.getsize(stumm) > 1000:
+        os.replace(stumm, ziel)
+    else:
+        try:
+            os.remove(stumm)
+        except Exception:
+            pass
 
 
 def _r5_lauf(k, sids):

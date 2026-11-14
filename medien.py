@@ -362,14 +362,12 @@ def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     daten = {"text": text, "timestamps": True}
     sid = stimme_id or kanal.get("stimme_id") or ""
     energie = float(kanal.get("stimme_energie", 0.6))
-    if _eleven_id(sid):
-        if _eleven_key(kanal):
-            print("[Stimme] ausgewaehlte ElevenLabs-Stimme, nicht die fal-Standardstimme")
-            return _eleven_direkt(kanal, text, ziel, sid.strip(), energie)
-        print("[Stimme] Diese ID kennt nur ein ElevenLabs-Konto. fal nimmt Rachel.")
-        sid = "Rachel"
+    if _eleven_id(sid) and _eleven_key(kanal):
+        print("[Stimme] ausgewaehlte ElevenLabs-Stimme, nicht die fal-Standardstimme")
+        return _eleven_direkt(kanal, text, ziel, sid.strip(), energie)
     if sid:
         daten["voice"] = sid
+        print("[Stimme] fal bekommt die Stimme %s" % sid)
     daten["stability"] = max(0.0, min(1.0, 1.0 - energie))
     daten["similarity_boost"] = 0.75
     daten["style"] = max(0.0, min(1.0, energie))
