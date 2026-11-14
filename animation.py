@@ -1314,8 +1314,10 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         wer = "die Person aus <IMAGE_0>"
         szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
         prompt = (
-            "%s steht links in %s auf einem Stein, ganz zu sehen, Gesicht zur "
-            "Kamera. Der Hintergrund bleibt in Bewegung. "
+            "%s steht links in %s auf einer flachen Steinplatte, nur knoechelhoch, "
+            "kein hoher Felsen. Ganz zu sehen, Gesicht zur Kamera, beide Fuesse "
+            "bleiben auf der Platte. Er geht nicht durch die Szene. "
+            "Der Hintergrund bleibt in Bewegung. "
             "%s "
             "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
             "Der Mund bewegt sich zu den Woertern und ist danach zu. "
