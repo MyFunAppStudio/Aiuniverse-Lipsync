@@ -2045,15 +2045,24 @@ def themen_vorschlagen(key, wieviel=G4_WIEVIEL):
 
     prompt = (
         "Du planst die Themenliste fuer einen Kurzvideo-Kanal.\n\n"
+        "KANALNAME: %s\n\n"
         "SO BESCHREIBT SICH DER KANAL:\n%s\n\n"
         "REGELN DES KANALS:\n%s\n\n"
-        "Schlage genau %d Themen vor, die zu diesem Kanal passen.\n"
+        "Schlage genau %d Themen vor, und NUR aus dem Fach, das dieser "
+        "Text nennt.\n"
+        "Steht dort Geschichte, Krieg oder ein Erklaervideo, dann nur echte "
+        "historische Ereignisse: Jahr, Ort, was passiert ist. Keine "
+        "Gruselgeschichten, keine Geister, keine Graeber, keine "
+        "Leuchttuerme, keine erfundenen Kriminalfaelle.\n"
+        "Steht dort etwas anderes, bleib bei genau diesem Fach. Wechsle das "
+        "Genre nicht.\n"
         "Jedes Thema ist eine Zeile und steht fuer sich: konkret genug, dass man "
         "sofort weiss, worum es geht, aber kurz. Keine Nummerierung, keine "
         "Erklaerung, kein Doppelpunkt-Geschwafel.\n"
         "%s\n"
         "Antworte NUR mit einer JSON-Liste von Zeichenketten, sonst nichts."
-        % ((d.get("prompt") or "").strip() or "(noch nichts eingetragen)",
+        % ((d.get("name") or "").strip() or "(ohne Namen)",
+           (d.get("prompt") or "").strip() or "(noch nichts eingetragen)",
            (d.get("regeln") or "").strip() or "(keine)",
            wieviel,
            ("Diese sind schon vergeben, nimm andere:\n- " + "\n- ".join(schon))

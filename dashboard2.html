@@ -836,8 +836,8 @@ function tThemen(){
    +'<button class="knopf or" onclick="themaNeu()">+</button></div>'
    +'<button class="knopf" style="width:100%;margin-top:8px" id="thvor" onclick="themenVorschlag()">'
    +'Themen vorschlagen lassen</button>'
-   +'<div class="hinw" style="padding-top:6px">Die Text-KI schlägt zwölf neue vor, passend zu '
-   +'Masterprompt und Regeln. Schon vergebene und erledigte kommen nicht noch einmal.</div>';
+   +'<div class="hinw" style="padding-top:6px">Die Text-KI schlägt zwölf neue vor, nur aus dem Fach '
+   +'im Masterprompt. Steht dort noch von ungelösten Fällen, kommen Gruselthemen, keine Geschichte.</div>';
   var erl=(S.themen.erledigt||[]).slice(-6).reverse();
   o+='<div class="hinw" style="margin-top:12px">Erledigt: '+(S.themen.erledigt||[]).length
    +(erl.length?' · zuletzt '+h(erl.map(function(x){return x.thema}).join(", ")):'')+'</div>';
