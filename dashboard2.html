@@ -33,8 +33,8 @@ h1,h2,.zahl{font-family:"Space Grotesk",sans-serif}
 /* Unten steht die feste Leiste mit VIDEO ERZEUGEN, bei einem laufenden
    Bau zusaetzlich die Statuszeile. Ohne Abstand verschwindet die letzte
    Karte dahinter - genau das ist bei den fertigen Videos passiert. */
-.inhalt{padding:12px 16px calc(150px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
-.karte{background:linear-gradient(180deg,#2A1E18,#1A1410);border:1px solid #463428;border-radius:16px;padding:4px 13px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.inhalt{padding:12px 16px calc(150px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:18px}
+.karte{background:linear-gradient(180deg,#2A1E18,#1A1410);border:2px solid #8A6848;border-radius:18px;padding:4px 13px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
 .karte.p{padding:13px}
 .kt{font-family:"Space Grotesk",sans-serif;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:#C8B0A0;margin:0 0 9px}
 .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #3E2E26}
@@ -45,7 +45,7 @@ h1,h2,.zahl{font-family:"Space Grotesk",sans-serif}
 .frag{flex:0 0 auto;width:18px;height:18px;line-height:16px;padding:0;border-radius:50%;background:#2A201A;border:1px solid #4E3A2E;color:#C8B0A0;font:inherit;font-size:11px;cursor:pointer;vertical-align:middle}
 .frag.an{background:#E39B45;border-color:#E39B45;color:#1C1208;font-weight:600}
 .erk{font-size:11.5px;line-height:1.55;color:#D8C4B4;background:#221812;border-left:2px solid #E39B45;border-radius:0 7px 7px 0;padding:9px 11px;margin:0 0 11px}
-.szf{margin:9px 0}
+.szf{margin:10px 0;padding:10px;border:2px solid #6A5040;border-radius:14px;background:#120E0C}
 .szf .szh{display:block;margin-bottom:4px}
 .szf textarea{min-height:52px}
 .dz{border-top:1px solid #3E2E26;padding:10px 0}
@@ -104,12 +104,19 @@ textarea{width:100%;text-align:left;resize:vertical;min-height:92px;line-height:
 .log{font:11px/1.6 ui-monospace,monospace;color:#C0A898;white-space:pre-wrap;word-break:break-word;max-height:170px;overflow:auto}
 .hinw{font-size:10.5px;color:#A88878;padding:4px 0 10px}
 .kind{padding-left:16px}
-.szn{background:#1E1612;border:2px solid #5A4436;border-radius:14px;padding:12px;margin-bottom:18px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.szn{background:#120E0C;border:3px solid #E39B45;border-radius:18px;padding:0 12px 14px;margin-bottom:22px;box-shadow:0 8px 0 #3A2818}
 .szn+.szn{margin-top:0}
-.szn .kopf{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:static;top:auto;z-index:auto;padding:0;background:none;border-bottom:0}
-.szn .nr{font-size:11px;color:#E0CDB8;letter-spacing:.08em;flex:1;font-weight:600}
-.szn .bildchen{width:100%;height:132px;object-fit:cover;border-radius:9px;background:#161210;display:block}
+.szn .kopf{display:flex;align-items:center;gap:8px;margin:0 -12px 12px;padding:10px 12px;position:static;top:auto;z-index:auto;background:#2A1C14;border-bottom:3px solid #E39B45;border-radius:15px 15px 0 0}
+.szn .nr{font-size:15px;color:#F6EDE4;letter-spacing:.04em;flex:1;font-weight:700}
+.szn .bildchen{width:100%;height:132px;object-fit:cover;border-radius:12px;background:#161210;display:block;border:2px solid #6A5040}
 .szn textarea{width:100%;min-height:58px;margin-top:8px}
+.satzzeit{display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px 12px;border:2px solid #E39B45;border-radius:14px;background:#241810}
+.satzzeit.sperre{border-color:#E23B3B;background:#2A1412}
+.zeitgross{font-family:"Space Grotesk",sans-serif;font-size:34px;font-weight:700;line-height:1;color:#F6EDE4;min-width:78px;font-variant-numeric:tabular-nums}
+.satzzeit.sperre .zeitgross{color:#FFB454;font-size:22px;min-width:92px}
+.zeitklein{font-size:13px;line-height:1.35;color:#EADCCE}
+.szn .stufwert{font-size:28px;min-width:74px}
+.szn .stufwert i{font-size:16px}
 .szz{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
 .szh{font-size:10.5px;color:#C4A898}
 .hak{display:flex;align-items:center;gap:6px;font-size:12px;color:#D4C0B0;cursor:pointer}
@@ -184,7 +191,7 @@ details.mehr[open]>summary{color:#E39B45}
 .karte.mit{border-color:#E39B45}
 
 /* Der Dreifachschalter je Szene */
-.schalt{display:flex;gap:6px;margin:10px 0 2px}
+.schalt{display:flex;gap:6px;margin:10px 0 2px;padding:8px;border:2px solid #6A5040;border-radius:14px;background:#1A1410}
 .schalt .st{flex:1;padding:10px 6px;border-radius:9px;border:1px solid #4E3A2E;
   background:#2A1E18;color:#C8B0A0;font-size:11.5px;font-weight:600;
   line-height:1.3;cursor:pointer;text-align:center}
@@ -1636,19 +1643,23 @@ function clipBedarf(text){
   return {woerter:w,spricht:Math.round(spricht*10)/10,puffer:puff,
           gesamt:Math.round(gesamt*10)/10,passt:passt,dauer:dauer};
 }
-function satzHinweis(text){
+function satzKasten(text){
   var b=clipBedarf(text);
-  if(!b.woerter)return "Noch kein Satz.";
-  var zahl=function(x){return String(x).replace(".",",")};
-  if(!b.passt)return b.woerter+" Wörter, etwa "+zahl(b.spricht)+" s plus "
-    +zahl(b.puffer)+" s Puffer. Das sind "+zahl(b.gesamt)+" s und damit zu lang. "
-    +"Erzeugen ist gesperrt. Kürze den Text oder hänge einen zweiten Clip an.";
-  return b.woerter+" Wörter, etwa "+zahl(b.spricht)+" s, plus "+zahl(b.puffer)
-    +" s Puffer. Der Clip wird "+b.dauer+" Sekunden.";
+  var z=function(x){return String(x).replace(".",",")};
+  if(!b.woerter)return {gross:"–",klein:"Noch kein Satz.",sperre:false};
+  if(!b.passt)return {gross:"zu lang",sperre:true,
+    klein:b.woerter+" Wörter, etwa "+z(b.spricht)+" s plus "+z(b.puffer)+" s Puffer. Kürzen oder zweiten Clip."};
+  return {gross:b.dauer+" s",sperre:false,
+    klein:b.woerter+" Wörter · "+z(b.spricht)+" s plus "+z(b.puffer)+" s Puffer"};
+}
+function satzHtml(text){
+  var k=satzKasten(text);
+  return '<div class="satzzeit'+(k.sperre?" sperre":"")+'"><b class="zeitgross">'+k.gross
+    +'</b><span class="zeitklein">'+k.klein+"</span></div>";
 }
 function satzZeigen(ta){
   var z=ta.parentNode&&ta.parentNode.querySelector(".satzzeit");
-  if(z)z.textContent=satzHinweis(ta.value);
+  if(z)z.outerHTML=satzHtml(ta.value);
 }
 function istGrok(){
   var url=((R6.stand||{}).ref_url||"");
@@ -1954,7 +1965,7 @@ function tSzenen(){
      +'<div class="szf"><span class="szh">Sprechtext</span>'
      +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." '
      +'oninput="satzZeigen(this)" onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea>'
-     +'<div class="szh satzzeit">'+satzHinweis(s.text||"")+'</div></div>'
+     +satzHtml(s.text||"")+'</div>'
      +'<div class="szf"><span class="szh">Bildbeschreibung</span>'
      +'<textarea placeholder="Was auf dem Bild zu sehen ist. Leer = aus dem Sprechtext." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
      +'<div class="szf"><span class="szh">Animationsanweisung</span>'
