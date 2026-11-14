@@ -2785,7 +2785,10 @@ function tGeschichte(){
    +'<input type="text" id="gsthema" class="breit" placeholder="Thema — leer nimmt das nächste aus der Liste" value="'
    +h(S.einst.geschichte_thema||"")+'" onchange="setz(\'geschichte_thema\',this.value)">'
    +'<button class="knopf or" id="gsknopf" onclick="textSchreiben()">Schreiben</button></div>'
-   +'<textarea id="gstext" style="min-height:190px" placeholder="Hier den ganzen Text einfügen.&#10;&#10;(Satz oder Absatz in Klammern wird ein Bild.)&#10;(Die nächste Klammer das nächste.)"'
+   +'<textarea id="gsquelle" style="min-height:120px;margin-bottom:9px" '
+   +'placeholder="Quelle — hier den kopierten Text einfügen, zum Beispiel einen Absatz über Coca-Cola. Das ist nicht das Drehbuch."'
+   +' onchange="setz(\'geschichte_quelle\',this.value)">'+h(S.einst.geschichte_quelle||"")+'</textarea>'
+   +'<textarea id="gstext" style="min-height:190px" placeholder="Hier landet das Drehbuch. Schreiben füllt es. Du kannst es danach ändern."'
    +' onchange="setz(\'geschichte_text\',this.value)">'+h(S.einst.geschichte_text||"")+'</textarea>'
    +'<div class="hinw" style="margin-top:8px">'
    +(g.saetze?('Ergibt <b>'+g.saetze+' Szenen</b> · etwa '+Number(g.kosten||0).toFixed(2)+' € für die Bilder')
@@ -2793,8 +2796,9 @@ function tGeschichte(){
    +'</div>'
    +'<div class="hinw" style="padding-top:0">Klammern bestimmen die Szenen: alles zwischen ( und ) wird ein Bild. '
    +'Ohne Klammern trennt eine Leerzeile, ohne beides wird Satz für Satz zerlegt.<br><br>'
-   +'<b>Schreiben</b> lässt die Text-KI eine Geschichte zum Thema verfassen, fertig mit Klammern '
-   +'und Regie. Lies drüber und ändere, was dir nicht passt, bevor du erzeugst.<br><br>'
+   +'<b>Schreiben</b> nimmt das Thema und die Quelle und lässt die Text-KI daraus die Szenen machen. '
+   +'Sie hat dabei kein Internet: sie nimmt den eingefügten Text und was sie schon weiß. '
+   +'Lies das Drehbuch danach durch.<br><br>'
    +'In Anführungszeichen spricht die Figur. In eckigen Klammern steht die Regie: was zu sehen sein soll. Sie wird nicht gesprochen.</div>'
    +'</div>';
 
@@ -2950,11 +2954,12 @@ function textSchreibenLos(){
   var b=el("gsknopf"); if(!b)return;
   var thema=(el("gsthema")||{}).value||"";
   var bisher=(el("gstext")||{}).value||"";
+  var quelle=(el("gsquelle")||{}).value||"";
   b.disabled=true; b.textContent="schreibt…";
-  api("/api/vorschlag?k="+S.kanal,{thema:thema,bisher:bisher}).then(function(r){
+  api("/api/vorschlag?k="+S.kanal,{thema:thema,bisher:bisher,quelle:quelle}).then(function(r){
     b.disabled=false; b.textContent="Schreiben";
     if(!r||!r.ok)return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
-    var d={geschichte_teil:0};
+    var d={geschichte_teil:0,geschichte_quelle:quelle};
     if(r.thema&&r.thema_aus_liste)d.geschichte_thema=r.thema;
     d.geschichte_serie="";
     d.geschichte_text=r.text;

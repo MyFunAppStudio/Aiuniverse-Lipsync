@@ -554,15 +554,29 @@ def aus_paket(paket):
 _neu_vorschlag_alt = vorschlag
 
 
-def vorschlag(kanal, thema="", bisher=""):
+def vorschlag(kanal, thema="", bisher="", quelle=""):
     alt = " ".join(str(bisher or "").split())
-    if alt and isinstance(kanal, dict):
+    q = " ".join(str(quelle or "").split())[:8000]
+    if isinstance(kanal, dict) and (alt or q):
         kanal = dict(kanal)
-        kanal["prompt"] = (kanal.get("prompt") or "") + (
-            "\n\nNEUER VERSUCH:\n"
-            "Zu diesem Thema liegt schon eine Fassung vor. Schreibe eine andere. "
-            "Anderer erster Satz, andere Szenen, andere Formulierungen. "
-            "Dieselbe Fassung noch einmal ist falsch.\n"
-            "Die alte Fassung, nicht wiederholen:\n" + alt[:1200]
-        )
+        extra = ""
+        if q:
+            extra += (
+                "\n\nQUELLE:\n"
+                "Der Nutzer hat einen Text zu diesem Thema hineinkopiert. "
+                "Das ist die Faktengrundlage, nicht das Drehbuch und nicht zum Abschreiben.\n"
+                "Uebernimm daraus Namen, Orte, Jahreszahlen und Zahlen. "
+                "Erfinde keine Zahl und kein Zitat, das weder in der Quelle steht "
+                "noch allgemein bekannt ist. Bekannte Fakten, die zur Sache gehoeren "
+                "und in der Quelle fehlen, darfst du ergaenzen.\n"
+                "Schreibe daraus kurze Szenen. Jede Szene ein eigener Moment.\n"
+                "-----\n%s\n-----" % q)
+        if alt:
+            extra += (
+                "\n\nNEUER VERSUCH:\n"
+                "Zu diesem Thema liegt schon eine Fassung vor. Schreibe eine andere. "
+                "Anderer erster Satz, andere Szenen, andere Formulierungen. "
+                "Dieselbe Fassung noch einmal ist falsch. Die Fakten aus der Quelle bleiben.\n"
+                "Die alte Fassung, nicht wiederholen:\n" + alt[:1200])
+        kanal["prompt"] = (kanal.get("prompt") or "") + extra
     return _neu_vorschlag_alt(kanal, thema)

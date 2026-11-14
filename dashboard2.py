@@ -1092,7 +1092,8 @@ class Griff(BaseHTTPRequestHandler):
             d.setdefault("id", k)
             d.setdefault("name", k)
             r = geschichte.vorschlag(
-                d, b.get("thema") or "", b.get("bisher") or "")
+                d, b.get("thema") or "", b.get("bisher") or "",
+                b.get("quelle") or d.get("geschichte_quelle") or "")
             if r.get("ok"):
                 import szenen
                 szenen.r10_alle_weg(k)
