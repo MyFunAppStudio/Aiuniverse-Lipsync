@@ -1987,11 +1987,16 @@ function clipKarte(){
      +'Gebraucht wird eines mit <b>reference-to-video</b> in der Adresse. '
      +'Das andere macht nur Lippenbewegung zu einem fertigen Bild und kennt '
      +'deine Avatare nicht.</div>';
-  else if(d.ref_url)
+  else if(d.ref_url){
+    var grokClip=String(d.ref_url).toLowerCase().indexOf("api.x.ai")>=0
+      ||String(d.ref_url).toLowerCase().indexOf("grok")>=0;
     o+='<div class="hinw" style="padding:0;margin-bottom:9px">Benutzt: <b>'
      +h(d.ref_name||"ohne Namen")+'</b> · '+h(d.ref_url)
-     +'<br>Die Szene kommt von Kling oder MiniMax. Danach werden die Münder '
-     +'auf die Stimmen gesetzt: links spricht, wer im Text zuerst drankommt, rechts der zweite.</div>';
+     +'<br>'+(grokClip
+       ?'Grok baut den Clip. Steht ein Avatar-Name im Text, spricht Grok und bewegt den Mund. Steht nur der Sprecher-Name, bleibt Grok stumm. Die Stimme von fal.ai kommt erst bei Video erzeugen dazu.'
+       :'Dieses Modell bewegt nur das Bild. Es spricht nicht. Avatare starten damit nicht. Die Stimme kommt bei Video erzeugen von fal.ai.')
+     +'</div>';
+  }
   if(!d.bereit){
     o+='<div class="hinw" style="padding:0;color:#E39B45">'+h(d.grund||"noch nicht eingerichtet")+'</div>';
     o+='<div class="hinw" style="padding:0;margin-top:9px">Das Referenzmodell trägst du unter '
@@ -2020,10 +2025,11 @@ function clipKarte(){
    +'Alle offenen Clips erzeugen</button>'
    +'<div class="hinw" style="padding:0;margin-top:7px">Einer nach dem anderen. '
    +'Du kannst jederzeit aufhören, fertige Clips bleiben.<br><br>'
-   +'<b>Danach:</b> das fertige Video baust du unten in der orangen Leiste mit '
-   +'<b>VIDEO ERZEUGEN</b> — dort kommen Stimme, Untertitel, Musik und Abspann dazu. '
-   +'Clips sind dafür nicht nötig; Szenen auf <b>Kamerafahrt</b> oder <b>Standbild</b> '
-   +'gehen genauso ins Video.</div></div>';
+   +'<b>Danach:</b> das fertige Video baust du unten mit <b>VIDEO ERZEUGEN</b>. '
+   +'Dort kommen Untertitel, Musik und Abspann dazu. '
+   +'Bei einer Sprecher-Szene auch die Stimme von fal.ai. '
+   +'Eine Avatar-Szene hat die Stimme schon im Clip. '
+   +'Szenen auf <b>Kamerafahrt</b> oder <b>Standbild</b> gehen auch ohne Clip ins Video.</div></div>';
   return o;
 }
 
