@@ -915,7 +915,7 @@ function tAvatarWahl(){
       ?('sprecherUm(\''+h(f.id)+'\')')
       :('dsDabei(\''+h(f.id)+'\','+(f.dabei?"false":"true")+')');
     return '<button type="button" class="'+(an?"an":"")+'" onclick="'+klick+'">'
-      +h(f.name)+(f.art==="sprecher"?" · Stimme":"")+'</button>'}).join("")
+      +h(f.art==="sprecher"?("Sprecher · "+f.name):f.name)+'</button>'}).join("")
     +'</div>';
 }
 function modellJetzt(){
