@@ -690,7 +690,7 @@ function tAktiv(){
     o+=reihe("Im Bild",knoepfe("avatar_gruppe",gruppe,
         [["einer","immer nur einer"],["alle","alle zusammen"]]),
       gruppe==="alle"
-        ?"Alle stehen zusammen in der Szene. Einer spricht, die anderen schauen hin."
+        ?"Alle stehen zusammen. Jeder redet nacheinander, nicht nur einer."
         :"Jede Szene zeigt nur einen. In der nächsten Szene kommt der andere.");
     an.forEach(function(f){
       o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
@@ -960,7 +960,7 @@ function tDiesesVideo(){
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }else if(zusammen){
     o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
-      +' stehen nebeneinander in der Szene, ohne Podest.</div>';
+      +' stehen nebeneinander in der Szene. Jeder kann reden, nacheinander.</div>';
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }

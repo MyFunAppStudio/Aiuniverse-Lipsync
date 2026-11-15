@@ -1441,8 +1441,10 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                     "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
                     % (name or "Die Person", _grok_stimme(figur), zeile))
             teile.append(
-                "Es spricht immer nur einer. Die anderen lachen, schauen hin "
-                "oder zeigen auf ihn, reden aber nicht mit. "
+                "Sie reden nacheinander, jeder seinen eigenen Satz. "
+                "Wer gerade nicht dran ist, hoert zu, lacht oder zeigt hin, "
+                "und redet nicht gleichzeitig mit. "
+                "Der Mund bewegt sich nur bei dem, der gerade spricht. "
                 "Keine Untertitel, keine Schrift.")
         prompt = " ".join(teile)
     else:

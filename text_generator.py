@@ -707,8 +707,9 @@ def _t4_anweisung(namen, kanal=None):
     if mehrere and gruppe == "alle":
         lage = (
             "ALLE stehen in jeder Szene zusammen im Bild, nebeneinander, "
-            "ohne Podest. Es spricht immer nur einer. Die anderen hoeren zu "
-            "oder zeigen hin. Das Feld \"wer\" enthaelt immer alle Namen: %s.\n"
+            "ohne Podest. Jeder von ihnen redet, nacheinander, kurze Saetze, "
+            "wie in einem Gespraech. Nicht nur einer. Schreib jede Zeile mit "
+            "dem Namen davor. Das Feld \"wer\" enthaelt immer alle Namen: %s.\n"
             % ", ".join(namen))
     elif mehrere:
         lage = (
