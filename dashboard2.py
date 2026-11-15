@@ -561,6 +561,11 @@ def lauf_starten(key, thema):
     p = LAUF["prozess"]
     if p and p.poll() is None:
         return False, "Es laeuft schon ein Video"
+    try:
+        if _avatar_ohne_grok(key, (szenen.laden(key).get("szenen") or [])):
+            return False, GROK_PFLICHT
+    except Exception as f:
+        print("[Start] Grok-Prüfung ging nicht:", f)
     befehl = [sys.executable, "-u", os.path.join(BASIS, "lauf.py"), key]
     if thema:
         befehl.append(thema)
@@ -1847,6 +1852,23 @@ def _r5_lauf(k, sids):
             _R5_LAEUFT.pop(k, None)
 
 
+GROK_PFLICHT = (
+    "Avatar ist angewählt. Das startet nur, wenn bei Referenzclip Grok an ist. "
+    "MiniMax und Kling bewegen den Mund nicht zum Satz.")
+
+
+def _avatar_ohne_grok(k, liste):
+    """True, wenn eine Szene einen Avatar zeigt und nicht Grok an ist."""
+    import animation
+    url = (animation.ref_slot(_r5_kanal(k)) or {}).get("url")
+    if animation.grok_ist(url):
+        return False
+    for s in liste or []:
+        if (s.get("modus") or "") == "avatare":
+            return True
+    return False
+
+
 def r5_clip_start(k, b):
     """Startet einen Clip oder alle. Antwortet sofort."""
     import animation
@@ -1881,6 +1903,10 @@ def r5_clip_start(k, b):
         if not szenen.r3_szene(k, sid):
             return {"ok": False, "fehler": "Szene unbekannt"}
         sids = [sid]
+
+    byid = {s["id"]: s for s in d["szenen"]}
+    if _avatar_ohne_grok(k, [byid[i] for i in sids if i in byid]):
+        return {"ok": False, "fehler": GROK_PFLICHT}
 
     with _R5_SPERRE:
         if k in _R5_LAEUFT:
