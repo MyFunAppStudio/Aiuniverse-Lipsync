@@ -683,6 +683,9 @@ function tAktiv(){
   if(!an.length&&!sp.length){
     o+='<div class="hinw" style="padding:0;color:#FFB454">Niemand angehakt. '
      +'Oben Avatar oder Sprecher anmachen.</div>';
+  }else if(an.length&&sp.length){
+    o+='<div class="hinw" style="padding:0 0 8px">Avatar-Szenen und Sprecher-Szenen. '
+     +'Pro Szene nur einer von beiden, je nachdem welcher Name im Text steht.</div>';
   }else if(an.length>=2){
     o+='<div class="hinw" style="padding:0 0 8px">'+h(an.map(function(f){return f.name}).join(", "))
      +' stehen in jeder Szene zusammen. Jeder redet nacheinander. Kein Podest.</div>';
@@ -894,23 +897,9 @@ function sprecherIds(){
 function sprecherUm(id){
   S.ok=false;
   var li=sprecherIds().slice(), i=li.indexOf(id);
-  if(i>=0){
-    li.splice(i,1);
-    S.einst.sprecher_an=li;
-    api("/api/kanal?k="+S.kanal,{sprecher_an:li}).then(function(){zeichne()});
-    return;
-  }
-  S.einst.sprecher_an=[id];
-  var an=(S.ds&&S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"});
-  var kette=Promise.resolve();
-  an.forEach(function(f){
-    kette=kette.then(function(){
-      return api("/api/darsteller?k="+S.kanal,{aktion:"dabei",id:f.id,wert:false});
-    });
-  });
-  kette.then(function(){
-    return api("/api/kanal?k="+S.kanal,{sprecher_an:[id]});
-  }).then(function(){return ladeDarsteller()});
+  if(i>=0) li.splice(i,1); else li.push(id);
+  S.einst.sprecher_an=li;
+  api("/api/kanal?k="+S.kanal,{sprecher_an:li}).then(function(){zeichne()});
 }
 function tAvatarWahl(){
   if(!S.ds){ladeDarsteller();
@@ -946,9 +935,11 @@ function tModellZeile(an,sp){
   var m=modellJetzt();
   if(an.length){
     if(m.grok)
-      return '<div class="hinw" style="color:#37D67A">Modell: Grok. Passt. Der Avatar spricht im Clip selbst.</div>';
+      return '<div class="hinw" style="color:#37D67A">Modell: Grok. Avatar-Szenen spricht Grok.'
+        +(sp&&sp.length?' Sprecher-Szenen spricht fal.ai.':'')+'</div>';
     return '<div class="hinw" style="color:#FFB454">Modell: '+h(m.name)
-      +'. Passt nicht. Avatare starten nur mit Grok. Einstellungen, Clips mit Avataren, Grok anmachen.</div>';
+      +'. Avatar-Szenen brauchen Grok. Einstellungen, Clips mit Avataren.'
+      +(sp&&sp.length?' Sprecher-Szenen nehmen trotzdem fal.ai.':'')+'</div>';
   }
   if(sp&&sp.length)
     return '<div class="hinw">Modell egal. Niemand im Bild. Die Stimme kommt von fal.ai.</div>';
@@ -959,11 +950,6 @@ function tDiesesVideo(){
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
   var sp=(S.ds&&(S.ds.darsteller||[]).filter(function(f){
     return f.art==="sprecher"&&sprecherIds().indexOf(f.id)>=0}))||[];
-  if(an.length&&sp.length){
-    S.einst.sprecher_an=[];
-    api("/api/kanal?k="+S.kanal,{sprecher_an:[]}).then(function(){zeichne()});
-    sp=[];
-  }
   var o='<div class="karte p"><h2 class="kt">Dieses Video</h2>'
    +'<div class="hinw" style="padding:0 0 8px">Gilt für dieses Video und lässt sich hier vor jedem Lauf ändern. '
    +'Prompt, Schlüssel und Musik bleiben im Reiter Einstellungen.</div>'
@@ -974,13 +960,13 @@ function tDiesesVideo(){
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
    +'<div class="r"><div><div class="lb">Wer redet</div>'
    +'<div class="hint">'+(an.length&&sp.length
-      ?"Beides geht nicht. Avatar oder Sprecher, nicht beides."
+      ?"Beides an ist richtig. Steht in der Szene ein Avatar-Name, ist er im Bild und Grok spricht. Steht nur der Sprecher-Name, ist niemand im Bild und fal.ai spricht. Nie beide in derselben Szene."
       :(an.length>=2
-        ?"Alle stehen zusammen im Bild. Grok spricht. Kein Sprecher."
+        ?"Alle stehen zusammen im Bild. Grok spricht."
         :(an.length===1
-          ?"Nur dieser Avatar. Grok spricht. Ein Sprecher ist dann aus."
+          ?"Dieser Avatar ist im Bild. Grok spricht. Nimmst du ihn aus einer Szene, redet er weiter aus dem Off."
           :(sp.length
-            ?"Nur dieser Sprecher. Niemand im Bild. Stimme von fal.ai."
+            ?"Nur der Sprecher. Niemand im Bild. Stimme von fal.ai."
             :"Nichts an. Nur Bild und Untertitel."))))
    +'</div></div></div>'
    +tAvatarWahl();
@@ -2503,15 +2489,7 @@ function dsSetz(o){
     return ladeDarsteller().then(function(){return r})});
 }
 
-function dsDabei(did,an){
-  S.ok=false;
-  var weiter=function(){return dsSetz({aktion:"dabei",id:did,wert:!!an})};
-  if(an&&sprecherIds().length){
-    S.einst.sprecher_an=[];
-    return api("/api/kanal?k="+S.kanal,{sprecher_an:[]}).then(weiter);
-  }
-  return weiter();
-}
+function dsDabei(did,an){S.ok=false;return dsSetz({aktion:"dabei",id:did,wert:!!an})}
 function dsFeld(did,feld,wert){return dsSetz({aktion:feld,id:did,wert:wert})}
 
 /* Ein Knopf. Dateiwaehler auf, Bilder markieren, fertig - ohne id legt

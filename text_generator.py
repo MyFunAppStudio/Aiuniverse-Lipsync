@@ -719,35 +719,40 @@ def _t4_anweisung(namen, kanal=None, sprecher=None):
         return ""
     sprecher = sprecher or []
     mehrere = len(namen) > 1
-    if mehrere:
+    if namen and sprecher:
         lage = (
-            "ALLE stehen in JEDER Szene zusammen im Bild, nebeneinander, "
-            "ohne Podest. Nicht abwechselnd und nicht einer nach dem anderen "
-            "in der naechsten Szene. Jeder redet nacheinander, kurze Saetze. "
-            "Schreib jede Zeile mit dem Namen davor. Das Feld \"wer\" enthaelt "
-            "immer alle Namen: %s.\n" % ", ".join(namen))
+            "Es gibt ZWEI Arten von Szenen, nie beide in derselben Szene.\n"
+            "Avatar-Szene: nur %s redet und steht im Bild. \"wer\" enthaelt %s. "
+            "Grok spricht.\n"
+            "Sprecher-Szene: nur %s redet, niemand im Bild, \"wer\": [].\n"
+            % (", ".join(namen),
+               "alle diese Namen" if mehrere else "diesen Namen",
+               ", ".join(sprecher)))
+        if mehrere:
+            lage += ("In einer Avatar-Szene stehen alle zusammen, ohne Podest, "
+                     "und reden nacheinander.\n")
+    elif mehrere:
+        lage = (
+            "ALLE stehen in jeder Avatar-Szene zusammen, ohne Podest, "
+            "und reden nacheinander. \"wer\" enthaelt immer: %s.\n"
+            % ", ".join(namen))
     elif namen:
         links = bool((kanal or {}).get("podest_an")) and str(
             (kanal or {}).get("figur_stand") or "") != "szene"
         lage = (
-            ("%s ist der feste Erzaehler und steht in JEDER Szene links "
-             "auf einem flachen Podest. Rechts bleibt frei. "
-             "Nicht abwechselnd. Das Feld \"wer\" ist immer [\"%s\"], "
-             "ausser der Ort ist wichtiger, dann []. Dieselbe Person redet dann "
-             "aus dem Off weiter, mit derselben Stimme. Kein zweiter Sprecher.\n")
+            ("%s steht in jeder Avatar-Szene links auf einem flachen Podest. "
+             "\"wer\" ist [\"%s\"]. Nimmt man die Person aus dem Bild, "
+             "redet sie weiter aus dem Off, dieselbe Stimme.\n")
             if links else
-            ("%s ist der feste Erzaehler und steht in JEDER Szene im Bild, "
-             "ohne Podest. Nicht abwechselnd. Das Feld \"wer\" ist immer "
-             "[\"%s\"], ausser der Ort ist wichtiger, dann []. Dieselbe Person "
-             "redet dann aus dem Off weiter, mit derselben Stimme.\n")
+            ("%s steht in jeder Avatar-Szene im Bild, ohne Podest. "
+             "\"wer\" ist [\"%s\"]. Nimmt man die Person aus dem Bild, "
+             "redet sie weiter aus dem Off, dieselbe Stimme.\n")
         ) % (namen[0], namen[0])
     else:
         lage = (
             "Niemand ist im Bild. Es spricht nur der Sprecher aus dem Off. "
             "Das Feld \"wer\" ist immer [].\n")
-    if namen:
-        sprecher = []
-    wer = namen or sprecher
+    wer = namen + [n for n in sprecher if n not in namen]
     liste = ", ".join(wer)
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
