@@ -221,7 +221,7 @@ body{background:#050607;color:#E7F6F1}
 .rot{color:#FF6B8A}
 .pills button.an,.sch.an,.frag.an,.schalt .st.an,.wer .wn.an{
   background:#E39B45;border-color:#E39B45;color:#1C1208}
-.reiter button.an{background:#E8C45C;border-color:#E8C45C;color:#1C1208;box-shadow:0 0 14px rgba(232,196,92,.35)}
+.reiter button.an{background:#4C7DFF;border-color:#4C7DFF;color:#fff;box-shadow:0 0 14px rgba(76,125,255,.4)}
 .knopf.or{background:#E39B45;color:#1C1208;box-shadow:none}
 .knopf.gen,.gen{background:#2DE2B4;border:none;color:#04110e;box-shadow:0 0 18px rgba(45,226,180,.28)}
 .ik.rot{background:#C8364A;border-color:#C8364A;color:#fff}
@@ -985,7 +985,9 @@ function tDiesesVideo(){
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }
-  if(sp.length)
+  if(sp.length&&an.length)
+    o+='<div class="hinw">Sprecher aus. '+h(an[0].name)+' behält dieselbe Stimme in jeder Szene, auch ohne Bild.</div>';
+  else if(sp.length)
     o+='<div class="hinw">Sprecher: '+h(sp.map(function(f){return f.name}).join(", "))
      +(an.length?'. Nicht im Bild, nur die Stimme.':'. Niemand im Bild.')+'</div>';
   if(S.ab&&(S.ab.eintraege||[]).length)

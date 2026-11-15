@@ -733,19 +733,20 @@ def _t4_anweisung(namen, kanal=None, sprecher=None):
             ("%s ist der feste Erzaehler und steht in JEDER Szene links "
              "auf einem flachen Podest. Rechts bleibt frei. "
              "Nicht abwechselnd. Das Feld \"wer\" ist immer [\"%s\"], "
-             "ausser der Ort ist wichtiger, dann [].\n")
+             "ausser der Ort ist wichtiger, dann []. Dieselbe Person redet dann "
+             "aus dem Off weiter, mit derselben Stimme. Kein zweiter Sprecher.\n")
             if links else
             ("%s ist der feste Erzaehler und steht in JEDER Szene im Bild, "
              "ohne Podest. Nicht abwechselnd. Das Feld \"wer\" ist immer "
-             "[\"%s\"], ausser der Ort ist wichtiger, dann [].\n")
+             "[\"%s\"], ausser der Ort ist wichtiger, dann []. Dieselbe Person "
+             "redet dann aus dem Off weiter, mit derselben Stimme.\n")
         ) % (namen[0], namen[0])
     else:
         lage = (
             "Niemand ist im Bild. Es spricht nur der Sprecher aus dem Off. "
             "Das Feld \"wer\" ist immer [].\n")
-    if sprecher and namen:
-        lage += ("Zusaetzlich spricht aus dem Off, nie im Bild: %s.\n"
-                 % ", ".join(sprecher))
+    if namen:
+        sprecher = []
     wer = namen or sprecher
     liste = ", ".join(wer)
     return (
