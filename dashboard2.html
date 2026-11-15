@@ -585,6 +585,7 @@ function setzViele(d){
   return api("/api/kanal?k="+S.kanal,d).then(function(){zeichne()});
 }
 function setz(feld,wert,zahlFeld){
+  S.ok=false;
   if(feld==="geschichte_text"||feld==="geschichte_stil")setTimeout(function(){S.gs=null;ladeGeschichte()},260);
   if(wert==="true")wert=true;else if(wert==="false")wert=false;
   else if(zahlFeld)wert=Number(wert)||0;
@@ -822,6 +823,30 @@ function tAvatarWahl(){
       +h(f.id)+'\','+(f.dabei?"false":"true")+')">'+h(f.name)+'</button>'}).join("")
     +'</div>';
 }
+function modellJetzt(){
+  var liste=(((S.modelle||{}).apis||{}).ref)||[];
+  var an=null, i;
+  for(i=0;i<liste.length;i++) if(liste[i].aktiv) an=liste[i];
+  if(!an) for(i=0;i<liste.length;i++) if(liste[i].url){an=liste[i];break}
+  if(!an) return {name:"keins angewählt", url:"", grok:false};
+  var u=String(an.url||"").toLowerCase();
+  return {name:an.name||"ohne Namen", url:an.url||"",
+    grok:u.indexOf("api.x.ai")>=0||u.indexOf("grok-imagine")>=0};
+}
+function stimmtSo(){S.ok=true;zeichne()}
+function tModellZeile(an){
+  if(!S.modelle){ladeModelle();
+    return '<div class="hinw">Modell wird geladen…</div>'}
+  var m=modellJetzt();
+  if(an.length){
+    if(m.grok)
+      return '<div class="hinw" style="color:#37D67A">Modell: Grok. Der Avatar spricht selbst.</div>';
+    return '<div class="hinw" style="color:#FFB454">Modell: '+h(m.name)
+      +'. Avatar startet so nicht. Unter Einstellungen bei Referenzclip Grok anmachen.</div>';
+  }
+  return '<div class="hinw">Kein Avatar. Die Stimme kommt von fal. '
+    +'Kling oder MiniMax nur, wenn eine Szene auf Nur Bild animieren steht.</div>';
+}
 function tDiesesVideo(){
   var w=videoWahl();
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
@@ -834,9 +859,12 @@ function tDiesesVideo(){
       "480 reicht fürs Handy. 768 ist schärfer. Grok bekommt dafür 720.")
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
    +'<div class="r"><div><div class="lb">Avatar</div>'
-   +'<div class="hint">Wer leuchtet, ist im Video. Niemand an: nur Bild, Untertitel und Sprecher.</div></div></div>'
+   +'<div class="hint">'+(an.length>1
+      ?"Mehrere stehen nebeneinander in der Szene. Nicht links auf einem Podest."
+      :"Wer leuchtet, ist im Video. Niemand an: nur Bild, Untertitel und Sprecher.")
+   +'</div></div></div>'
    +tAvatarWahl();
-  if(an.length){
+  if(an.length===1){
     o+=reihe("Stand",knoepfe("figur_stand",w.stand,
         [["links","links"],["rechts","rechts"],["szene","in der Szene"]]),
       w.stand==="rechts"?"Handlung Mitte und links":
@@ -855,6 +883,11 @@ function tDiesesVideo(){
     }
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
+  }else if(an.length>1){
+    o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
+      +' stehen nebeneinander in der Szene, ohne Podest.</div>';
+    o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
+        [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }
   if(S.ab&&(S.ab.eintraege||[]).length)
     o+=abWahlZeile(S.ab);
@@ -863,6 +896,13 @@ function tDiesesVideo(){
     o+='<div class="hinw">Abspann wird geladen…</div>';
   }else
     o+='<div class="hinw">Kein Abspann hochgeladen. Das Video endet mit der letzten Szene.</div>';
+  o+=tModellZeile(an);
+  o+='<div style="margin-top:12px">'
+   +(S.ok
+      ?'<div class="hinw" style="color:#37D67A">Einstellungen bestätigt. Jetzt darf Video erzeugen starten.</div>'
+      :'<button class="knopf or" style="width:100%" onclick="stimmtSo()">Stimmt so</button>'
+       +'<div class="hinw">Erst dieser Knopf, dann Video erzeugen. Änderst du etwas, musst du ihn neu drücken.</div>')
+   +'</div>';
   return o+'</div>';
 }
 function tWie(){
@@ -1231,6 +1271,12 @@ function abbrechen(){api("/api/stop",{}).then(laden)}
    dann, wenn aus fertigen Szenen gebaut wird und gar kein Thema
    gebraucht wird. Jetzt steht da, was wirklich passiert. */
 function fragGenerieren(){
+  if(!S.ok) return melde("Erst auf der Karte Stimmt so drücken. Sonst wird nichts erzeugt.");
+  var namen=((S.ds&&S.ds.darsteller)||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"})
+    .map(function(f){return f.name});
+  var m=modellJetzt();
+  if(namen.length&&!m.grok)
+    return melde("Avatar ist an, aber nicht Grok. Unter Einstellungen bei Referenzclip Grok anmachen.");
   var t=(el("thema")&&el("thema").value||"").trim();
   var k=kanalDaten(), p=S.preis||{};
   var szenen=(((S.szenen||{}).szenen)||[]);
@@ -1254,10 +1300,8 @@ function fragGenerieren(){
   }
   var sek=(p.sekunden?(Math.round(p.sekunden)+" Sek gesprochen"):((S.einst.laenge||20)+" Sek"));
   var w=videoWahl();
-  var namen=((S.ds&&S.ds.darsteller)||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"})
-    .map(function(f){return f.name});
-  var stand=w.stand==="szene"?"in der Szene":w.stand;
-  var podest=!namen.length?"ohne Avatar":(w.stand==="szene"?"ohne Podest":
+  var stand=namen.length>1?"nebeneinander in der Szene":(w.stand==="szene"?"in der Szene":w.stand);
+  var podest=!namen.length?"ohne Avatar":(namen.length>1||w.stand==="szene"?"ohne Podest":
     (w.podest?(w.art==="eigen"?(S.einst.podest_text||"eigenes Podest"):(w.art==="wolke"?"Wolke":"Stein")):"ohne Podest"));
   var sicht=w.sicht==="knie"?"Kopf bis Knie":(w.sicht==="ober"?"Nur Oberkörper":"Kopf bis Schuh");
   frage("Video erzeugen?",
@@ -2335,7 +2379,7 @@ function dsSetz(o){
     return ladeDarsteller().then(function(){return r})});
 }
 
-function dsDabei(did,an){return dsSetz({aktion:"dabei",id:did,wert:!!an})}
+function dsDabei(did,an){S.ok=false;return dsSetz({aktion:"dabei",id:did,wert:!!an})}
 function dsFeld(did,feld,wert){return dsSetz({aktion:feld,id:did,wert:wert})}
 
 /* Ein Knopf. Dateiwaehler auf, Bilder markieren, fertig - ohne id legt
@@ -2405,6 +2449,7 @@ function ladeAbspann(){
 }
 
 function abSetz(o){
+  S.ok=false;
   return api("/api/abspann?k="+S.kanal,o).then(function(r){
     if(!r||!r.ok){melde((r&&r.fehler)||"ging nicht");return r}
     return ladeAbspann().then(function(){return r})});

@@ -1166,10 +1166,16 @@ def _lage_satz(kanal):
     k = kanal or {}
     sicht = {"knie": "head to knees", "ober": "chest up, face large"}.get(
         str(k.get("figur_sicht") or ""), "full body, head to shoes")
+    mehrere = False
+    try:
+        import darsteller
+        mehrere = len(darsteller.besetzung(k)) > 1
+    except Exception:
+        mehrere = False
     stand = str(k.get("figur_stand") or "links")
-    if stand == "szene":
-        return ("LAGE, DIE GILT: The avatar belongs in the scene, %s. "
-                "No empty pedestal and no reserved corner." % sicht)
+    if mehrere or stand == "szene":
+        return ("LAGE, DIE GILT: The avatars stand together in the scene, %s. "
+                "No pedestal and no empty corner on the left." % sicht)
     seite = "right" if stand == "rechts" else "left"
     andere = "left" if seite == "right" else "right"
     if not k.get("podest_an"):
