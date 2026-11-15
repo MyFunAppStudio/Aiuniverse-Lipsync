@@ -271,6 +271,10 @@ input[type=text],input[type=number],select,textarea,.suchf input[type=text]{
 .karte:nth-child(3n+2),.szn:nth-child(3n+2){animation-name:randgold;border-color:#E8C45C}
 .karte:nth-child(3n),.szn:nth-child(3n){animation-name:randrosa;border-color:#FF6B9A}
 .leiste .pr .w{color:#2DE2B4;text-shadow:0 0 12px rgba(45,226,180,.45)}
+.szn{animation:none;border:2px solid #E39B45;margin:0 0 28px;box-shadow:none;background:#07090b}
+.szn .kopf{background:#1c140e;border-bottom:2px solid #E39B45}
+.szn .nr{font-size:16px;color:#F6E2C4}
+.knopf.gen{background:#2DE2B4;border:none;color:#04110e;font-weight:700;min-height:48px;box-shadow:0 0 18px rgba(45,226,180,.35)}
 @media (prefers-reduced-motion:reduce){
   .karte,.szn,details.falt,.dlg{animation:none}
 }
@@ -1953,7 +1957,7 @@ function clipZeile(s){
      +'<video src="/eigen/'+encodeURIComponent(clip)+'?k='+S.kanal+'" controls playsinline muted '
      +'style="width:100%;max-height:300px;border-radius:9px;background:#000;display:block"></video>'
      +'<div style="display:flex;gap:7px;margin-top:7px">'
-     +'<button class="knopf" style="flex:1"'+((laeuft||clipZuLang(s))?' disabled':'')
+     +'<button class="knopf gen" style="flex:1"'+((laeuft||clipZuLang(s))?' disabled':'')
      +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',true)">Clip neu machen</button>'
      +'<button class="knopf" onclick="clipWeg(\''+s.id+'\')">Verwerfen</button>'
      +'</div>'
@@ -1967,7 +1971,7 @@ function clipZeile(s){
   o+='<div class="szz p62" style="display:block">'
    +(clipZuLang(s)?'<div class="szh" style="margin-bottom:6px;color:#FFB454">Erzeugen ist gesperrt. '
      +'Der Satz plus Puffer passt nicht in 15 Sekunden. Kürze den Text oder teile ihn auf.</div>':'')
-   +'<button class="knopf" style="width:100%"'+((laeuft||clipZuLang(s))?' disabled':'')
+   +'<button class="knopf gen" style="width:100%"'+((laeuft||clipZuLang(s))?' disabled':'')
    +' onclick="clipNeu(\''+s.id+'\','+clipSoll(s)+',false)">Clip erzeugen'
    +(clipZuLang(s)?'':(clipSoll(s)?(' · '+clipSoll(s)+' s'):''))+'</button>';
   if(stand==="fehler"&&txt)
@@ -2021,7 +2025,7 @@ function clipKarte(){
   o+='<div class="hinw" style="padding:0">'+d.offen+' Szene'+(d.offen===1?'':'n')+' ohne Clip, '
    +'zusammen '+d.offen_sekunden+' Sekunden. Das kostet etwa <b>'
    +(Number(d.offen_preis)||0).toFixed(2)+' USD</b>.</div>'
-   +'<button class="knopf or" style="width:100%;margin-top:9px" onclick="clipAlle()">'
+   +'<button class="knopf gen" style="width:100%;margin-top:9px" onclick="clipAlle()">'
    +'Alle offenen Clips erzeugen</button>'
    +'<div class="hinw" style="padding:0;margin-top:7px">Einer nach dem anderen. '
    +'Du kannst jederzeit aufhören, fertige Clips bleiben.<br><br>'
