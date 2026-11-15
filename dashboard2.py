@@ -1724,10 +1724,13 @@ def _r5_einen(k, sid):
 
     grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
     if grok:
+        nfig = len(figuren or [])
+        mindest = 12 if nfig >= 3 else (10 if nfig >= 2 else 8)
         bedarf = szenen.clip_bedarf(
             s.get("text") or "",
             kanal.get("woerter_pro_sekunde") or 2.5,
-            kanal.get("nachlauf", 0.9))
+            kanal.get("nachlauf", 0.9),
+            mindest=mindest)
         if not bedarf["passt"]:
             grund = ("Text zu lang: %d Wörter, etwa %.1f s plus %.1f s Puffer. "
                      "Das sind mehr als 15 s. Kürze den Satz oder teile ihn "

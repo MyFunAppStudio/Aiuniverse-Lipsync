@@ -456,7 +456,7 @@ var ERK={
 drehbuch:"Was der Bau aus deinem Text machen wird — Szene für Szene, bevor etwas Geld kostet. Zerlegt wird auf dem Server mit genau dem Code, der danach auch baut; was hier steht, wird also so gebaut.<br><br><b>Erzähler</b> ist normaler Text. <b>Avatar sagt</b> ist, was in Anführungszeichen steht. <b>Bild</b> kommt aus <i>[BILD: ...]</i> und geht an Flux. <b>Bewegung</b> kommt aus <i>[BEWEGUNG: ...]</i> und steuert den Clip. Steht nur eine Klammer ohne Namen drin, wird sie für Bild und Bewegung genommen — dann stehen beide gleich da.<br><br>Fehlt eine Zeile, fehlt sie auch im Video. Ändern tust du oben im Textfeld, nicht hier.",
 
 szenentext:"Oben an der Szenenliste. Die drei Felder jeder Szene haben jeweils ein eigenes Fragezeichen.",
-szene_sprech:"Was gesprochen und untertitelt wird. Jede Zeile beginnt mit dem Namen. Mehrere Avatare dürfen in EINER Szene nacheinander reden: Mara: Erster Satz. Jonas: Zweiter Satz. Hugo: Dritter Satz. Zusammen kurz genug für 10 Sekunden. Eine Zeile nur mit dem Sprecher-Namen ist eine Szene ohne Bild, fal.ai spricht.",
+szene_sprech:"Was gesprochen und untertitelt wird. Jede Zeile beginnt mit dem Namen. Mehrere Avatare dürfen in EINER Szene nacheinander reden: Mara: Erster Satz. Jonas: Zweiter Satz. Hugo: Dritter Satz. Grok macht den Clip 8 bis 15 Sekunden. Bei drei Avataren mindestens 12, nie 4. Eine Zeile nur mit dem Sprecher-Namen ist eine Szene ohne Bild, fal.ai spricht.",
 szene_bild:"Was auf dem Bild zu sehen ist. In der Sprache, die beim Video gewählt ist, nicht automatisch Englisch. Das malt das Bildmodell. Ort, Leute, Handlung. Nicht den gesprochenen Satz abschreiben. Steht der Avatar links, bleibt unten links frei.",
 szene_regie:"Was die Avatare tun. Ein Satz gilt für alle. Oder je Avatar eine eigene Zeile: Mara: zeigt nach rechts. Jonas: lacht. Hugo: nickt. Leer lassen heißt eine ruhige Bewegung.",
 
@@ -1894,17 +1894,27 @@ function wortzahl(text){
   t=t.trim();
   return t?t.split(/\s+/).length:0;
 }
-function clipBedarf(text){
+function clipMindest(s){
+  var n=0, t=String((s&&s.text)||"");
+  if(s&&Array.isArray(s.wer)) n=s.wer.filter(Boolean).length;
+  var m=t.match(/(?:^|\s)[A-Za-zÄÖÜäöüß][^:\n]{0,18}:/g);
+  if(m&&m.length>n) n=m.length;
+  if(n>=3) return 12;
+  if(n>=2) return 10;
+  return 8;
+}
+function clipBedarf(text, mindest){
   var w=wortzahl(text), rate=satzTempo(), puff=satzPuffer();
   var spricht=w?w/rate:0;
   var gesamt=spricht+puff;
   var passt=w>0&&gesamt<=15.05;
-  var dauer=passt?Math.max(4,Math.min(15,Math.ceil(gesamt-1e-9))):0;
+  var boden=mindest||8;
+  var dauer=passt?Math.max(boden,Math.min(15,Math.ceil(gesamt-1e-9))):0;
   return {woerter:w,spricht:Math.round(spricht*10)/10,puffer:puff,
           gesamt:Math.round(gesamt*10)/10,passt:passt,dauer:dauer};
 }
-function satzKasten(text){
-  var b=clipBedarf(text);
+function satzKasten(text, s){
+  var b=clipBedarf(text, s?clipMindest(s):8);
   var z=function(x){return String(x).replace(".",",")};
   if(!b.woerter)return {gross:"–",klein:"Noch kein Satz.",sperre:false};
   if(!b.passt)return {gross:"zu lang",sperre:true,
@@ -1912,14 +1922,14 @@ function satzKasten(text){
   return {gross:b.dauer+" s",sperre:false,
     klein:b.woerter+" Wörter · "+z(b.spricht)+" s plus "+z(b.puffer)+" s Puffer"};
 }
-function satzHtml(text){
-  var k=satzKasten(text);
+function satzHtml(text, s){
+  var k=satzKasten(text, s);
   return '<div class="satzzeit'+(k.sperre?" sperre":"")+'"><b class="zeitgross">'+k.gross
     +'</b><span class="zeitklein">'+k.klein+"</span></div>";
 }
 function satzZeigen(ta){
   var z=ta.parentNode&&ta.parentNode.querySelector(".satzzeit");
-  if(z)z.outerHTML=satzHtml(ta.value);
+  if(z)z.outerHTML=satzHtml(ta.value,{text:ta.value});
 }
 function istGrok(){
   var url=((R6.stand||{}).ref_url||"");
@@ -1927,7 +1937,7 @@ function istGrok(){
 }
 function clipSoll(s){
   if(istGrok()){
-    var b=clipBedarf(s.text||"");
+    var b=clipBedarf(s.text||"", clipMindest(s));
     if(b.passt)return b.dauer;
     return 0;
   }
@@ -2216,7 +2226,7 @@ function tSzenen(){
      +'<div class="szf">'+szHinweis("Sprechtext","szene_sprech")
      +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." '
      +'oninput="satzZeigen(this)" onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea>'
-     +satzHtml(s.text||"")+'</div>'
+     +satzHtml(s.text||"", s)+'</div>'
      +'<div class="szf">'+szHinweis("Bildbeschreibung","szene_bild")
      +'<textarea placeholder="Was auf dem Bild zu sehen ist, in der Sprache des Videos." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
      +'<div class="szf">'+szHinweis("Animationsanweisung","szene_regie")

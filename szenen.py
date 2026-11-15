@@ -326,12 +326,14 @@ def wortzahl(text):
     return len([w for w in re.split(r"\s+", (_p50_ohne_regie(text) or "").strip()) if w])
 
 
-def clip_bedarf(text, tempo=2.5, puffer=0.9, grenze=15):
+def clip_bedarf(text, tempo=2.5, puffer=0.9, grenze=15, mindest=8):
     """Ob der Satz samt Puffer in einen Grok-Clip passt.
 
     Die Wörter sind gezählt. Die Sekunden sind eine Schätzung aus dem
     Sprechtempo. Der Puffer muss nach dem letzten Wort noch übrig sein.
     Passt das nicht, wird nichts bestellt und nichts abgeschnitten.
+    mindest ist die kürzeste Cliplänge. Bei drei Avataren 12, sonst 8.
+    Sonst bestellt Grok 4 Sekunden, und niemand kommt zu Wort.
     """
     try:
         rate = float(str(tempo).replace(",", "."))
@@ -349,7 +351,16 @@ def clip_bedarf(text, tempo=2.5, puffer=0.9, grenze=15):
     passt = bool(worte) and gesamt <= float(grenze) + 0.05
     dauer = int(math.ceil(gesamt - 1e-9)) if passt else 0
     if passt:
-        dauer = max(4, min(int(grenze), dauer))
+        boden = 8
+        try:
+            boden = int(mindest)
+        except Exception:
+            boden = 8
+        if boden < 4:
+            boden = 4
+        if boden > int(grenze):
+            boden = int(grenze)
+        dauer = max(boden, min(int(grenze), dauer))
     return {"woerter": worte, "spricht": round(spricht, 1), "puffer": round(puff, 1),
             "gesamt": round(gesamt, 1), "passt": passt, "dauer": dauer}
 

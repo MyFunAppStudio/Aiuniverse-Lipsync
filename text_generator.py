@@ -96,10 +96,17 @@ def erzeuge_paket(kanal, eigenes_thema=None):
 
     laenge = einstellungen.laenge_in_minuten(kanal)
     anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
-    _je = min(9.0, (laenge * 60.0) / max(1, anzahl_bilder))
+    _sek, _worte, _grok = _clip_deckel(kanal)
+    _je = min(float(_sek) - 1.0, (laenge * 60.0) / max(1, anzahl_bilder))
+    _je = max(8.0 if _grok else 4.0, _je)
     _wps = _p37_wps(kanal)
-    _unten = max(4, int(_je * _wps * 0.85))
-    _oben = max(_unten + 1, int(_je * _wps))
+    _unten = max(8 if _grok else 4, int(_je * _wps * 0.85))
+    _oben = max(_unten + 1, min(_worte, int(_je * _wps)))
+    _zeit = ("Grok macht den Clip zwischen 8 und 15 Sekunden. "
+             "Stehen drei Avatare in der Szene, mindestens 12 Sekunden, nie 4. "
+             "Laenger als 15 Sekunden wird nicht erzeugt. "
+             if _grok else
+             "Der Clip ist 10 Sekunden und kann nicht laenger. ")
 
     prompt = f"""{lade_prompt(kanal)}
 
@@ -109,7 +116,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens 9 Sekunden. Der Clip ist 10 Sekunden und kann nicht laenger. Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens {_je:.0f} Sekunden gesprochen. {_zeit}Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen in der Sprache des Videos, nicht in einer anderen. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Die Handlung ist in der Mitte und rechts, nicht links vorne. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, a flat ankle-high empty stone slab in the lower left, not a boulder".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
@@ -346,6 +353,28 @@ def _p37_wps(kanal):
     if wert < 1.2 or wert > 4.0:
         wert = P37_STANDARD
     return wert
+
+
+def _clip_deckel(kanal):
+    """Wie lang ein Clip sein darf, und wie viele Woerter reinpassen.
+
+    Grok nimmt jede ganze Sekunde von 4 bis 15. Kling und MiniMax bleiben
+    bei 10. Der Puffer muss noch in den Clip passen, sonst wird gesperrt.
+    """
+    try:
+        import animation
+        grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
+    except Exception:
+        grok = False
+    sek = 15 if grok else 10
+    try:
+        puff = float((kanal or {}).get("nachlauf"))
+    except Exception:
+        puff = 0.9
+    if puff != puff or puff < 0 or puff > 5:
+        puff = 0.9
+    worte = max(12, int((sek - puff) * _p37_wps(kanal)))
+    return sek, worte, grok
 
 
 # ---------- Nachtrag p40: JSON mit Anfuehrungszeichen retten ----------
@@ -938,17 +967,28 @@ def _t4_anweisung(namen, kanal=None, sprecher=None):
     sprecher = sprecher or []
     mehrere = len(namen) > 1
     if mehrere:
+        sek, worte, grok = _clip_deckel(kanal) if kanal else (15, 35, True)
+        boden = 12 if len(namen) >= 3 else 10
+        try:
+            puff = float((kanal or {}).get("nachlauf"))
+        except Exception:
+            puff = 0.9
+        if puff != puff or puff < 0 or puff > 5:
+            puff = 0.9
+        mindest_worte = max(12, int((boden - puff) * _p37_wps(kanal)))
         zeilen = "\n".join("  %s: Kurzer Satz mit einer Angabe." % n for n in namen[:3])
         lage = (
             "ALLE Avatare stehen in JEDER Avatar-Szene zusammen und reden "
             "NACHEINANDER IN DERSELBEN Szene. Nicht jeder in einer eigenen "
             "Szene und nicht gleichzeitig.\n"
             "Schreib alle Zeilen in den Text dieser einen Szene:\n%s\n"
-            "Zusammen hoechstens 20 Woerter, damit es in 10 Sekunden passt.\n"
+            "Mindestens %d Woerter, hoechstens %d. Der Clip ist %d bis %d Sekunden%s. Nie 4 Sekunden.\n"
             "Das Feld \"wer\" enthaelt immer alle Avatar-Namen: %s.\n"
             "Die Animationsanweisung ist EIN Satz fuer alle, oder je Avatar "
             "eine eigene Zeile: %s: zeigt nach rechts. %s: lacht.\n"
-            % (zeilen, ", ".join(namen), namen[0], namen[1]))
+            % (zeilen, mindest_worte, worte, boden, sek,
+               ", bei Grok jede ganze Sekunde von 8 bis 15" if grok else "",
+               ", ".join(namen), namen[0], namen[1]))
     elif namen:
         lage = (
             "%s steht im Bild und redet. Das Feld \"wer\" ist [\"%s\"].\n"
@@ -1135,12 +1175,12 @@ def _clip_gruppen(beide, grenze=20):
     return gruppen
 
 
-def _clip10(paket):
+def _clip10(paket, grenze=35):
     """Keine Szene darf laenger gesprochen sein, als der Clip dauert.
 
-    22 Woerter sind bei der Schaetzung knapp unter 10 Sekunden. Was
-    darueber liegt, wird zur naechsten Szene - dasselbe Bild, neuer Satz.
-    Die Text-KI haelt sich nicht an die Vorgabe.
+    grenze ist die Wortzahl, die inklusive Puffer in den Clip passt.
+    Bei Grok sind das bis zu 15 Sekunden, sonst 10. Was darueber liegt,
+    wird zur naechsten Szene.
     """
     if not isinstance(paket, dict):
         return paket
@@ -1159,7 +1199,7 @@ def _clip10(paket):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
-            for gruppe in _clip_gruppen(beide):
+            for gruppe in _clip_gruppen(beide, grenze):
                 s2 = dict(s)
                 s2["text"] = " ".join("%s: %s." % (n, w) for n, w in gruppe)
                 namen = []
@@ -1175,7 +1215,7 @@ def _clip10(paket):
             name = m.group(1).strip()
             roh = roh[m.end():].strip()
         woerter = roh.split()
-        if len(woerter) <= 22:
+        if len(woerter) <= grenze:
             s2 = dict(s)
             s2["text"] = (name + ": " + roh).strip(": ").strip() if name else roh
             if name:
@@ -1187,8 +1227,8 @@ def _clip10(paket):
             if len(rest) <= 26:
                 stueck, rest = rest, []
             else:
-                schnitt = 18
-                for i in range(18, 10, -1):
+                schnitt = max(8, grenze - 6)
+                for i in range(min(grenze - 1, len(rest)), max(8, grenze // 3), -1):
                     if rest[i - 1][-1:] in ",;:":
                         schnitt = i
                         break
@@ -1200,8 +1240,8 @@ def _clip10(paket):
                 s2["wer"] = [name]
             neu.append(s2)
     if len(neu) != len(szenen):
-        print("[Text] Zu lang fuer 10 Sekunden: %d Szenen werden %d"
-              % (len(szenen), len(neu)))
+        print("[Text] Zu lang fuer %d Woerter: %d Szenen werden %d"
+              % (grenze, len(szenen), len(neu)))
     raus = dict(paket)
     raus["szenen"] = neu
     return raus
@@ -1213,22 +1253,31 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         minuten = einstellungen.laenge_in_minuten(k)
         gesamt = minuten * 60.0
         if gesamt > 0:
+            sek, worte, grok = _clip_deckel(k)
             stufen = _t7_stufen(k)
-            nahe = [x for x in stufen if 6 <= x <= 10]
-            stufe = min(nahe, key=lambda x: abs(x - 10)) if nahe else 10
-            stufe = min(10, stufe)
+            if grok:
+                stufe = 15
+            else:
+                nahe = [x for x in stufen if 6 <= x <= 10]
+                stufe = min(nahe, key=lambda x: abs(x - 10)) if nahe else 10
+                stufe = min(sek, stufe)
             szenen = max(1, int(round(gesamt / float(stufe))))
-            if gesamt / szenen > 10:
-                szenen = max(1, int((gesamt + 9) // 10))
+            if gesamt / szenen > sek:
+                szenen = max(1, int((gesamt + sek - 1) // sek))
             bisher = max(1, int(round(minuten * k.get("bilder_pro_minute", 6))))
             k["bilder_pro_minute"] = (szenen + 0.4) / max(0.01, minuten)
             k["woerter_pro_sekunde"] = round(_p37_wps(k) * 0.85, 3)
             print("[Text] %d Szenen zu je hoechstens %d Sekunden "
                   "(vorher %d Szenen, im Schnitt %.1f)"
                   % (szenen, stufe, bisher, gesamt / max(1, bisher)))
-            return _clip10(_t7_erzeuge_alt(k, eigenes_thema))
+            return _clip10(_t7_erzeuge_alt(k, eigenes_thema), worte)
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
+        try:
+            _sek, worte, _grok = _clip_deckel(kanal)
+        except Exception:
+            worte = 35
+        return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte)
     return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema))
 
 
