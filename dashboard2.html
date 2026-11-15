@@ -252,16 +252,23 @@ input[type=text],input[type=number],select,textarea,.suchf input[type=text]{
 .me.warn,details.falt[open]>summary,details.mehr[open]>summary,.sucherg b{color:#E8C45C}
 .schalt .st.an,.wer .wn.an{background:rgba(45,226,180,.14);border-color:#2DE2B4;color:#E7F6F1}
 @keyframes rand{
-  0%{border-color:#2DE2B4;box-shadow:0 0 0 1px rgba(45,226,180,.22),0 0 18px rgba(45,226,180,.16)}
-  33%{border-color:#E8C45C;box-shadow:0 0 0 1px rgba(232,196,92,.22),0 0 18px rgba(232,196,92,.14)}
-  66%{border-color:#FF6B9A;box-shadow:0 0 0 1px rgba(255,107,154,.2),0 0 18px rgba(255,107,154,.12)}
-  100%{border-color:#2DE2B4;box-shadow:0 0 0 1px rgba(45,226,180,.22),0 0 18px rgba(45,226,180,.16)}
+  0%,100%{box-shadow:0 0 0 1px rgba(45,226,180,.45),0 0 16px rgba(45,226,180,.22),inset 0 1px 0 rgba(125,255,224,.45)}
+  50%{box-shadow:0 0 0 1px rgba(45,226,180,.9),0 0 28px rgba(45,226,180,.45),inset 0 1px 0 rgba(125,255,224,.8)}
 }
-.karte,.szn,details.falt,.dlg{animation:rand 9s linear infinite}
-.karte:nth-child(3n+2),.szn:nth-child(3n+2){animation-delay:-3s}
-.karte:nth-child(3n),.szn:nth-child(3n){animation-delay:-6s}
+@keyframes randgold{
+  0%,100%{box-shadow:0 0 0 1px rgba(232,196,92,.4),0 0 16px rgba(232,196,92,.18),inset 0 1px 0 rgba(232,196,92,.4)}
+  50%{box-shadow:0 0 0 1px rgba(232,196,92,.85),0 0 28px rgba(232,196,92,.4),inset 0 1px 0 rgba(232,196,92,.75)}
+}
+@keyframes randrosa{
+  0%,100%{box-shadow:0 0 0 1px rgba(255,107,154,.4),0 0 16px rgba(255,107,154,.16),inset 0 1px 0 rgba(255,107,154,.35)}
+  50%{box-shadow:0 0 0 1px rgba(255,107,154,.85),0 0 28px rgba(255,107,154,.38),inset 0 1px 0 rgba(255,107,154,.7)}
+}
+.karte,.szn,details.falt,.dlg{animation:rand 3.2s ease-in-out infinite;border-color:#2DE2B4}
+.karte:nth-child(3n+2),.szn:nth-child(3n+2){animation-name:randgold;border-color:#E8C45C}
+.karte:nth-child(3n),.szn:nth-child(3n){animation-name:randrosa;border-color:#FF6B9A}
+.leiste .pr .w{color:#2DE2B4;text-shadow:0 0 12px rgba(45,226,180,.45)}
 @media (prefers-reduced-motion:reduce){
-  .karte,.szn,details.falt,.dlg{animation:none;border-color:#2DE2B4}
+  .karte,.szn,details.falt,.dlg{animation:none}
 }
 </style>
 </head>
@@ -671,10 +678,20 @@ function tAktiv(){
   var o='<div class="karte p"><h2 class="kt">Aktiv vor dem Schreiben</h2>';
   if(!an.length){
     o+='<div class="hinw" style="padding:0;color:#FFB454">Niemand angehakt. '
-     +'Im Reiter Avatare den Schalter anmachen. Sonst schreibt die Szene ohne Figur.</div>';
+     +'Oben bei Avatar jemanden anmachen. Sonst schreibt die Szene ohne Figur.</div>';
+  }else if(an.length===1){
+    o+='<div class="hinw" style="padding:0 0 8px">'+h(an[0].name)+' ist in den Szenen zu sehen.</div>';
+    an.forEach(function(f){
+      o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
+       +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
+    });
   }else{
-    o+='<div class="hinw" style="padding:0 0 8px">Pro Szene ist nur einer im Bild und spricht. '
-     +'Sind mehrere an, kommt in der nächsten Szene der andere, aus seiner Blickrichtung.</div>';
+    var gruppe=S.einst.avatar_gruppe==="alle"?"alle":"einer";
+    o+=reihe("Im Bild",knoepfe("avatar_gruppe",gruppe,
+        [["einer","immer nur einer"],["alle","alle zusammen"]]),
+      gruppe==="alle"
+        ?"Alle stehen zusammen in der Szene. Einer spricht, die anderen schauen hin."
+        :"Jede Szene zeigt nur einen. In der nächsten Szene kommt der andere.");
     an.forEach(function(f){
       o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
        +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
@@ -906,6 +923,8 @@ function tModellZeile(an){
 function tDiesesVideo(){
   var w=videoWahl();
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
+  var gruppe=S.einst.avatar_gruppe==="alle"?"alle":"einer";
+  var zusammen=an.length>1&&gruppe==="alle";
   var o='<div class="karte p"><h2 class="kt">Dieses Video</h2>'
    +'<div class="hinw" style="padding:0 0 8px">Gilt für dieses Video und lässt sich hier vor jedem Lauf ändern. '
    +'Prompt, Schlüssel und Musik bleiben im Reiter Einstellungen.</div>'
@@ -915,12 +934,12 @@ function tDiesesVideo(){
       "480 reicht fürs Handy. 768 ist schärfer. Grok bekommt dafür 720.")
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
    +'<div class="r"><div><div class="lb">Avatar</div>'
-   +'<div class="hint">'+(an.length>1
+   +'<div class="hint">'+(zusammen
       ?"Mehrere stehen nebeneinander in der Szene. Nicht links auf einem Podest."
       :"Wer leuchtet, ist im Video. Niemand an: nur Bild, Untertitel und Sprecher.")
    +'</div></div></div>'
    +tAvatarWahl();
-  if(an.length===1){
+  if(an.length===1||(an.length>1&&!zusammen)){
     o+=reihe("Stand",knoepfe("figur_stand",w.stand,
         [["links","links"],["rechts","rechts"],["szene","in der Szene"]]),
       w.stand==="rechts"?"Handlung Mitte und links":
@@ -939,7 +958,7 @@ function tDiesesVideo(){
     }
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
-  }else if(an.length>1){
+  }else if(zusammen){
     o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
       +' stehen nebeneinander in der Szene, ohne Podest.</div>';
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,

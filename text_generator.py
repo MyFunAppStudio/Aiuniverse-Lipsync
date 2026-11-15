@@ -698,11 +698,27 @@ def _t4_besetzung(kanal):
         return []
 
 
-def _t4_anweisung(namen):
+def _t4_anweisung(namen, kanal=None):
     if not namen:
         return ""
     liste = " und ".join(namen) if len(namen) < 3 else ", ".join(namen)
     mehrere = len(namen) > 1
+    gruppe = str((kanal or {}).get("avatar_gruppe") or "einer")
+    if mehrere and gruppe == "alle":
+        lage = (
+            "ALLE stehen in jeder Szene zusammen im Bild, nebeneinander, "
+            "ohne Podest. Es spricht immer nur einer. Die anderen hoeren zu "
+            "oder zeigen hin. Das Feld \"wer\" enthaelt immer alle Namen: %s.\n"
+            % ", ".join(namen))
+    elif mehrere:
+        lage = (
+            "Pro Szene ist GENAU EINER im Bild und spricht. Die anderen sind "
+            "in dieser Szene nicht zu sehen. In der naechsten Szene kommt der "
+            "naechste. Das Feld \"wer\" hat genau einen Namen.\n")
+    else:
+        lage = (
+            "Das Feld \"wer\" nennt den Namen, wenn die Figur im Bild steht, "
+            "sonst eine leere Liste.\n")
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
         "In diesem Kanal treten auf: %s. Es gibt KEINEN Erzaehler. "
@@ -711,20 +727,19 @@ def _t4_anweisung(namen):
         "  %s: Erster Satz.\n"
         "%s"
         "%s"
+        "%s"
         "Die Figuren fuehren durch das Thema, sie sind keine Zeitzeugen und "
         "keine historischen Personen. Sie duerfen staunen, zweifeln und "
         "nachfragen.\n"
-        "Dazu gehoert je Szene das Feld \"wer\": eine Liste der Namen, die in "
-        "DIESEM Bild zu sehen sind. Das ist unabhaengig davon, wer spricht - "
-        "die Figuren koennen auch aus dem Off reden, waehrend man nur die "
-        "Landschaft sieht. Zeig sie nicht in jeder Szene; bei Szenen, in "
-        "denen der Ort oder das Ereignis wichtiger ist, gehoert \"wer\": []."
+        "Bei Szenen, in denen der Ort oder das Ereignis wichtiger ist, "
+        "gehoert \"wer\": [].\n"
         % (liste,
            namen[0],
            ("  %s: Antwort darauf.\n" % namen[1]) if mehrere else "",
            ("Sie reden MITEINANDER: einer fragt, der andere antwortet, einer "
             "widerspricht. Keine zwei Leute, die abwechselnd Fakten aufsagen.\n")
-           if mehrere else "")
+           if mehrere else "",
+           lage)
     )
 
 
@@ -736,7 +751,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     if not namen:
         return _t4_erzeuge_alt(kanal, eigenes_thema)
     k2 = dict(kanal or {})
-    k2["prompt"] = (k2.get("prompt") or "") + _t4_anweisung(namen)
+    k2["prompt"] = (k2.get("prompt") or "") + _t4_anweisung(namen, kanal)
     return _t4_erzeuge_alt(k2, eigenes_thema)
 
 
@@ -1169,7 +1184,8 @@ def _lage_satz(kanal):
     mehrere = False
     try:
         import darsteller
-        mehrere = len(darsteller.besetzung(k)) > 1
+        mehrere = (len(darsteller.besetzung(k)) > 1
+                   and str(k.get("avatar_gruppe") or "") == "alle")
     except Exception:
         mehrere = False
     stand = str(k.get("figur_stand") or "links")
