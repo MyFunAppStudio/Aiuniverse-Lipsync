@@ -894,9 +894,23 @@ function sprecherIds(){
 function sprecherUm(id){
   S.ok=false;
   var li=sprecherIds().slice(), i=li.indexOf(id);
-  if(i>=0) li.splice(i,1); else li.push(id);
-  S.einst.sprecher_an=li;
-  api("/api/kanal?k="+S.kanal,{sprecher_an:li}).then(function(){zeichne()});
+  if(i>=0){
+    li.splice(i,1);
+    S.einst.sprecher_an=li;
+    api("/api/kanal?k="+S.kanal,{sprecher_an:li}).then(function(){zeichne()});
+    return;
+  }
+  S.einst.sprecher_an=[id];
+  var an=(S.ds&&S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"});
+  var kette=Promise.resolve();
+  an.forEach(function(f){
+    kette=kette.then(function(){
+      return api("/api/darsteller?k="+S.kanal,{aktion:"dabei",id:f.id,wert:false});
+    });
+  });
+  kette.then(function(){
+    return api("/api/kanal?k="+S.kanal,{sprecher_an:[id]});
+  }).then(function(){return ladeDarsteller()});
 }
 function tAvatarWahl(){
   if(!S.ds){ladeDarsteller();
@@ -926,24 +940,30 @@ function modellJetzt(){
     grok:u.indexOf("api.x.ai")>=0||u.indexOf("grok-imagine")>=0};
 }
 function stimmtSo(){S.ok=true;zeichne()}
-function tModellZeile(an){
+function tModellZeile(an,sp){
   if(!S.modelle){ladeModelle();
     return '<div class="hinw">Modell wird geladen…</div>'}
   var m=modellJetzt();
   if(an.length){
     if(m.grok)
-      return '<div class="hinw" style="color:#37D67A">Modell: Grok. Der Avatar spricht selbst.</div>';
+      return '<div class="hinw" style="color:#37D67A">Modell: Grok. Passt. Der Avatar spricht im Clip selbst.</div>';
     return '<div class="hinw" style="color:#FFB454">Modell: '+h(m.name)
-      +'. Avatar startet so nicht. Unter Einstellungen bei Referenzclip Grok anmachen.</div>';
+      +'. Passt nicht. Avatare starten nur mit Grok. Einstellungen, Clips mit Avataren, Grok anmachen.</div>';
   }
-  return '<div class="hinw">Kein Avatar. Die Stimme kommt von fal. '
-    +'Kling oder MiniMax nur, wenn eine Szene auf Nur Bild animieren steht.</div>';
+  if(sp&&sp.length)
+    return '<div class="hinw">Modell egal. Niemand im Bild. Die Stimme kommt von fal.ai.</div>';
+  return '<div class="hinw">Nichts angewählt. Nur Bild und Untertitel, Stimme von fal.ai wenn Text da ist.</div>';
 }
 function tDiesesVideo(){
   var w=videoWahl();
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
   var sp=(S.ds&&(S.ds.darsteller||[]).filter(function(f){
     return f.art==="sprecher"&&sprecherIds().indexOf(f.id)>=0}))||[];
+  if(an.length&&sp.length){
+    S.einst.sprecher_an=[];
+    api("/api/kanal?k="+S.kanal,{sprecher_an:[]}).then(function(){zeichne()});
+    sp=[];
+  }
   var o='<div class="karte p"><h2 class="kt">Dieses Video</h2>'
    +'<div class="hinw" style="padding:0 0 8px">Gilt für dieses Video und lässt sich hier vor jedem Lauf ändern. '
    +'Prompt, Schlüssel und Musik bleiben im Reiter Einstellungen.</div>'
@@ -952,12 +972,16 @@ function tDiesesVideo(){
    +reihe("Auflösung",knoepfe("aufloesung",w.auf,[["480","480"],["768","768"]]),
       "480 reicht fürs Handy. 768 ist schärfer. Grok bekommt dafür 720.")
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
-   +'<div class="r"><div><div class="lb">Avatar</div>'
-   +'<div class="hint">'+(an.length>=2
-      ?"Ab zwei stehen alle in jeder Szene. Kein Podest."
-      :(an.length===1
-        ?"Einer erzählt fest, links. Podest nur für diesen einen. Rechts bleiben die Buttons frei."
-        :"Niemand im Bild: nur Untertitel und Sprecher."))
+   +'<div class="r"><div><div class="lb">Wer redet</div>'
+   +'<div class="hint">'+(an.length&&sp.length
+      ?"Beides geht nicht. Avatar oder Sprecher, nicht beides."
+      :(an.length>=2
+        ?"Alle stehen zusammen im Bild. Grok spricht. Kein Sprecher."
+        :(an.length===1
+          ?"Nur dieser Avatar. Grok spricht. Ein Sprecher ist dann aus."
+          :(sp.length
+            ?"Nur dieser Sprecher. Niemand im Bild. Stimme von fal.ai."
+            :"Nichts an. Nur Bild und Untertitel."))))
    +'</div></div></div>'
    +tAvatarWahl();
   if(an.length>=2){
@@ -970,7 +994,6 @@ function tDiesesVideo(){
         [["false","nein"],["true","ja"]]),
       "Nur links. Rechts sind Like und Kommentar.");
     if(w.podest){
-      o+='<div class="hinw">'+h(an[0].name)+' steht links auf dem Podest und erzählt jede Szene.</div>';
       o+=reihe("Art",knoepfe("podest_art",w.art,
           [["stein","Stein"],["wolke","Wolke"],["eigen","selber"]]),
         "Immer flach. Kein hoher Felsen.");
@@ -985,11 +1008,6 @@ function tDiesesVideo(){
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }
-  if(sp.length&&an.length)
-    o+='<div class="hinw">Sprecher aus. '+h(an[0].name)+' behält dieselbe Stimme in jeder Szene, auch ohne Bild.</div>';
-  else if(sp.length)
-    o+='<div class="hinw">Sprecher: '+h(sp.map(function(f){return f.name}).join(", "))
-     +(an.length?'. Nicht im Bild, nur die Stimme.':'. Niemand im Bild.')+'</div>';
   if(S.ab&&(S.ab.eintraege||[]).length)
     o+=abWahlZeile(S.ab);
   else if(!S.ab){
@@ -997,7 +1015,7 @@ function tDiesesVideo(){
     o+='<div class="hinw">Abspann wird geladen…</div>';
   }else
     o+='<div class="hinw">Kein Abspann hochgeladen. Das Video endet mit der letzten Szene.</div>';
-  o+=tModellZeile(an);
+  o+=tModellZeile(an,sp);
   o+='<div style="margin-top:12px">'
    +(S.ok
       ?'<div class="hinw" style="color:#37D67A">Einstellungen bestätigt. Jetzt darf Video erzeugen starten.</div>'
@@ -2485,7 +2503,15 @@ function dsSetz(o){
     return ladeDarsteller().then(function(){return r})});
 }
 
-function dsDabei(did,an){S.ok=false;return dsSetz({aktion:"dabei",id:did,wert:!!an})}
+function dsDabei(did,an){
+  S.ok=false;
+  var weiter=function(){return dsSetz({aktion:"dabei",id:did,wert:!!an})};
+  if(an&&sprecherIds().length){
+    S.einst.sprecher_an=[];
+    return api("/api/kanal?k="+S.kanal,{sprecher_an:[]}).then(weiter);
+  }
+  return weiter();
+}
 function dsFeld(did,feld,wert){return dsSetz({aktion:feld,id:did,wert:wert})}
 
 /* Ein Knopf. Dateiwaehler auf, Bilder markieren, fertig - ohne id legt
