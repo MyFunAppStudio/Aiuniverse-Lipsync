@@ -1257,6 +1257,8 @@ def lage_text(kanal, mehrere=False):
     """Wohin die Figur soll, so wie es unter Video machen steht."""
     k = kanal or {}
     stand = str(k.get("figur_stand") or "links")
+    if stand == "rechts":
+        stand = "links"
     sicht = str(k.get("figur_sicht") or "ganz")
     if sicht == "knie":
         koerper = "von Kopf bis Knie zu sehen"

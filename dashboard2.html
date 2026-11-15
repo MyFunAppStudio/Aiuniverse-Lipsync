@@ -216,15 +216,21 @@ body{background:#050607;color:#E7F6F1}
 .punkt.aus{background:#3a4a46;box-shadow:none}
 .unter,.r .hint,.e .me,.szh,.hinw,.log,.dlg p,.zt,.leiste .pr .t,.dznr,.dzz span{color:#8FB8AE}
 .kname,.r label,.r .lb,.e .ti,.szn .nr,.zeitklein,.hak{color:#E7F6F1}
-.kt,.dzz.av{color:#7DFFE0}
+.kt,.dzz.av{color:#F3E6C8}
 .gruen,.dzz.bi{color:#2DE2B4}
-.rot{color:#FF6B9A}
+.rot{color:#FF6B8A}
+.pills button.an,.sch.an,.frag.an,.schalt .st.an,.wer .wn.an{
+  background:#E39B45;border-color:#E39B45;color:#1C1208}
+.reiter button.an{background:#E8C45C;border-color:#E8C45C;color:#1C1208;box-shadow:0 0 14px rgba(232,196,92,.35)}
+.knopf.or{background:#E39B45;color:#1C1208;box-shadow:none}
+.knopf.gen,.gen{background:#2DE2B4;border:none;color:#04110e;box-shadow:0 0 18px rgba(45,226,180,.28)}
+.ik.rot{background:#C8364A;border-color:#C8364A;color:#fff}
 .grau,.leer{color:#6E8B84}
 .knopf{background:#101618;border-color:#24584e;color:#D7FFF4}
 .knopf:active{background:#16302c;border-color:#2DE2B4}
 .or{background:#2DE2B4;color:#04110e;box-shadow:0 0 18px rgba(45,226,180,.28)}
-.reiter button{background:#0c1012;border-color:#1c3330;color:#9FE7D4}
-.reiter button.an{background:#2DE2B4;border-color:#2DE2B4;color:#04110e;box-shadow:0 0 16px rgba(45,226,180,.35)}
+.reiter button{background:#0c1012;border-color:#3a3420;color:#E8D7A8}
+.or{background:#E39B45;color:#1C1208;box-shadow:none}
 .erkl{background:rgba(45,226,180,.08);border-color:rgba(45,226,180,.35);color:#D7FFF4}
 .erkl i{background:#2DE2B4}
 .karte,details.falt{background:#0b1014;border-color:#1e4a42}
@@ -234,9 +240,7 @@ input[type=text],input[type=number],select,textarea,.suchf input[type=text]{
   background:#070a0c;border-color:#24584e;color:#E7F6F1}
 .suchf input::placeholder{color:#5d7a74}
 .pills button,.ik,.schalt .st,.wer .wn,.stufen .stuf,.zl{
-  background:#101618;border-color:#24584e;color:#B7E8DA}
-.pills button.an,.sch.an,.frag.an,.farbfeld .fb.an{
-  background:#2DE2B4;border-color:#2DE2B4;color:#04110e}
+  background:#101618;border-color:#3a3428;color:#E7D7C4}
 .sch{background:#1a2422}.sch i{background:#6E8B84}
 .sch.an i{background:#04110e}
 .erk{background:#0c1214;border-left-color:#2DE2B4;color:#D7FFF4}
@@ -250,7 +254,7 @@ input[type=text],input[type=number],select,textarea,.suchf input[type=text]{
 .lauf .pk{background:#2DE2B4}
 .dlg{background:#0b1014;border-color:#2DE2B4}
 .me.warn,details.falt[open]>summary,details.mehr[open]>summary,.sucherg b{color:#E8C45C}
-.schalt .st.an,.wer .wn.an{background:rgba(45,226,180,.14);border-color:#2DE2B4;color:#E7F6F1}
+.schalt .st.an,.wer .wn.an{background:#E39B45;border-color:#E39B45;color:#1C1208}
 @keyframes rand{
   0%,100%{box-shadow:0 0 0 1px rgba(45,226,180,.45),0 0 16px rgba(45,226,180,.22),inset 0 1px 0 rgba(125,255,224,.45)}
   50%{box-shadow:0 0 0 1px rgba(45,226,180,.9),0 0 28px rgba(45,226,180,.45),inset 0 1px 0 rgba(125,255,224,.8)}
@@ -664,39 +668,38 @@ function setz(feld,wert,zahlFeld){
 
 /* ---------- Reiter ---------- */
 function tAktiv(){
-  /* Vor dem Schreiben: welche Avatare der Schalter anhat. Die Text-KI
-     nimmt genau diese, und pro Szene nur einen davon. */
   if(!S.ds){ladeDarsteller();
     return '<div class="karte p"><div class="leer">lade Avatare…</div></div>'}
   var an=(S.ds.darsteller||[]).filter(function(f){
     return f.dabei && f.art!=="sprecher"});
+  var sp=(S.ds.darsteller||[]).filter(function(f){
+    return f.art==="sprecher"&&sprecherIds().indexOf(f.id)>=0});
   var name=function(id){
     var li=S.ds.stimmliste||[];
     for(var i=0;i<li.length;i++) if(li[i][0]===id) return li[i][1];
     return id?id:"keine Stimme gewählt";
   };
   var o='<div class="karte p"><h2 class="kt">Aktiv vor dem Schreiben</h2>';
-  if(!an.length){
+  if(!an.length&&!sp.length){
     o+='<div class="hinw" style="padding:0;color:#FFB454">Niemand angehakt. '
-     +'Oben bei Avatar jemanden anmachen. Sonst schreibt die Szene ohne Figur.</div>';
+     +'Oben Avatar oder Sprecher anmachen.</div>';
+  }else if(an.length>=2){
+    o+='<div class="hinw" style="padding:0 0 8px">'+h(an.map(function(f){return f.name}).join(", "))
+     +' stehen in jeder Szene zusammen. Jeder redet nacheinander. Kein Podest.</div>';
   }else if(an.length===1){
-    o+='<div class="hinw" style="padding:0 0 8px">'+h(an[0].name)+' ist in den Szenen zu sehen.</div>';
-    an.forEach(function(f){
-      o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
-       +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
-    });
-  }else{
-    var gruppe=S.einst.avatar_gruppe==="alle"?"alle":"einer";
-    o+=reihe("Im Bild",knoepfe("avatar_gruppe",gruppe,
-        [["einer","immer nur einer"],["alle","alle zusammen"]]),
-      gruppe==="alle"
-        ?"Alle stehen zusammen. Jeder redet nacheinander, nicht nur einer."
-        :"Jede Szene zeigt nur einen. In der nächsten Szene kommt der andere.");
-    an.forEach(function(f){
-      o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)+'</div>'
-       +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
-    });
+    o+='<div class="hinw" style="padding:0 0 8px">'+h(an[0].name)
+     +' erzählt in jeder Szene, links'
+     +(S.einst.podest_an?" auf dem Podest":"")
+     +'. Nicht abwechselnd.</div>';
   }
+  if(sp.length&&!an.length)
+    o+='<div class="hinw" style="padding:0 0 8px">Nur Stimme: '
+     +h(sp.map(function(f){return f.name}).join(", "))+'. Niemand im Bild.</div>';
+  an.concat(sp).forEach(function(f){
+    o+='<div class="e"><div class="tx"><div class="ti">'+h(f.name)
+     +(f.art==="sprecher"?" · Sprecher":"")+'</div>'
+     +'<div class="me">'+h(name(f.stimme))+'</div></div></div>';
+  });
   return o+'</div>';
 }
 
@@ -884,16 +887,32 @@ function abspannName(){
   for(var i=0;i<li.length;i++) if(li[i].id===d.wahl) return li[i].name||"Abspann";
   return li[0].name||"Abspann";
 }
+function sprecherIds(){
+  var li=S.einst&&S.einst.sprecher_an;
+  return Array.isArray(li)?li:[];
+}
+function sprecherUm(id){
+  S.ok=false;
+  var li=sprecherIds().slice(), i=li.indexOf(id);
+  if(i>=0) li.splice(i,1); else li.push(id);
+  S.einst.sprecher_an=li;
+  api("/api/kanal?k="+S.kanal,{sprecher_an:li}).then(function(){zeichne()});
+}
 function tAvatarWahl(){
   if(!S.ds){ladeDarsteller();
     return '<div class="hinw" style="padding:0">lade Avatare…</div>'}
   var li=(S.ds.darsteller||[]).filter(function(f){
-    return f.art!=="sprecher"&&(f.bilder||[]).length});
+    return f.art==="sprecher"||(f.bilder||[]).length});
   if(!li.length)
-    return '<div class="hinw" style="padding:0">Noch kein Avatar mit Bild. Anlegen im Reiter Avatare.</div>';
+    return '<div class="hinw" style="padding:0">Noch kein Avatar und kein Sprecher. Anlegen im Reiter Avatare.</div>';
+  var sp=sprecherIds();
   return '<div class="pills">'+li.map(function(f){
-    return '<button type="button" class="'+(f.dabei?"an":"")+'" onclick="dsDabei(\''
-      +h(f.id)+'\','+(f.dabei?"false":"true")+')">'+h(f.name)+'</button>'}).join("")
+    var an=f.art==="sprecher"?sp.indexOf(f.id)>=0:!!f.dabei;
+    var klick=f.art==="sprecher"
+      ?('sprecherUm(\''+h(f.id)+'\')')
+      :('dsDabei(\''+h(f.id)+'\','+(f.dabei?"false":"true")+')');
+    return '<button type="button" class="'+(an?"an":"")+'" onclick="'+klick+'">'
+      +h(f.name)+(f.art==="sprecher"?" · Stimme":"")+'</button>'}).join("")
     +'</div>';
 }
 function modellJetzt(){
@@ -923,8 +942,8 @@ function tModellZeile(an){
 function tDiesesVideo(){
   var w=videoWahl();
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
-  var gruppe=S.einst.avatar_gruppe==="alle"?"alle":"einer";
-  var zusammen=an.length>1&&gruppe==="alle";
+  var sp=(S.ds&&(S.ds.darsteller||[]).filter(function(f){
+    return f.art==="sprecher"&&sprecherIds().indexOf(f.id)>=0}))||[];
   var o='<div class="karte p"><h2 class="kt">Dieses Video</h2>'
    +'<div class="hinw" style="padding:0 0 8px">Gilt für dieses Video und lässt sich hier vor jedem Lauf ändern. '
    +'Prompt, Schlüssel und Musik bleiben im Reiter Einstellungen.</div>'
@@ -934,36 +953,41 @@ function tDiesesVideo(){
       "480 reicht fürs Handy. 768 ist schärfer. Grok bekommt dafür 720.")
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
    +'<div class="r"><div><div class="lb">Avatar</div>'
-   +'<div class="hint">'+(zusammen
-      ?"Mehrere stehen nebeneinander in der Szene. Nicht links auf einem Podest."
-      :"Wer leuchtet, ist im Video. Niemand an: nur Bild, Untertitel und Sprecher.")
+   +'<div class="hint">'+(an.length>=2
+      ?"Ab zwei stehen alle in jeder Szene. Kein Podest."
+      :(an.length===1
+        ?"Einer erzählt fest, links. Podest nur für diesen einen. Rechts bleiben die Buttons frei."
+        :"Niemand im Bild: nur Untertitel und Sprecher."))
    +'</div></div></div>'
    +tAvatarWahl();
-  if(an.length===1||(an.length>1&&!zusammen)){
-    o+=reihe("Stand",knoepfe("figur_stand",w.stand,
-        [["links","links"],["rechts","rechts"],["szene","in der Szene"]]),
-      w.stand==="rechts"?"Handlung Mitte und links":
-      (w.stand==="szene"?"Die Figur gehört ins Bild":"Handlung Mitte und rechts"));
-    if(w.stand!=="szene"){
-      o+=reihe("Podest",knoepfe("podest_an",w.podest?"true":"false",
-          [["false","nein"],["true","ja"]]));
-      if(w.podest){
-        o+=reihe("Art",knoepfe("podest_art",w.art,
-            [["stein","Stein"],["wolke","Wolke"],["eigen","selber"]]),
-          "Immer flach. Kein hoher Felsen.");
-        if(w.art==="eigen")
-          o+=reihe("Name",'<input type="text" value="'+h(S.einst.podest_text||"")
-            +'" placeholder="Fass, Stufe, Kiste" onchange="setz(\'podest_text\',this.value)">');
-      }
+  if(an.length>=2){
+    o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
+      +' stehen in jeder Szene zusammen. Jeder redet nacheinander.</div>';
+    o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
+        [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
+  }else if(an.length===1){
+    o+=reihe("Podest",knoepfe("podest_an",w.podest?"true":"false",
+        [["false","nein"],["true","ja"]]),
+      "Nur links. Rechts sind Like und Kommentar.");
+    if(w.podest){
+      o+='<div class="hinw">'+h(an[0].name)+' steht links auf dem Podest und erzählt jede Szene.</div>';
+      o+=reihe("Art",knoepfe("podest_art",w.art,
+          [["stein","Stein"],["wolke","Wolke"],["eigen","selber"]]),
+        "Immer flach. Kein hoher Felsen.");
+      if(w.art==="eigen")
+        o+=reihe("Name",'<input type="text" value="'+h(S.einst.podest_text||"")
+          +'" placeholder="Fass, Stufe, Kiste" onchange="setz(\'podest_text\',this.value)">');
+    }else{
+      o+=reihe("Stand",knoepfe("figur_stand",w.stand==="szene"?"szene":"links",
+          [["links","links"],["szene","in der Szene"]]),
+        "Rechts geht nicht. Dort sind die Buttons.");
     }
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
-  }else if(zusammen){
-    o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
-      +' stehen nebeneinander in der Szene. Jeder kann reden, nacheinander.</div>';
-    o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
-        [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }
+  if(sp.length)
+    o+='<div class="hinw">Sprecher: '+h(sp.map(function(f){return f.name}).join(", "))
+     +(an.length?'. Nicht im Bild, nur die Stimme.':'. Niemand im Bild.')+'</div>';
   if(S.ab&&(S.ab.eintraege||[]).length)
     o+=abWahlZeile(S.ab);
   else if(!S.ab){
@@ -1375,8 +1399,8 @@ function fragGenerieren(){
   }
   var sek=(p.sekunden?(Math.round(p.sekunden)+" Sek gesprochen"):((S.einst.laenge||20)+" Sek"));
   var w=videoWahl();
-  var stand=namen.length>1?"nebeneinander in der Szene":(w.stand==="szene"?"in der Szene":w.stand);
-  var podest=!namen.length?"ohne Avatar":(namen.length>1||w.stand==="szene"?"ohne Podest":
+  var stand=namen.length>1?"alle zusammen in der Szene":(namen.length&&w.podest?"links auf dem Podest":(w.stand==="szene"?"in der Szene":"links"));
+  var podest=!namen.length?"ohne Avatar":(namen.length>1?"ohne Podest":
     (w.podest?(w.art==="eigen"?(S.einst.podest_text||"eigenes Podest"):(w.art==="wolke"?"Wolke":"Stein")):"ohne Podest"));
   var sicht=w.sicht==="knie"?"Kopf bis Knie":(w.sicht==="ober"?"Nur Oberkörper":"Kopf bis Schuh");
   frage("Video erzeugen?",
@@ -1424,6 +1448,7 @@ function fragAlleSzenenWeg(n){
 }
 function themenVorschlag(){
   var b=el("thvor"); if(!b)return;
+  frage("Themen vorschlagen lassen?","Die Text-KI sucht neue Themen. Das kostet ein wenig.","Los",function(){
   b.disabled=true; b.textContent="fragt nach…";
   api("/api/themen_vorschlag?k="+S.kanal,{wieviel:12}).then(function(r){
     b.disabled=false; b.textContent="Themen vorschlagen lassen";
@@ -1436,13 +1461,17 @@ function themenVorschlag(){
     melde("Die Anfrage kam nicht durch: "+(e&&e.message?e.message:"Verbindung abgebrochen")
       +". Im Reiter Einstellungen unter KI & Technik prüfen, ob beim Drehbuch ein Schlüssel steht.");
   });
+  });
 }
 function themaWaehlen(t){
   var f=el("thema"); if(f)f.value=t;
   var g=el("gsthema"); if(g)g.value=t;
   setz("geschichte_thema",t);
 }
-function themaWeg(t){api("/api/themen?k="+S.kanal,{weg:t}).then(function(x){S.themen=x;zeichne()})}
+function themaWeg(t){
+  frage("Thema löschen?","<b>"+h(t)+"</b><br><br>Es kommt aus der Liste.",
+    "Löschen",function(){api("/api/themen?k="+S.kanal,{weg:t}).then(function(x){S.themen=x;zeichne()})},true);
+}
 function kanalNeu(){
   var n=(el("nname").value||"").trim();if(!n)return melde("Bitte einen Namen eingeben.");
   api("/api/kanal_neu",{name:n,sprache:el("nsprache").value}).then(function(r){S.kanal=r.key;laden()});
@@ -2514,7 +2543,10 @@ function dsWeg(did,name){
   frage("Avatar löschen?","<b>"+h(name)+"</b><br><br>Die Bilder dieser Figur werden gelöscht.",
     "Löschen",function(){dsSetz({aktion:"weg",id:did})},true);
 }
-function dsBildWeg(did,datei){dsSetz({aktion:"bild_weg",id:did,datei:datei})}
+function dsBildWeg(did,datei){
+  frage("Bild löschen?","Das Bild dieses Avatars wird gelöscht.","Löschen",
+    function(){dsSetz({aktion:"bild_weg",id:did,datei:datei})},true);
+}
 function dsBildVor(did,datei){dsSetz({aktion:"bild_vor",id:did,datei:datei})}
 
 /* ---------- Abspann-Bibliothek (r6) ---------- */

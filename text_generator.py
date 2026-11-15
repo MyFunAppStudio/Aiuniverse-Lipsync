@@ -698,48 +698,70 @@ def _t4_besetzung(kanal):
         return []
 
 
-def _t4_anweisung(namen, kanal=None):
-    if not namen:
+def _t4_sprecher(kanal):
+    ids = [str(x) for x in ((kanal or {}).get("sprecher_an") or [])]
+    if not ids:
+        return []
+    try:
+        import darsteller
+        d = darsteller.laden(kanal)
+        return [(x.get("name") or "").strip()
+                for x in (d.get("darsteller") or [])
+                if str(x.get("id") or "") in ids and (x.get("art") == "sprecher")
+                and (x.get("name") or "").strip()]
+    except Exception as e:
+        print("[Text] Sprecher nicht lesbar:", e)
+        return []
+
+
+def _t4_anweisung(namen, kanal=None, sprecher=None):
+    if not namen and not sprecher:
         return ""
-    liste = " und ".join(namen) if len(namen) < 3 else ", ".join(namen)
+    sprecher = sprecher or []
     mehrere = len(namen) > 1
-    gruppe = str((kanal or {}).get("avatar_gruppe") or "einer")
-    if mehrere and gruppe == "alle":
+    if mehrere:
         lage = (
-            "ALLE stehen in jeder Szene zusammen im Bild, nebeneinander, "
-            "ohne Podest. Jeder von ihnen redet, nacheinander, kurze Saetze, "
-            "wie in einem Gespraech. Nicht nur einer. Schreib jede Zeile mit "
-            "dem Namen davor. Das Feld \"wer\" enthaelt immer alle Namen: %s.\n"
-            % ", ".join(namen))
-    elif mehrere:
+            "ALLE stehen in JEDER Szene zusammen im Bild, nebeneinander, "
+            "ohne Podest. Nicht abwechselnd und nicht einer nach dem anderen "
+            "in der naechsten Szene. Jeder redet nacheinander, kurze Saetze. "
+            "Schreib jede Zeile mit dem Namen davor. Das Feld \"wer\" enthaelt "
+            "immer alle Namen: %s.\n" % ", ".join(namen))
+    elif namen:
+        links = bool((kanal or {}).get("podest_an")) and str(
+            (kanal or {}).get("figur_stand") or "") != "szene"
         lage = (
-            "Pro Szene ist GENAU EINER im Bild und spricht. Die anderen sind "
-            "in dieser Szene nicht zu sehen. In der naechsten Szene kommt der "
-            "naechste. Das Feld \"wer\" hat genau einen Namen.\n")
+            ("%s ist der feste Erzaehler und steht in JEDER Szene links "
+             "auf einem flachen Podest. Rechts bleibt frei. "
+             "Nicht abwechselnd. Das Feld \"wer\" ist immer [\"%s\"], "
+             "ausser der Ort ist wichtiger, dann [].\n")
+            if links else
+            ("%s ist der feste Erzaehler und steht in JEDER Szene im Bild, "
+             "ohne Podest. Nicht abwechselnd. Das Feld \"wer\" ist immer "
+             "[\"%s\"], ausser der Ort ist wichtiger, dann [].\n")
+        ) % (namen[0], namen[0])
     else:
         lage = (
-            "Das Feld \"wer\" nennt den Namen, wenn die Figur im Bild steht, "
-            "sonst eine leere Liste.\n")
+            "Niemand ist im Bild. Es spricht nur der Sprecher aus dem Off. "
+            "Das Feld \"wer\" ist immer [].\n")
+    if sprecher and namen:
+        lage += ("Zusaetzlich spricht aus dem Off, nie im Bild: %s.\n"
+                 % ", ".join(sprecher))
+    wer = namen or sprecher
+    liste = ", ".join(wer)
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
-        "In diesem Kanal treten auf: %s. Es gibt KEINEN Erzaehler. "
-        "Jeder gesprochene Satz gehoert einer dieser Figuren.\n"
+        "Zu sehen oder zu hoeren: %s.\n"
         "Schreib den Text jeder Szene als Zeilen mit dem Namen davor:\n"
         "  %s: Erster Satz.\n"
         "%s"
         "%s"
+        "Die Figuren fuehren durch das Thema. Sie sind keine Zeitzeugen.\n"
         "%s"
-        "Die Figuren fuehren durch das Thema, sie sind keine Zeitzeugen und "
-        "keine historischen Personen. Sie duerfen staunen, zweifeln und "
-        "nachfragen.\n"
-        "Bei Szenen, in denen der Ort oder das Ereignis wichtiger ist, "
-        "gehoert \"wer\": [].\n"
         % (liste,
-           namen[0],
-           ("  %s: Antwort darauf.\n" % namen[1]) if mehrere else "",
-           ("Sie reden MITEINANDER: einer fragt, der andere antwortet, einer "
-            "widerspricht. Keine zwei Leute, die abwechselnd Fakten aufsagen.\n")
-           if mehrere else "",
+           wer[0],
+           ("  %s: Antwort darauf.\n" % wer[1]) if len(wer) > 1 else "",
+           ("Sie reden nacheinander. Keiner redet gleichzeitig.\n")
+           if len(namen) > 1 else "",
            lage)
     )
 
@@ -749,10 +771,11 @@ _t4_erzeuge_alt = erzeuge_paket
 
 def erzeuge_paket(kanal, eigenes_thema=None):
     namen = _t4_besetzung(kanal)
-    if not namen:
+    stimmen = _t4_sprecher(kanal)
+    if not namen and not stimmen:
         return _t4_erzeuge_alt(kanal, eigenes_thema)
     k2 = dict(kanal or {})
-    k2["prompt"] = (k2.get("prompt") or "") + _t4_anweisung(namen, kanal)
+    k2["prompt"] = (k2.get("prompt") or "") + _t4_anweisung(namen, kanal, stimmen)
     return _t4_erzeuge_alt(k2, eigenes_thema)
 
 
@@ -1185,11 +1208,12 @@ def _lage_satz(kanal):
     mehrere = False
     try:
         import darsteller
-        mehrere = (len(darsteller.besetzung(k)) > 1
-                   and str(k.get("avatar_gruppe") or "") == "alle")
+        mehrere = len(darsteller.besetzung(k)) > 1
     except Exception:
         mehrere = False
     stand = str(k.get("figur_stand") or "links")
+    if stand == "rechts" or (k.get("podest_an") and not mehrere):
+        stand = "links"
     if mehrere or stand == "szene":
         return ("LAGE, DIE GILT: The avatars stand together in the scene, %s. "
                 "No pedestal and no empty corner on the left." % sicht)
