@@ -615,7 +615,21 @@ def plan_bauen(kanal, ordner):
             continue
         text, regie = _regie_trennen(s["text"])
         ton, dauer, teile_info = None, 0.0, []
-        if s["gesprochen"] and text:
+        grok_behaelt = False
+        try:
+            import animation as _an
+            import darsteller as _ds
+            grok_behaelt = (
+                s.get("typ") == "clip"
+                and _an.grok_ist((_an.ref_slot(kanal) or {}).get("url"))
+                and not _ds.nur_sprecher(
+                    kanal, text, s.get("modus") or "", s.get("wer")))
+        except Exception:
+            grok_behaelt = False
+        if grok_behaelt:
+            print("[Stimme] Szene %d behaelt den Grok-Ton, fal spricht nicht"
+                  % (nr + 1))
+        elif s["gesprochen"] and text:
             ton = os.path.join(ordner, "sz_%02d.mp3" % (nr + 1))
             k2 = dict(kanal)
             if s.get("stimmung") and s["stimmung"] in szenen.ENERGIE:

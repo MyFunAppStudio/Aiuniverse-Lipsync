@@ -1760,9 +1760,16 @@ def _r5_einen(k, sid):
         szenen.r3_stand_setzen(k, sid, "fehler", "Produktbild fehlt")
         return False, "Produktbild fehlt"
     if grok:
+        stumm = darsteller.nur_sprecher(
+            k, _r5_spruch(s), s.get("modus") or "", s.get("wer"))
+        if stumm:
+            melden("Sprecher: Grok bleibt stumm, die Stimme kommt von fal")
         pfad = animation.erzeuge_grok(
             kanal, hintergrund, figuren, _r5_spruch(s), dauer, ziel,
-            kanal.get("format") or "9:16", melden, fest=bool(s.get("fest")))
+            kanal.get("format") or "9:16", melden, fest=bool(s.get("fest")),
+            stumm=stumm)
+        if pfad and stumm:
+            _r5_ohne_klington(ziel)
         if pfad and s.get("fest"):
             if not hintergrund:
                 szenen.r3_stand_setzen(k, sid, "fehler", "Produktbild fehlt")

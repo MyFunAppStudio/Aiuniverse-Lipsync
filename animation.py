@@ -1337,7 +1337,7 @@ def _grok_dialog(satz, personen):
 
 
 def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
-                 format_seite="9:16", melden=None, fest=False):
+                 format_seite="9:16", melden=None, fest=False, stumm=False):
     """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
 
     So ist der Clip entstanden, der auf Deutsch gesprochen und den Mund
@@ -1377,7 +1377,7 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             sag("Weder Avatar noch Szenenbild")
         return None
     spruch = " ".join((satz or "").split())
-    if not spruch:
+    if not spruch and not stumm:
         sag("Kein Sprechtext")
         return None
     try:
@@ -1388,16 +1388,26 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         # Nur die Person, auf einer Farbe, die sich danach ausstanzen laesst.
         # Das Produktbild geht hier nicht mit, sonst malt Grok es neu.
         bilder = bilder[:1]
-        prompt = (
-            "<IMAGE_0> ist die Person. Nur diese eine Person, sonst nichts im Bild. "
-            "Sie steht mittig, ganz zu sehen, von Kopf bis Schuh, Gesicht zur Kamera. "
-            "Der gesamte Hintergrund ist eine vollkommen flache Farbe Magenta, "
-            "ohne Boden, ohne Schatten, ohne Verlauf und ohne Gegenstand. "
-            "%s "
-            "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
-            "Der Mund bewegt sich zu den Woertern und ist danach zu. "
-            "Keine Untertitel, keine Schrift."
-            % (_grok_art(figuren), spruch.replace('"', "'")))
+        ruhig = ("Der Mund bleibt die ganze Zeit geschlossen. Niemand spricht. "
+                 "Keine Stimme, kein Ton. Keine Untertitel, keine Schrift.")
+        if stumm:
+            prompt = (
+                "<IMAGE_0> ist die Person. Nur diese eine Person, sonst nichts im Bild. "
+                "Sie steht mittig, ganz zu sehen, von Kopf bis Schuh, Gesicht zur Kamera. "
+                "Der gesamte Hintergrund ist eine vollkommen flache Farbe Magenta, "
+                "ohne Boden, ohne Schatten, ohne Verlauf und ohne Gegenstand. "
+                "%s %s" % (_grok_art(figuren), ruhig))
+        else:
+            prompt = (
+                "<IMAGE_0> ist die Person. Nur diese eine Person, sonst nichts im Bild. "
+                "Sie steht mittig, ganz zu sehen, von Kopf bis Schuh, Gesicht zur Kamera. "
+                "Der gesamte Hintergrund ist eine vollkommen flache Farbe Magenta, "
+                "ohne Boden, ohne Schatten, ohne Verlauf und ohne Gegenstand. "
+                "%s "
+                "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
+                "Der Mund bewegt sich zu den Woertern und ist danach zu. "
+                "Keine Untertitel, keine Schrift."
+                % (_grok_art(figuren), spruch.replace('"', "'")))
     elif len(personen) >= 2:
         teile = []
         for i, (f, _p) in enumerate(personen):
@@ -1416,29 +1426,43 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "Sie sind die Hauptsache, die Szene bleibt dahinter."
                 % (len(personen), lage_text(kanal, True)))
         teile.append("Sie bleiben in der Gruppe und laufen nicht aus dem Bild.")
-        for name, zeile in _grok_dialog(spruch, personen):
-            figur = None
-            for f, _p in personen:
-                if " ".join(str(f.get("name") or "").split()).lower() == name.lower():
-                    figur = f
-                    break
+        if stumm:
             teile.append(
-                "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
-                % (name or "Die Person", _grok_stimme(figur), zeile))
-        teile.append(
-            "Es spricht immer nur einer. Die anderen lachen, schauen hin "
-            "oder zeigen auf ihn, reden aber nicht mit. "
-            "Keine Untertitel, keine Schrift.")
+                "Der Mund bleibt bei allen geschlossen. Niemand spricht. "
+                "Keine Stimme, kein Ton. Keine Untertitel, keine Schrift.")
+        else:
+            for name, zeile in _grok_dialog(spruch, personen):
+                figur = None
+                for f, _p in personen:
+                    if " ".join(str(f.get("name") or "").split()).lower() == name.lower():
+                        figur = f
+                        break
+                teile.append(
+                    "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
+                    % (name or "Die Person", _grok_stimme(figur), zeile))
+            teile.append(
+                "Es spricht immer nur einer. Die anderen lachen, schauen hin "
+                "oder zeigen auf ihn, reden aber nicht mit. "
+                "Keine Untertitel, keine Schrift.")
         prompt = " ".join(teile)
     else:
-        prompt = (
-            "<IMAGE_0> ist die Person. "
-            + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
-            + "%s Gesicht zur Kamera. %s "
-            "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
-            "Der Mund bewegt sich zu den Woertern und ist danach zu. "
-            "Keine Untertitel, keine Schrift."
-            % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'")))
+        if stumm:
+            prompt = (
+                "<IMAGE_0> ist die Person. "
+                + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
+                + "%s Gesicht zur Kamera. %s "
+                "Der Mund bleibt die ganze Zeit geschlossen. Niemand spricht. "
+                "Keine Stimme, kein Ton. Keine Untertitel, keine Schrift."
+                % (lage_text(kanal), _grok_art(figuren)))
+        else:
+            prompt = (
+                "<IMAGE_0> ist die Person. "
+                + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
+                + "%s Gesicht zur Kamera. %s "
+                "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
+                "Der Mund bewegt sich zu den Woertern und ist danach zu. "
+                "Keine Untertitel, keine Schrift."
+                % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'")))
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,
@@ -1446,9 +1470,10 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         "duration": dauer,
         "aspect_ratio": format_seite or "9:16",
         "resolution": "720p" if str((kanal or {}).get("aufloesung")) == "768" else "480p",
-        "generate_audio": True,
+        "generate_audio": not stumm,
     }
-    sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:14]))
+    sag("Grok bekommt %d Bilder%s" % (
+        len(bilder[:14]), " und bleibt stumm" if stumm else " und den Satz"))
     try:
         start = _grok_holen("https://api.x.ai/v1/videos/generations", key, koerper, 180)
     except urllib.error.HTTPError as f:

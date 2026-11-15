@@ -605,6 +605,25 @@ def stimme_von(kanal, name):
     return ""
 
 
+def nur_sprecher(kanal, text, modus="", wer=None):
+    """True, wenn hier kein Avatar redet. Dann bleibt Grok stumm."""
+    namen = []
+    try:
+        import szenen
+        namen = szenen.r19_redner(kanal, text or "")
+    except Exception:
+        namen = []
+    if namen:
+        arten = {}
+        for f in (laden(kanal).get("darsteller") or []):
+            arten[(f.get("name") or "").strip().lower()] = f.get("art") or "avatar"
+        return all(arten.get(str(n).strip().lower(), "avatar") == "sprecher"
+                   for n in namen)
+    if (modus or "") == "avatare" and list(wer or []):
+        return False
+    return True
+
+
 # ---------- Nachtrag d8: Stimme und Art ueberleben das Laden ----------
 #
 # laden() liest die Datei nicht einfach ein, es baut jeden Eintrag neu
