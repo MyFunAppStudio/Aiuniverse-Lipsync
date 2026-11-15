@@ -1156,3 +1156,43 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
     return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema))
+
+
+_lage_prompt_alt = lade_prompt
+
+
+def _lage_satz(kanal):
+    """Die Lage aus Video machen. Steht am Ende und gilt vor der alten Platte."""
+    k = kanal or {}
+    sicht = {"knie": "head to knees", "ober": "chest up, face large"}.get(
+        str(k.get("figur_sicht") or ""), "full body, head to shoes")
+    stand = str(k.get("figur_stand") or "links")
+    if stand == "szene":
+        return ("LAGE, DIE GILT: The avatar belongs in the scene, %s. "
+                "No empty pedestal and no reserved corner." % sicht)
+    seite = "right" if stand == "rechts" else "left"
+    andere = "left" if seite == "right" else "right"
+    if not k.get("podest_an"):
+        boden = "on the scene floor, no pedestal"
+    else:
+        art = str(k.get("podest_art") or "stein")
+        eigen = " ".join(str(k.get("podest_text") or "").split())[:40]
+        if art == "wolke":
+            boden = "on a flat ankle-high cloud, not a tall rock"
+        elif art == "eigen" and eigen:
+            boden = "on a flat low %s, not a tall rock" % eigen
+        else:
+            boden = "on a flat ankle-high stone slab, not a boulder"
+    return ("LAGE, DIE GILT: lower %s stays empty, %s, %s. "
+            "The action fills the center and the %s. "
+            "Ignore any older pedestal instruction."
+            % (seite, boden, sicht, andere))
+
+
+def lade_prompt(kanal):
+    text = _lage_prompt_alt(kanal)
+    extra = _lage_satz(kanal)
+    if extra and extra not in (text or ""):
+        return (text or "").rstrip() + "\n\n" + extra
+    return text
+

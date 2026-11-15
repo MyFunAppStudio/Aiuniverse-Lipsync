@@ -423,7 +423,7 @@ untertitel_an:"Blendet den gesprochenen Text als Untertitel ein, Wort für Wort 
 
 
 
-modus:"<b>Claude schreibt es</b> — du gibst Thema und Länge, sonst nichts. Claude schreibt das Drehbuch, Flux malt zu jeder Szene das Bild, fertig. Du liest nichts gegen.<br><br><b>Text ansehen und ändern</b> — dasselbe, aber der Text hält vorher an. Claude schreibt eine Geschichte, in der jede runde Klammer eine Szene wird und jede eckige Klammer darin die Bildbeschreibung ist. Du liest drüber, änderst was dir nicht passt, und erst dann werden die Bilder gemalt.<br><br><b>Ich baue es selbst</b> — kein Drehbuch, keine Geschichte. Du legst jede Szene einzeln an: eigenes Bild oder eigener Clip hochladen, ein Satz Text dazu, Schalter auf <i>Avatare im Bild</i> / <i>Nur Bild, bewegt</i> / <i>Nur Bild, still</i>, wer im Bild ist, wie lange sie dauert. Du musst trotzdem nicht alles selbst malen: <b>Bild neu</b> bei einer Szene lässt Flux ein Bild für genau diese eine Szene erzeugen, aus ihrem Text und ihrer Regieanweisung.",
+modus:"<b>KI schreibt und baut</b> — du gibst Thema und Länge, sonst nichts. Die Text-KI aus den Einstellungen schreibt das Drehbuch, die Bild-KI malt zu jeder Szene das Bild, fertig. Du liest nichts gegen.<br><br><b>Erst Text schauen</b> — dasselbe, aber der Text hält vorher an. Du liest drüber, änderst was dir nicht passt, und erst dann werden die Bilder gemalt.<br><br><b>Selber machen</b> — kein Drehbuch. Du legst jede Szene einzeln an.",
 
 sprachen_eins:"In welcher Sprache gesprochen und untertitelt wird. Die Stimme muss dazu passen — eine deutsche Stimm-ID liest englischen Text mit Akzent vor.",
 
@@ -744,7 +744,7 @@ function tStart(){
 function tMachen(){
   /* Der Ablauf von oben nach unten: was gebaut wird, wer angehakt ist,
      woraus, dann die Szenen mit ihren Clips. */
-  return tWie()+tAktiv()+tStartKopf()+tAbspannWahl()+tPrompt()+tLauf()+tVideos();
+  return tDiesesVideo()+tWie()+tAktiv()+tStartKopf()+tPrompt()+tLauf()+tVideos();
 }
 
 function tDarstellerSeite(){
@@ -792,16 +792,86 @@ function tEinst(){
 function modusJetzt(){
   return (S.einst.modus==="szenen")?"szenen":((S.einst.modus==="geschichte")?"geschichte":"auto");
 }
+function videoWahl(){
+  var e=S.einst||{};
+  return {
+    auf: e.aufloesung==="768"?"768":"480",
+    stand: e.figur_stand==="rechts"?"rechts":(e.figur_stand==="szene"?"szene":"links"),
+    podest: !!e.podest_an,
+    art: e.podest_art==="wolke"?"wolke":(e.podest_art==="eigen"?"eigen":"stein"),
+    sicht: e.figur_sicht==="knie"?"knie":(e.figur_sicht==="ober"?"ober":"ganz")
+  };
+}
+function abspannName(){
+  var d=S.ab;
+  if(!d||!(d.eintraege||[]).length) return "keiner";
+  if(d.wahl==="zufall") return "Zufall";
+  var li=d.eintraege||[];
+  for(var i=0;i<li.length;i++) if(li[i].id===d.wahl) return li[i].name||"Abspann";
+  return li[0].name||"Abspann";
+}
+function tAvatarWahl(){
+  if(!S.ds){ladeDarsteller();
+    return '<div class="hinw" style="padding:0">lade Avatare…</div>'}
+  var li=(S.ds.darsteller||[]).filter(function(f){
+    return f.art!=="sprecher"&&(f.bilder||[]).length});
+  if(!li.length)
+    return '<div class="hinw" style="padding:0">Noch kein Avatar mit Bild. Anlegen im Reiter Avatare.</div>';
+  return '<div class="pills">'+li.map(function(f){
+    return '<button type="button" class="'+(f.dabei?"an":"")+'" onclick="dsDabei(\''
+      +h(f.id)+'\','+(f.dabei?"false":"true")+')">'+h(f.name)+'</button>'}).join("")
+    +'</div>';
+}
+function tDiesesVideo(){
+  var w=videoWahl();
+  var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
+  var o='<div class="karte p"><h2 class="kt">Dieses Video</h2>'
+   +'<div class="hinw" style="padding:0 0 8px">Gilt für dieses Video und lässt sich hier vor jedem Lauf ändern. '
+   +'Prompt, Schlüssel und Musik bleiben im Reiter Einstellungen.</div>'
+   +reihe("Format",knoepfe("format",S.einst.format||"9:16",
+      [["9:16","9:16"],["4:5","4:5"],["1:1","1:1"],["16:9","16:9"]]))
+   +reihe("Auflösung",knoepfe("aufloesung",w.auf,[["480","480"],["768","768"]]),
+      "480 reicht fürs Handy. 768 ist schärfer. Grok bekommt dafür 720.")
+   +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
+   +'<div class="r"><div><div class="lb">Avatar</div>'
+   +'<div class="hint">Wer leuchtet, ist im Video. Niemand an: nur Bild, Untertitel und Sprecher.</div></div></div>'
+   +tAvatarWahl();
+  if(an.length){
+    o+=reihe("Stand",knoepfe("figur_stand",w.stand,
+        [["links","links"],["rechts","rechts"],["szene","in der Szene"]]),
+      w.stand==="rechts"?"Handlung Mitte und links":
+      (w.stand==="szene"?"Die Figur gehört ins Bild":"Handlung Mitte und rechts"));
+    if(w.stand!=="szene"){
+      o+=reihe("Podest",knoepfe("podest_an",w.podest?"true":"false",
+          [["false","nein"],["true","ja"]]));
+      if(w.podest){
+        o+=reihe("Art",knoepfe("podest_art",w.art,
+            [["stein","Stein"],["wolke","Wolke"],["eigen","selber"]]),
+          "Immer flach. Kein hoher Felsen.");
+        if(w.art==="eigen")
+          o+=reihe("Name",'<input type="text" value="'+h(S.einst.podest_text||"")
+            +'" placeholder="Fass, Stufe, Kiste" onchange="setz(\'podest_text\',this.value)">');
+      }
+    }
+    o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
+        [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
+  }
+  if(S.ab&&(S.ab.eintraege||[]).length)
+    o+=abWahlZeile(S.ab);
+  else if(!S.ab){
+    ladeAbspann();
+    o+='<div class="hinw">Abspann wird geladen…</div>';
+  }else
+    o+='<div class="hinw">Kein Abspann hochgeladen. Das Video endet mit der letzten Szene.</div>';
+  return o+'</div>';
+}
 function tWie(){
-  /* Steht ganz oben, weil diese eine Auswahl bestimmt, was darunter
-     ueberhaupt kommt. */
   var modus=modusJetzt();
-  return '<div class="karte">'+reihe("Wie das Video entsteht",
-    wahl("modus",modus,[["auto","Claude schreibt es"],["geschichte","Text ansehen und ändern"],["szenen","Ich baue es selbst"]]),
-    modus==="szenen"?"Deine Bilder, Clips und Texte":
-    (modus==="geschichte"?"Thema rein, Text zum Gegenlesen, dann erzeugen":"Thema rein, fertiges Video raus"))
-   +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN),
-          "gilt für Text und Untertitel")
+  return '<div class="karte">'+reihe("Text",
+    wahl("modus",modus,[["auto","KI schreibt und baut"],["geschichte","Erst Text schauen"],["szenen","Selber machen"]]),
+    modus==="szenen"?"Du baust die Szenen selbst":
+    (modus==="geschichte"?"Die KI schreibt, du liest den Text, dann erst Bilder":
+     "Die KI aus den Einstellungen schreibt und baut"))
    +'</div>';
 }
 function tPrompt(){
@@ -1183,13 +1253,23 @@ function fragGenerieren(){
       +"Stimme und Video erzeugt.";
   }
   var sek=(p.sekunden?(Math.round(p.sekunden)+" Sek gesprochen"):((S.einst.laenge||20)+" Sek"));
+  var w=videoWahl();
+  var namen=((S.ds&&S.ds.darsteller)||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"})
+    .map(function(f){return f.name});
+  var stand=w.stand==="szene"?"in der Szene":w.stand;
+  var podest=!namen.length?"ohne Avatar":(w.stand==="szene"?"ohne Podest":
+    (w.podest?(w.art==="eigen"?(S.einst.podest_text||"eigenes Podest"):(w.art==="wolke"?"Wolke":"Stein")):"ohne Podest"));
+  var sicht=w.sicht==="knie"?"Kopf bis Knie":(w.sicht==="ober"?"Nur Oberkörper":"Kopf bis Schuh");
   frage("Video erzeugen?",
-    "<b>"+h(kopf)+"</b><br>"+h(k?k.name:"")+" · "+sek+" · "+(S.einst.format||"9:16")
+    "<b>"+h(kopf)+"</b><br>"+h(k?k.name:"")+" · "+sek+" · "+h(S.einst.format||"9:16")
+    +" · "+w.auf+" · "+h(sprachName((S.einst.sprachen||["de"])[0]))
+    +"<br>"+(namen.length?h(namen.join(", "))+" · "+h(stand)+" · "+h(podest)+" · "+h(sicht):"ohne Avatar")
+    +"<br>Abspann: "+h(abspannName())
     +"<br><br>"+was
     +"<br><br>Kostet etwa <b>"+(Number(p.gesamt)||0).toFixed(2).replace(".",",")+" €</b> echtes Guthaben."
     +'<br><br><span style="color:#FFB454">Während das läuft, keinen Neustart '
     +'machen — der Bau wird sonst abgebrochen.</span>',
-    "Ja, erzeugen",function(){
+    "Stimmt so",function(){
       api("/api/start",{k:S.kanal,thema:t}).then(function(r){if(!r.ok)melde(r.text||"ging nicht");laden()});
     });
 }

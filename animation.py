@@ -856,13 +856,15 @@ def erzeuge_referenz(kanal, hintergrund, figuren, prompt, sekunden, ziel,
     neu_prompt = (m7_vorspann(hintergrund, figuren) + " " + rest).strip()
 
     # Einmal je Modell nachfragen, was es annimmt - danach gemerkt.
+    wunsch = "480P" if str((kanal or {}).get("aufloesung") or "480") == "480" else "768P"
+    globals()["M7_AUFLOESUNG"] = wunsch
     try:
         werte = m9_werte(kanal)
         laengen = m9_zahlen(werte)
         if laengen:
             globals()["M7_STUFEN"] = laengen
         globals()["M7_AUFLOESUNG"] = m9_passend(werte, "resolution",
-                                                M7_AUFLOESUNG, "768P")
+                                                wunsch, wunsch)
     except Exception as f:
         print("[Modell] Werte nicht abfragbar:", str(f)[:120])
 
@@ -1251,6 +1253,39 @@ def _grok_art(figuren):
     return " ".join(teile)
 
 
+def lage_text(kanal, mehrere=False):
+    """Wohin die Figur soll, so wie es unter Video machen steht."""
+    k = kanal or {}
+    stand = str(k.get("figur_stand") or "links")
+    sicht = str(k.get("figur_sicht") or "ganz")
+    if sicht == "knie":
+        koerper = "von Kopf bis Knie zu sehen"
+    elif sicht == "ober":
+        koerper = "nur Oberkoerper und Gesicht zu sehen"
+    else:
+        koerper = "ganz zu sehen, von Kopf bis Schuh"
+    if mehrere:
+        return koerper
+    if stand == "szene":
+        return ("Die Person steht in der Szene und gehoert ins Bild, %s. "
+                "Kein leerer Rand und kein Podest." % koerper)
+    seite = "rechts" if stand == "rechts" else "links"
+    andere = "links" if seite == "rechts" else "rechts"
+    if not k.get("podest_an"):
+        boden = "auf dem Boden der Szene, ohne Podest"
+    else:
+        art = str(k.get("podest_art") or "stein")
+        eigen = " ".join(str(k.get("podest_text") or "").split())[:40].replace('"', "'")
+        if art == "wolke":
+            boden = "auf einer flachen Wolke, nur knoechelhoch"
+        elif art == "eigen" and eigen:
+            boden = "auf %s, flach und nicht hoch" % eigen
+        else:
+            boden = "auf einer flachen Steinplatte, nur knoechelhoch"
+    return ("Die Person steht %s, %s, %s. Die Handlung ist in der Mitte "
+            "und %s. Kein hoher Felsen." % (seite, boden, koerper, andere))
+
+
 def _grok_stimme(figur):
     klang = " ".join(str((figur or {}).get("klang") or "").split())[:160].replace('"', "'")
     if klang:
@@ -1372,13 +1407,14 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             teile.append("<IMAGE_%d> ist die Szene hinter ihnen." % len(personen))
         if len(personen) == 2:
             teile.append(
-                "Beide stehen nebeneinander in der Mitte, ganz zu sehen. "
-                "Sie sind die Hauptsache, die Szene bleibt dahinter.")
+                "Beide stehen nebeneinander in der Mitte, %s. "
+                "Sie sind die Hauptsache, die Szene bleibt dahinter."
+                % lage_text(kanal, True))
         else:
             teile.append(
-                "Alle %d stehen nebeneinander in der Mitte, ganz zu sehen. "
+                "Alle %d stehen nebeneinander in der Mitte, %s. "
                 "Sie sind die Hauptsache, die Szene bleibt dahinter."
-                % len(personen))
+                % (len(personen), lage_text(kanal, True)))
         teile.append("Sie bleiben in der Gruppe und laufen nicht aus dem Bild.")
         for name, zeile in _grok_dialog(spruch, personen):
             figur = None
@@ -1395,26 +1431,21 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             "Keine Untertitel, keine Schrift.")
         prompt = " ".join(teile)
     else:
-        wer = "die Person aus <IMAGE_0>"
-        szene = "<IMAGE_1>" if len(bilder) > 1 else "der Szene"
         prompt = (
-            "%s steht links in %s auf einer flachen Steinplatte, nur knoechelhoch, "
-            "kein hoher Felsen. Ganz zu sehen, Gesicht zur Kamera, beide Fuesse "
-            "bleiben auf der Platte. Er geht nicht durch die Szene. "
-            "Der Hintergrund bleibt in Bewegung, die Handlung in der Mitte und rechts. "
-            "Links vorne bleibt frei, dort steht nur die Person. "
-            "%s "
+            "<IMAGE_0> ist die Person. "
+            + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
+            + "%s Gesicht zur Kamera. %s "
             "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
             "Der Mund bewegt sich zu den Woertern und ist danach zu. "
             "Keine Untertitel, keine Schrift."
-            % (wer, szene, _grok_art(figuren), spruch.replace('"', "'")))
+            % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'")))
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,
         "reference_images": [{"url": _daten_uri(p)} for p in bilder[:14]],
         "duration": dauer,
         "aspect_ratio": format_seite or "9:16",
-        "resolution": "480p",
+        "resolution": "720p" if str((kanal or {}).get("aufloesung")) == "768" else "480p",
         "generate_audio": True,
     }
     sag("Grok bekommt %d Bilder und den Satz" % len(bilder[:14]))
