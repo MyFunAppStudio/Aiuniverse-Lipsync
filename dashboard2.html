@@ -207,6 +207,62 @@ details.mehr[open]>summary{color:#E39B45}
 .wer .wn{padding:7px 13px;border-radius:999px;border:1px solid #4E3A2E;
   background:#2A1E18;color:#C8B0A0;font-size:12.5px;font-weight:600;cursor:pointer}
 .wer .wn.an{border-color:#E39B45;color:#F6EDE4;background:rgba(227,155,69,.16)}
+
+/* Aussehen wie die dunkle Prognose: schwarz, leuchtende Rahmen, farbige Schrift.
+   Nur Darstellung. Keine Funktion. */
+body{background:#050607;color:#E7F6F1}
+.kopf{background:linear-gradient(180deg,#0c1214,#050607);border-bottom-color:#16302c}
+.punkt{background:#2DE2B4;box-shadow:0 0 10px rgba(45,226,180,.85)}
+.punkt.aus{background:#3a4a46;box-shadow:none}
+.unter,.r .hint,.e .me,.szh,.hinw,.log,.dlg p,.zt,.leiste .pr .t,.dznr,.dzz span{color:#8FB8AE}
+.kname,.r label,.r .lb,.e .ti,.szn .nr,.zeitklein,.hak{color:#E7F6F1}
+.kt,.dzz.av{color:#7DFFE0}
+.gruen,.dzz.bi{color:#2DE2B4}
+.rot{color:#FF6B9A}
+.grau,.leer{color:#6E8B84}
+.knopf{background:#101618;border-color:#24584e;color:#D7FFF4}
+.knopf:active{background:#16302c;border-color:#2DE2B4}
+.or{background:#2DE2B4;color:#04110e;box-shadow:0 0 18px rgba(45,226,180,.28)}
+.reiter button{background:#0c1012;border-color:#1c3330;color:#9FE7D4}
+.reiter button.an{background:#2DE2B4;border-color:#2DE2B4;color:#04110e;box-shadow:0 0 16px rgba(45,226,180,.35)}
+.erkl{background:rgba(45,226,180,.08);border-color:rgba(45,226,180,.35);color:#D7FFF4}
+.erkl i{background:#2DE2B4}
+.karte,details.falt{background:#0b1014;border-color:#1e4a42}
+.karte.mit{border-color:#2DE2B4}
+.r,.rw,.dz,.liste .e{border-color:#16302c}
+input[type=text],input[type=number],select,textarea,.suchf input[type=text]{
+  background:#070a0c;border-color:#24584e;color:#E7F6F1}
+.suchf input::placeholder{color:#5d7a74}
+.pills button,.ik,.schalt .st,.wer .wn,.stufen .stuf,.zl{
+  background:#101618;border-color:#24584e;color:#B7E8DA}
+.pills button.an,.sch.an,.frag.an,.farbfeld .fb.an{
+  background:#2DE2B4;border-color:#2DE2B4;color:#04110e}
+.sch{background:#1a2422}.sch i{background:#6E8B84}
+.sch.an i{background:#04110e}
+.erk{background:#0c1214;border-left-color:#2DE2B4;color:#D7FFF4}
+.szf,.szn{background:#070a0c;border-color:#1e4a42}
+.szn{box-shadow:none}
+.szn .kopf{background:#0c1416;border-bottom-color:#2DE2B4}
+.satzzeit{background:#0c1416;border-color:#2DE2B4}
+.satzzeit.sperre{border-color:#FF6B9A;background:#14080c}
+.leiste{background:#050607;border-top-color:#16302c}
+.lauf{background:#0c1214;border-color:#1e4a42;color:#D7FFF4}
+.lauf .pk{background:#2DE2B4}
+.dlg{background:#0b1014;border-color:#2DE2B4}
+.me.warn,details.falt[open]>summary,details.mehr[open]>summary,.sucherg b{color:#E8C45C}
+.schalt .st.an,.wer .wn.an{background:rgba(45,226,180,.14);border-color:#2DE2B4;color:#E7F6F1}
+@keyframes rand{
+  0%{border-color:#2DE2B4;box-shadow:0 0 0 1px rgba(45,226,180,.22),0 0 18px rgba(45,226,180,.16)}
+  33%{border-color:#E8C45C;box-shadow:0 0 0 1px rgba(232,196,92,.22),0 0 18px rgba(232,196,92,.14)}
+  66%{border-color:#FF6B9A;box-shadow:0 0 0 1px rgba(255,107,154,.2),0 0 18px rgba(255,107,154,.12)}
+  100%{border-color:#2DE2B4;box-shadow:0 0 0 1px rgba(45,226,180,.22),0 0 18px rgba(45,226,180,.16)}
+}
+.karte,.szn,details.falt,.dlg{animation:rand 9s linear infinite}
+.karte:nth-child(3n+2),.szn:nth-child(3n+2){animation-delay:-3s}
+.karte:nth-child(3n),.szn:nth-child(3n){animation-delay:-6s}
+@media (prefers-reduced-motion:reduce){
+  .karte,.szn,details.falt,.dlg{animation:none;border-color:#2DE2B4}
+}
 </style>
 </head>
 <body>
