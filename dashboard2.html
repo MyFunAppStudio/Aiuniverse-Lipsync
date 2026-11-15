@@ -455,7 +455,10 @@ function zeichne(){
 var ERK={
 drehbuch:"Was der Bau aus deinem Text machen wird — Szene für Szene, bevor etwas Geld kostet. Zerlegt wird auf dem Server mit genau dem Code, der danach auch baut; was hier steht, wird also so gebaut.<br><br><b>Erzähler</b> ist normaler Text. <b>Avatar sagt</b> ist, was in Anführungszeichen steht. <b>Bild</b> kommt aus <i>[BILD: ...]</i> und geht an Flux. <b>Bewegung</b> kommt aus <i>[BEWEGUNG: ...]</i> und steuert den Clip. Steht nur eine Klammer ohne Namen drin, wird sie für Bild und Bewegung genommen — dann stehen beide gleich da.<br><br>Fehlt eine Zeile, fehlt sie auch im Video. Ändern tust du oben im Textfeld, nicht hier.",
 
-szenentext:"<b>So schreibst du den Text einer Szene.</b><br><br>Jede Zeile beginnt mit dem Namen der Figur, die sie spricht:<br><i>Mara: Da vorne liegt die Küste.</i><br><i>Jonas: Das kann unmöglich Indien sein.</i><br>Jede Zeile bekommt die Stimme dieser Figur — dafür muss ein Stimmen-Eintrag genauso heißen wie der Avatar. Eine Zeile ohne Namen spricht die Kanalstimme.<br><br>Reden und zu sehen sein sind zwei verschiedene Dinge: Eine Figur kann sprechen, ohne unter <b>Wer steht im Bild</b> angewählt zu sein — dann hört man sie über der Landschaft.<br><br><b>In eckigen Klammern</b> steht, was nicht gesprochen wird:<br><i>[BILD: verwitterter Rucksack auf Geröll, Morgenlicht]</i> — danach malt Flux.<br><i>[BEWEGUNG: Kamera fährt langsam zurück]</i> — danach bewegt sich der Clip.<br>Schreibst du nur eine Klammer ohne Namen, wird sie für beides genommen.",
+szenentext:"Oben an der Szenenliste. Die drei Felder jeder Szene haben jeweils ein eigenes Fragezeichen.",
+szene_sprech:"Was gesprochen und untertitelt wird. Jede Zeile beginnt mit dem Namen. Zum Beispiel Mara: Da vorne liegt die Küste. Oder Frau: Der Sturm kam in der Nacht. Nie beide Namen in derselben Szene. Steht ein Avatar-Name da, ist die Person im Bild und Grok spricht. Steht der Sprecher-Name da, ist niemand im Bild und fal.ai spricht.",
+szene_bild:"Was auf dem Bild zu sehen ist. In der Sprache, die beim Video gewählt ist, nicht automatisch Englisch. Das malt das Bildmodell. Ort, Leute, Handlung. Nicht den gesprochenen Satz abschreiben. Steht der Avatar links, bleibt unten links frei.",
+szene_regie:"Was sich im Bild bewegt. Kurz, in derselben Sprache. Die Handlung, nicht die Kamera. Leer lassen heißt eine ruhige Bewegung.",
 
 prompt:"Wer der Kanal ist und wie er klingt. Steht am Anfang jeder Anfrage an Claude: Rolle, Tonfall, Sprache, für wen das Video gemacht ist. Gilt für jedes Video dieses Kanals, egal welches Thema. Hier steht das <b>Wer und Wie</b>.",
 
@@ -508,6 +511,12 @@ sprachen_eins:"In welcher Sprache gesprochen und untertitelt wird. Die Stimme mu
 
 function feldAus(s){var m=/setz\('([a-zA-Z0-9_]+)'/.exec(s||"");return m?m[1]:""}
 function erkUm(f){if(!S.erk)S.erk={};if(S.erk[f])delete S.erk[f];else S.erk[f]=1;zeichne()}
+function szHinweis(titel,key){
+  var e=ERK[key], auf=!!(e&&S.erk&&S.erk[key]);
+  return '<span class="szh">'+h(titel)
+    +(e?' <button type="button" class="frag'+(auf?' an':'')+'" onclick="erkUm(\''+key+'\')">?</button>':'')
+    +'</span>'+(auf?'<div class="erk">'+e+'</div>':'');
+}
 function kartenKopf(titel,f){
   var e=ERK[f], auf=!!(e&&S.erk&&S.erk[f]);
   return '<h2 class="kt">'+h(titel)
@@ -2203,13 +2212,13 @@ function tSzenen(){
      +'<button class="ik rot" onclick="szeneWeg(\''+s.id+'\',\''+h(s.datei).replace(/'/g,"")+'\')">✕</button></div>'
      +vor
      +versionen(s,"bild")
-     +'<div class="szf"><span class="szh">Sprechtext</span>'
+     +'<div class="szf">'+szHinweis("Sprechtext","szene_sprech")
      +'<textarea placeholder="Was gesagt wird. In Anführungszeichen spricht der Avatar." '
      +'oninput="satzZeigen(this)" onchange="szeneSetz(\''+s.id+'\',\'text\',this.value)">'+h(s.text||"")+'</textarea>'
      +satzHtml(s.text||"")+'</div>'
-     +'<div class="szf"><span class="szh">Bildbeschreibung</span>'
-     +'<textarea placeholder="Was auf dem Bild zu sehen ist. Leer = aus dem Sprechtext." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
-     +'<div class="szf"><span class="szh">Animationsanweisung</span>'
+     +'<div class="szf">'+szHinweis("Bildbeschreibung","szene_bild")
+     +'<textarea placeholder="Was auf dem Bild zu sehen ist, in der Sprache des Videos." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
+     +'<div class="szf">'+szHinweis("Animationsanweisung","szene_regie")
      +'<textarea placeholder="Wie sich das Bild bewegen soll. Leer = ruhige Fahrt." onchange="szeneSetz(\''+s.id+'\',\'regie\',this.value)">'+h(s.regie||"")+'</textarea></div>'
      ;
     o+=schalterZeile(s,d)+werZeile(s);
