@@ -1772,7 +1772,7 @@ def _r5_einen(k, sid):
         pfad = animation.erzeuge_grok(
             kanal, hintergrund, figuren, _r5_spruch(s), dauer, ziel,
             kanal.get("format") or "9:16", melden, fest=bool(s.get("fest")),
-            stumm=stumm)
+            stumm=stumm, regie=_r5_regie(s, kanal))
         if pfad and stumm:
             _r5_ohne_klington(ziel)
         if pfad and s.get("fest"):

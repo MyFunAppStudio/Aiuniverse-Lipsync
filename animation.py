@@ -1338,8 +1338,24 @@ def _grok_dialog(satz, personen):
     return zeilen
 
 
+def _grok_anweisungen(regie, personen):
+    """Eine Zeile ohne Namen gilt für alle. Name: gilt nur für diese Person."""
+    text = " ".join(str(regie or "").split()).replace('"', "'")
+    if not text:
+        return []
+    namen = []
+    for f, _p in personen or []:
+        n = " ".join(str(f.get("name") or "").split())
+        if n:
+            namen.append(n)
+    if not any((n.lower() + ":") in text.lower() for n in namen):
+        return [("", text)]
+    return _grok_dialog(text, personen)
+
+
 def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
-                 format_seite="9:16", melden=None, fest=False, stumm=False):
+                 format_seite="9:16", melden=None, fest=False, stumm=False,
+                 regie=""):
     """Ein Aufruf: Person, Szene und der Satz. Mund und Stimme kommen zusammen.
 
     So ist der Clip entstanden, der auf Deutsch gesprochen und den Mund
@@ -1448,6 +1464,13 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "und redet nicht gleichzeitig mit. "
                 "Der Mund bewegt sich nur bei dem, der gerade spricht. "
                 "Keine Untertitel, keine Schrift.")
+            for name, zeile in _grok_anweisungen(regie, personen):
+                if not zeile:
+                    continue
+                if name:
+                    teile.append("%s tut dabei dies: %s" % (name, zeile))
+                else:
+                    teile.append("Alle tun dabei dasselbe: %s" % zeile)
         prompt = " ".join(teile)
     else:
         if stumm:
@@ -1467,6 +1490,9 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "Der Mund bewegt sich zu den Woertern und ist danach zu. "
                 "Keine Untertitel, keine Schrift."
                 % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'")))
+            extra = _grok_anweisungen(regie, personen)
+            if extra and extra[0][1]:
+                prompt += " Die Person tut dabei dies: %s" % extra[0][1]
     koerper = {
         "model": "grok-imagine-video-1.5",
         "prompt": prompt,

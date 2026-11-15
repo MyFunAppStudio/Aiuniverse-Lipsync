@@ -456,9 +456,9 @@ var ERK={
 drehbuch:"Was der Bau aus deinem Text machen wird — Szene für Szene, bevor etwas Geld kostet. Zerlegt wird auf dem Server mit genau dem Code, der danach auch baut; was hier steht, wird also so gebaut.<br><br><b>Erzähler</b> ist normaler Text. <b>Avatar sagt</b> ist, was in Anführungszeichen steht. <b>Bild</b> kommt aus <i>[BILD: ...]</i> und geht an Flux. <b>Bewegung</b> kommt aus <i>[BEWEGUNG: ...]</i> und steuert den Clip. Steht nur eine Klammer ohne Namen drin, wird sie für Bild und Bewegung genommen — dann stehen beide gleich da.<br><br>Fehlt eine Zeile, fehlt sie auch im Video. Ändern tust du oben im Textfeld, nicht hier.",
 
 szenentext:"Oben an der Szenenliste. Die drei Felder jeder Szene haben jeweils ein eigenes Fragezeichen.",
-szene_sprech:"Was gesprochen und untertitelt wird. Jede Zeile beginnt mit dem Namen. Zum Beispiel Mara: Da vorne liegt die Küste. Oder Frau: Der Sturm kam in der Nacht. Nie beide Namen in derselben Szene. Steht ein Avatar-Name da, ist die Person im Bild und Grok spricht. Steht der Sprecher-Name da, ist niemand im Bild und fal.ai spricht.",
+szene_sprech:"Was gesprochen und untertitelt wird. Jede Zeile beginnt mit dem Namen. Mehrere Avatare dürfen in EINER Szene nacheinander reden: Mara: Erster Satz. Jonas: Zweiter Satz. Hugo: Dritter Satz. Zusammen kurz genug für 10 Sekunden. Eine Zeile nur mit dem Sprecher-Namen ist eine Szene ohne Bild, fal.ai spricht.",
 szene_bild:"Was auf dem Bild zu sehen ist. In der Sprache, die beim Video gewählt ist, nicht automatisch Englisch. Das malt das Bildmodell. Ort, Leute, Handlung. Nicht den gesprochenen Satz abschreiben. Steht der Avatar links, bleibt unten links frei.",
-szene_regie:"Was sich im Bild bewegt. Kurz, in derselben Sprache. Die Handlung, nicht die Kamera. Leer lassen heißt eine ruhige Bewegung.",
+szene_regie:"Was die Avatare tun. Ein Satz gilt für alle. Oder je Avatar eine eigene Zeile: Mara: zeigt nach rechts. Jonas: lacht. Hugo: nickt. Leer lassen heißt eine ruhige Bewegung.",
 
 prompt:"Wer der Kanal ist und wie er klingt. Steht am Anfang jeder Anfrage an Claude: Rolle, Tonfall, Sprache, für wen das Video gemacht ist. Gilt für jedes Video dieses Kanals, egal welches Thema. Hier steht das <b>Wer und Wie</b>.",
 
@@ -704,7 +704,8 @@ function tAktiv(){
      +'Oben Avatar oder Sprecher anmachen.</div>';
   }else if(an.length&&sp.length){
     o+='<div class="hinw" style="padding:0 0 8px">Avatar-Szenen und Sprecher-Szenen. '
-     +'Pro Szene nur einer von beiden, je nachdem welcher Name im Text steht.</div>';
+     +'Mehrere Avatare reden in einer Szene nacheinander. '
+     +'Nur der Sprecher-Name heißt: niemand im Bild.</div>';
   }else if(an.length>=2){
     o+='<div class="hinw" style="padding:0 0 8px">'+h(an.map(function(f){return f.name}).join(", "))
      +' stehen in jeder Szene zusammen. Jeder redet nacheinander. Kein Podest.</div>';
@@ -979,9 +980,9 @@ function tDiesesVideo(){
    +reihe("Sprache",wahl("sprachen_eins",(S.einst.sprachen||["de"])[0],SPRACHEN))
    +'<div class="r"><div><div class="lb">Wer redet</div>'
    +'<div class="hint">'+(an.length&&sp.length
-      ?"Beides an ist richtig. Steht in der Szene ein Avatar-Name, ist er im Bild und Grok spricht. Steht nur der Sprecher-Name, ist niemand im Bild und fal.ai spricht. Nie beide in derselben Szene."
+      ?"Beides an ist richtig. Avatare reden in einer Szene nacheinander, Grok spricht. Eine Szene nur mit dem Sprecher-Namen hat niemand im Bild, fal.ai spricht."
       :(an.length>=2
-        ?"Alle stehen zusammen im Bild. Grok spricht."
+        ?"Alle stehen in derselben Szene und reden nacheinander. Nicht jeder in einer eigenen Szene."
         :(an.length===1
           ?"Dieser Avatar ist im Bild. Grok spricht. Nimmst du ihn aus einer Szene, redet er weiter aus dem Off."
           :(sp.length
@@ -991,7 +992,7 @@ function tDiesesVideo(){
    +tAvatarWahl();
   if(an.length>=2){
     o+='<div class="hinw">'+h(an.map(function(f){return f.name}).join(", "))
-      +' stehen in jeder Szene zusammen. Jeder redet nacheinander.</div>';
+      +' stehen in derselben Szene und reden nacheinander.</div>';
     o+=reihe("Größe",knoepfe("figur_sicht",w.sicht,
         [["ganz","Kopf bis Schuh"],["knie","Kopf bis Knie"],["ober","Nur Oberkörper"]]));
   }else if(an.length===1){
@@ -1023,9 +1024,9 @@ function tDiesesVideo(){
   o+=tModellZeile(an,sp);
   if(an.length&&sp.length)
     o+='<div style="margin-top:12px;padding:10px 12px;border:1px solid #C8364A;border-radius:12px;background:#2a1014;color:#ffb4c0">'
-     +'Avatar und Sprecher sind beide an. Das Drehbuch wechselt nicht von allein. '
-     +'Pro Szene redet nur einer. Avatar-Name: im Bild, Grok spricht. '
-     +'Sprecher-Name: niemand im Bild, fal.ai spricht. Nach dem Schreiben den Text prüfen.'
+     +'Avatar und Sprecher sind beide an. Avatare reden in einer Szene nacheinander, Grok spricht. '
+     +'Eine Szene nur mit dem Sprecher-Namen hat niemand im Bild, fal.ai spricht. '
+     +'Nach dem Schreiben den Text prüfen.'
      +'</div>';
   o+='<div style="margin-top:12px">'
    +(S.ok
@@ -2219,7 +2220,7 @@ function tSzenen(){
      +'<div class="szf">'+szHinweis("Bildbeschreibung","szene_bild")
      +'<textarea placeholder="Was auf dem Bild zu sehen ist, in der Sprache des Videos." onchange="szeneSetz(\''+s.id+'\',\'bild\',this.value)">'+h(s.bild||"")+'</textarea></div>'
      +'<div class="szf">'+szHinweis("Animationsanweisung","szene_regie")
-     +'<textarea placeholder="Wie sich das Bild bewegen soll. Leer = ruhige Fahrt." onchange="szeneSetz(\''+s.id+'\',\'regie\',this.value)">'+h(s.regie||"")+'</textarea></div>'
+     +'<textarea placeholder="Ein Satz für alle, oder Mara: zeigt hin. Jonas: lacht." onchange="szeneSetz(\''+s.id+'\',\'regie\',this.value)">'+h(s.regie||"")+'</textarea></div>'
      ;
     o+=schalterZeile(s,d)+werZeile(s);
     /* "Wer spricht" und der Haken "Gesprochen" sind weg: Claude

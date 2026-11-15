@@ -124,7 +124,7 @@ erzaehlt wird - nicht irgendein allgemeines Motiv.
   "szenen": [
     {{"text": "gesprochener Text dieser Szene",
       "bild": "Bildbeschreibung in der Sprache des Videos, passend zu diesem Text",
-      "bewegung": "was sich im Bild bewegt, in der Sprache des Videos, ein kurzer Satz",
+      "bewegung": "ein Satz fuer alle, oder je Avatar eine Zeile Name: was diese Person tut",
       "wer": ["Namen der Figuren, die in diesem Bild zu sehen sind, sonst leere Liste"]}}
   ],
   "beschreibung_youtube": "...",
@@ -932,48 +932,45 @@ def lade_prompt(kanal):
 # eine Angabe, und das Beispiel zeigt jetzt, wie das aussieht.
 
 
-def _t4_anweisung(namen):
-    if not namen:
+def _t4_anweisung(namen, kanal=None, sprecher=None):
+    if not namen and not sprecher:
         return ""
-    liste = " und ".join(namen) if len(namen) < 3 else ", ".join(namen)
+    sprecher = sprecher or []
     mehrere = len(namen) > 1
     if mehrere:
-        beispiel = (
-            "  %s: Um sieben Uhr abends warf Napoleon die Garde nach vorn.\n"
-            "  %s: Eine Stunde spaeter war er auf der Flucht.\n"
-            % (namen[0], namen[1]))
-        form = ("Sie wechseln sich ab wie zwei Sprecher einer Dokumentation: "
-                "einer erzaehlt ein Stueck, der naechste fuehrt genau dort "
-                "weiter, wo der erste aufgehoert hat. KEINE Fragen "
-                "aneinander, keine Rueckmeldungen, kein Staunen, kein "
-                "\"Unglaublich\", kein \"Erzaehl weiter\", keine Anrede mit "
-                "Namen. Solche Zeilen halten nur auf. Jede Zeile bringt die "
-                "Geschichte voran und enthaelt eine Angabe.\n")
+        zeilen = "\n".join("  %s: Kurzer Satz mit einer Angabe." % n for n in namen[:3])
+        lage = (
+            "ALLE Avatare stehen in JEDER Avatar-Szene zusammen und reden "
+            "NACHEINANDER IN DERSELBEN Szene. Nicht jeder in einer eigenen "
+            "Szene und nicht gleichzeitig.\n"
+            "Schreib alle Zeilen in den Text dieser einen Szene:\n%s\n"
+            "Zusammen hoechstens 20 Woerter, damit es in 10 Sekunden passt.\n"
+            "Das Feld \"wer\" enthaelt immer alle Avatar-Namen: %s.\n"
+            "Die Animationsanweisung ist EIN Satz fuer alle, oder je Avatar "
+            "eine eigene Zeile: %s: zeigt nach rechts. %s: lacht.\n"
+            % (zeilen, ", ".join(namen), namen[0], namen[1]))
+    elif namen:
+        lage = (
+            "%s steht im Bild und redet. Das Feld \"wer\" ist [\"%s\"].\n"
+            "Die Animationsanweisung ist ein kurzer Satz, was diese Person tut.\n"
+            % (namen[0], namen[0]))
     else:
-        beispiel = ("  %s: Am Morgen des 18. Juni standen sich bei Waterloo "
-                    "zweihunderttausend Mann gegenueber.\n" % namen[0])
-        form = ("%s erklaert das ganze Video allein. In JEDER Szene spricht "
-                "nur %s, genau ein Satz, hoechstens 16 Woerter. "
-                "Das Feld \"wer\" ist in jeder Szene nur dieser eine Name.\n"
-                % (namen[0], namen[0]))
-    satz = ("JEDE Szene ist EINE Einstellung mit EINER Person. Genau ein "
-            "kurzer Satz, hoechstens 16 Woerter. Die Personen wechseln sich "
-            "ab: erst der eine, in der naechsten Szene der andere. "
-            "Das Feld \"wer\" enthaelt nur den Namen, der in dieser Szene redet.\n"
-            if mehrere else "")
+        lage = (
+            "Niemand ist im Bild. Es spricht nur der Sprecher. "
+            "Das Feld \"wer\" ist immer [].\n")
+    if namen and sprecher:
+        lage += (
+            "Eine Sprecher-Szene ist getrennt: nur %s, niemand im Bild, "
+            "\"wer\": []. Den Sprecher nicht in eine Avatar-Szene schreiben.\n"
+            % ", ".join(sprecher))
+    wer = namen + [n for n in sprecher if n not in namen]
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
-        "In diesem Kanal treten auf: %s. Es gibt KEINEN Erzaehler. "
-        "Jeder gesprochene Satz gehoert einer dieser Figuren.\n"
-        "Schreib den Text jeder Szene mit dem Namen vor jedem Stueck, alles in EINER Zeile hintereinander - im JSON darf kein echter Zeilenumbruch stehen:\n"
+        "Zu sehen oder zu hoeren: %s.\n"
+        "Jede Zeile beginnt mit dem Namen. Avatare duerfen in einer Szene "
+        "nacheinander reden.\n"
         "%s"
-        "%s"
-        "Die Figuren erklaeren das Thema, sie sind keine Zeitzeugen und "
-        "keine historischen Personen. Sie kommentieren nicht, sie "
-        "berichten.\n"
-        "%s"
-        % (liste, beispiel, form, satz)
-    )
+        % (", ".join(wer), lage))
 
 
 # ---------- Nachtrag t6: kaputtes JSON flicken und richtig melden ----------
@@ -1111,6 +1108,33 @@ def _clip_beide_kurz(beide, grenze=20):
     return raus
 
 
+def _clip_gruppen(beide, grenze=20):
+    """Mehrere Sprecher bleiben zusammen, solange der Clip das fasst."""
+    gruppen, paket, zahl = [], [], 0
+    for name, wort in beide:
+        ww = (wort or "").split()
+        if not ww:
+            continue
+        if zahl and zahl + len(ww) > grenze:
+            gruppen.append(paket)
+            paket, zahl = [], 0
+        while ww:
+            platz = grenze - zahl
+            if platz <= 0:
+                gruppen.append(paket)
+                paket, zahl = [], 0
+                platz = grenze
+            stueck, ww = ww[:platz], ww[platz:]
+            paket.append((name, " ".join(stueck)))
+            zahl += len(stueck)
+            if ww:
+                gruppen.append(paket)
+                paket, zahl = [], 0
+    if paket:
+        gruppen.append(paket)
+    return gruppen
+
+
 def _clip10(paket):
     """Keine Szene darf laenger gesprochen sein, als der Clip dauert.
 
@@ -1135,10 +1159,14 @@ def _clip10(paket):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
-            for n, w in _clip_beide_kurz(beide):
+            for gruppe in _clip_gruppen(beide):
                 s2 = dict(s)
-                s2["text"] = "%s: %s." % (n, w)
-                s2["wer"] = [n]
+                s2["text"] = " ".join("%s: %s." % (n, w) for n, w in gruppe)
+                namen = []
+                for n, _w in gruppe:
+                    if n not in namen:
+                        namen.append(n)
+                s2["wer"] = namen
                 neu.append(s2)
             continue
         name = ""
