@@ -1002,6 +1002,12 @@ function tDiesesVideo(){
   }else
     o+='<div class="hinw">Kein Abspann hochgeladen. Das Video endet mit der letzten Szene.</div>';
   o+=tModellZeile(an,sp);
+  if(an.length&&sp.length)
+    o+='<div style="margin-top:12px;padding:10px 12px;border:1px solid #C8364A;border-radius:12px;background:#2a1014;color:#ffb4c0">'
+     +'Avatar und Sprecher sind beide an. Das Drehbuch wechselt nicht von allein. '
+     +'Pro Szene redet nur einer. Avatar-Name: im Bild, Grok spricht. '
+     +'Sprecher-Name: niemand im Bild, fal.ai spricht. Nach dem Schreiben den Text prüfen.'
+     +'</div>';
   o+='<div style="margin-top:12px">'
    +(S.ok
       ?'<div class="hinw" style="color:#37D67A">Einstellungen bestätigt. Jetzt darf Video erzeugen starten.</div>'
