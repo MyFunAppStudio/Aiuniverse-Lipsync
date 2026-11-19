@@ -283,13 +283,13 @@ def aufbauen(kanal, text, melde=None):
             melde(i + 1, len(saetze), "Bild %d von %d" % (i + 1, len(saetze)))
         name = "gs_%s_%02d.png" % (stempel, i + 1)
         ziel = os.path.join(ordner, name)
-        prompt = bildprompt(satz, stil, figur, zusatz, _platte(kanal))
+        prompt = flux_anweisung(kanal, satz, stil=stil, zusatz=zusatz)
         print("[Bild] Szene %d malt: %s" % (i + 1, " ".join(prompt.split())[:140]))
         p = bilder.erzeuge(kanal, prompt, ziel,
                            referenz=referenz, seite=seite)
         if not p:
-            kurz = bildprompt(satz, stil, "", "", False)
-            print("[Bild] Szene %d noch einmal, nur das Ereignis" % (i + 1))
+            kurz = " ".join(prompt.split()[:40])
+            print("[Bild] Szene %d noch einmal, kuerzer" % (i + 1))
             p = bilder.erzeuge(kanal, kurz, ziel, referenz=None, seite=seite)
         if not p:
             fehlend += 1
@@ -448,6 +448,47 @@ def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
     if kern:
         teile.append(kern)
     return ", ".join(x for x in teile if x)
+
+
+def flux_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
+    """Macht aus dem deutschen Satz eine englische Malanweisung.
+
+    Flux folgt dem deutschen Text nicht. Eine kurze Uebersetzung nennt
+    genau die Dinge, die im Satz stehen, und sonst nichts.
+    """
+    rest, bild, _beweg, ohne = _p84_klammern(satz or "")
+    kern = _ohne_stein(", ".join(bild) or ", ".join(ohne) or "")
+    rede = _ohne_stein(gesprochen or rest)
+    if not kern:
+        kern = rede
+    if not kern and not rede:
+        return bildprompt(satz, stil, "", zusatz, False)
+    look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic"
+    auftrag = (
+        "Schreibe EINE englische Bildanweisung fuer ein Bildmodell. "
+        "Nur was hier steht, nichts dazu erfinden.\n"
+        "Stehen zwei Schiffe, sind beide gross im Bild und man sieht den Stoss. "
+        "Nicht ein Schiff allein und nicht weit weg.\n"
+        "Eine Explosion zeigt den Feuerball und was er zerbricht. Kein Blut, keine Leichen.\n"
+        "Kein Stein, kein Fels, kein Podest, kein Block im Vordergrund.\n"
+        "Keine Schrift. Kein Gefecht, wenn keins im Text steht.\n"
+        "Ein Absatz, 40 bis 80 Woerter, ohne Anfuehrungszeichen.\n"
+        "Stil: %s\n"
+        "GESPROCHEN: %s\n"
+        "BILD: %s"
+        % (look, rede or "—", kern or "—"))
+    try:
+        import text_generator
+        roh = text_generator._claude_anfrage(auftrag, max_tokens=300, kanal=kanal)
+        text = " ".join((roh or "").replace("```", " ").split())
+        if len(text) < 30:
+            raise RuntimeError("zu kurz")
+        text += (" No stone, no boulder, no pedestal, no text, no people in the "
+                 "foreground unless the text is about a person.")
+        return text[:1100]
+    except Exception as e:
+        print("[Bild] Englische Anweisung nicht bekommen: %s" % e)
+        return bildprompt(satz, stil, "", zusatz, False)
 
 
 # ---------- Nachtrag g2: Thema abhaken ----------

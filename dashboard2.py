@@ -1595,8 +1595,8 @@ def _p90_neu(k, sid):
     # Nachtrag r11: steht im Feld "Bildbeschreibung" etwas, wird danach
     # gemalt. Sonst wie bisher aus dem Satz und seinen Klammern.
     eigen = (s.get("bild") or "").strip()
-    prompt = geschichte.bildprompt(
-        eigen or text, stil, figur, zusatz, geschichte._platte(kanal))
+    prompt = geschichte.flux_anweisung(
+        kanal, eigen or text, text, stil, zusatz)
     name = "gs_%s_s%s.png" % (_p90_time.strftime("%H%M%S"), re.sub(r"\W", "", str(sid))[:6])
     ziel = os.path.join(szenen.ordner(kanal), name)
 
