@@ -119,11 +119,9 @@ _CLIP_NAME = re.compile(r"^([^:]{1,24}):\s*")
 
 
 def _in_den_clip(szenen, hoechstens):
-    """Jede Szene muss in 10 Sekunden gesprochen sein.
+    """Jede Szene muss in 15 Sekunden gesprochen sein.
 
-    22 Woerter bleiben unter 10 Sekunden. Der Rest wird die naechste
-    Szene, mit demselben Bild. Sonst bleibt am Ende ein Standbild stehen,
-    weil der Clip nicht laenger kann.
+    Was darüber liegt, wird die nächste Szene, mit demselben Bild.
     """
     raus = []
     for s in szenen:
@@ -133,7 +131,13 @@ def _in_den_clip(szenen, hoechstens):
     return raus[:hoechstens]
 
 
-def _clip_stueck(satz):
+def _clip_stueck(satz, grenze=36):
+    """Eine Klammer bleibt eine Szene, solange sie in 15 Sekunden passt.
+
+    36 Woerter sind knapp unter 15 Sekunden. Frueher wurden bei 22 Woertern
+    und bei zwei Sprechern aus 3 Szenen 6. Mehrere Namen in einer Klammer
+    bleiben zusammen.
+    """
     ganz = str(satz or "")
     klammern = [k.strip() for k in _CLIP_ECKIG.findall(ganz) if k.strip()]
     rest = _CLIP_ECKIG.sub(" ", ganz)
@@ -141,47 +145,22 @@ def _clip_stueck(satz):
     if auf >= 0:
         rest = rest[:auf]
     rest = " ".join(rest.split())
-    beide = []
-    ms = [m for m in re.finditer(
-            r"(?:^|\s)([A-Za-zÄÖÜäöüß]+(?:\s+[A-Za-zÄÖÜäöüß]+){0,2}):\s+", rest)
-          if len(m.group(1).split()) <= 3]
-    if len(ms) >= 2:
-        for i, m in enumerate(ms):
-            ende = ms[i + 1].start() if i + 1 < len(ms) else len(rest)
-            wort = rest[m.end():ende].strip(" .")
-            if wort:
-                beide.append((m.group(1).strip(), wort))
     anhang = "".join(" [%s]" % k for k in klammern)
-    if len(beide) >= 2:
-        raus = []
-        for n, w in beide:
-            raus.extend(_clip_stueck("%s: %s.%s" % (n, w, anhang)))
-        return raus
-    name = ""
-    m = _CLIP_NAME.match(rest)
-    if m and len(m.group(1).split()) <= 3:
-        name = m.group(1).strip()
-        rest = rest[m.end():].strip()
+    if len(rest.split()) <= grenze:
+        return [(rest + anhang).strip() or ganz]
     woerter = rest.split()
-    anhang = "".join(" [%s]" % k for k in klammern)
-    if len(woerter) <= 22:
-        kern = (name + ": " + rest).strip() if name else rest
-        return [((kern + anhang).strip() or ganz)]
     teile, restw = [], woerter
     while restw:
-        if len(restw) <= 22:
+        if len(restw) <= grenze:
             stueck, restw = restw, []
         else:
-            schnitt = 18
-            for i in range(min(18, len(restw)), 10, -1):
+            schnitt = max(8, grenze - 6)
+            for i in range(min(grenze - 1, len(restw)), max(8, grenze // 3), -1):
                 if restw[i - 1][-1:] in ",;:":
                     schnitt = i
                     break
             stueck, restw = restw[:schnitt], restw[schnitt:]
-        kern = " ".join(stueck)
-        if name:
-            kern = name + ": " + kern
-        teile.append((kern + anhang).strip())
+        teile.append((" ".join(stueck) + anhang).strip())
     return teile or [ganz]
 
 
@@ -267,7 +246,7 @@ def vorschlag(kanal, thema=""):
     return {"ok": True, "text": text,
             "titel": (paket or {}).get("titel") or "",
             "teile": len(teile),
-            "szenen": text.count("(")}
+            "szenen": len(zerlege(text))}
 
 
 def aufbauen(kanal, text, melde=None):

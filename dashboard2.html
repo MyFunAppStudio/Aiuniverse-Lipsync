@@ -1531,10 +1531,19 @@ function themenVorschlag(){
   });
   });
 }
+function themaFeld(wert){
+  var neu=String(wert||"");
+  var alt=String((S.einst||{}).geschichte_thema||"");
+  if(neu.trim()===alt.trim()) return;
+  var q=el("gsquelle");
+  if(q) q.value="";
+  S.einst.geschichte_quelle="";
+  setzViele({geschichte_thema:neu, geschichte_quelle:""});
+}
 function themaWaehlen(t){
   var f=el("thema"); if(f)f.value=t;
   var g=el("gsthema"); if(g)g.value=t;
-  setz("geschichte_thema",t);
+  themaFeld(t);
 }
 function themaWeg(t){
   frage("Thema löschen?","<b>"+h(t)+"</b><br><br>Es kommt aus der Liste.",
@@ -3101,10 +3110,10 @@ function tGeschichte(){
   var o='<div class="karte p"><h2 class="kt">Deine Geschichte</h2>'
    +'<div style="display:flex;gap:7px;margin-bottom:9px">'
    +'<input type="text" id="gsthema" class="breit" placeholder="Thema — leer nimmt das nächste aus der Liste" value="'
-   +h(S.einst.geschichte_thema||"")+'" onchange="setz(\'geschichte_thema\',this.value)">'
+   +h(S.einst.geschichte_thema||"")+'" onchange="themaFeld(this.value)">'
    +'<button class="knopf or" id="gsknopf" onclick="textSchreiben()">Schreiben</button></div>'
    +'<textarea id="gsquelle" style="min-height:120px;margin-bottom:9px" '
-   +'placeholder="Quelle — hier den kopierten Text einfügen, zum Beispiel einen Absatz über Coca-Cola. Das ist nicht das Drehbuch."'
+   +'placeholder="Quelle nur zum jetzigen Thema. Ein neues Thema leert dieses Feld."'
    +' onchange="setz(\'geschichte_quelle\',this.value)">'+h(S.einst.geschichte_quelle||"")+'</textarea>'
    +'<textarea id="gstext" style="min-height:190px" placeholder="Hier landet das Drehbuch. Schreiben füllt es. Du kannst es danach ändern."'
    +' onchange="setz(\'geschichte_text\',this.value)">'+h(S.einst.geschichte_text||"")+'</textarea>'
