@@ -294,7 +294,9 @@ def aufbauen(kanal, text, melde=None):
             melde(i + 1, len(saetze), "Bild %d von %d" % (i + 1, len(saetze)))
         name = "gs_%s_%02d.png" % (stempel, i + 1)
         ziel = os.path.join(ordner, name)
-        p = bilder.erzeuge(kanal, bildprompt(satz, stil, figur, zusatz), ziel,
+        prompt = bildprompt(satz, stil, figur, zusatz, _platte(kanal))
+        print("[Bild] Szene %d malt: %s" % (i + 1, " ".join(prompt.split())[:140]))
+        p = bilder.erzeuge(kanal, prompt, ziel,
                            referenz=referenz, seite=seite)
         if not p:
             fehlend += 1
@@ -386,30 +388,45 @@ def _p84_klammern(satz):
     return rest, bild, beweg, ohne
 
 
-def bildprompt(satz, stil="", figur_name="", zusatz=""):
-    """Baut die Bildbeschreibung - vorrangig aus der BILD-Klammer."""
+def _platte(kanal):
+    """Nur wenn ein Avatar im Video steht, bleibt unten links die Platte frei."""
+    try:
+        import darsteller
+        return bool(darsteller.besetzung(kanal))
+    except Exception:
+        return False
+
+
+def _zusatz_tauglich(zusatz):
+    """Der alte Stil-Anker hat jeder Szene denselben Angriff vorgeschrieben."""
+    z = (zusatz or "").strip()
+    niedrig = z.lower()
+    if "people charging" in niedrig or "firing or riding" in niedrig:
+        return ""
+    return z
+
+
+def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
+    """Nur der Moment dieser Szene. Kein fester Kampf für alle Bilder."""
     rest, bild, _beweg, ohne = _p84_klammern(satz)
     kern = ", ".join(bild) or ", ".join(ohne) or rest
-    if not kern.strip():
+    if not (kern or "").strip():
         kern = rest
     teile = []
-    if figur_name:
-        teile.append("%s in dieser Szene: %s" % (figur_name, kern))
-    else:
-        teile.append(kern)
     st = STIL_TEXT.get((stil or "").strip().lower())
     if st:
         teile.append(st)
-    if (zusatz or "").strip():
-        teile.append(zusatz.strip())
+    extra = _zusatz_tauglich(zusatz)
+    if extra:
+        teile.append(extra)
     teile.append(P84_SAUBER)
-    teile.append(
-        "cinematic action still, the most intense second frozen in motion, "
-        "people charging, firing or riding, dust, smoke, fire and flags, "
-        "dramatic low sunlight, high contrast, sharp, cool and violent, "
-        "not a quiet landscape, not an empty road, not anyone standing still, "
-        "a plain empty stone pedestal in the lower left, nothing on it")
-    return ", ".join(teile)
+    if mit_platte:
+        teile.append(
+            "lower left one flat ankle-high empty stone slab, nothing on it, "
+            "the action stays in the center and on the right")
+    kopf = ("%s in dieser Szene: %s" % (figur_name, kern)) if figur_name else kern
+    teile.append(kopf)
+    return ", ".join(x for x in teile if x)
 
 
 # ---------- Nachtrag g2: Thema abhaken ----------

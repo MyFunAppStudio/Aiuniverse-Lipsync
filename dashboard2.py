@@ -1595,7 +1595,8 @@ def _p90_neu(k, sid):
     # Nachtrag r11: steht im Feld "Bildbeschreibung" etwas, wird danach
     # gemalt. Sonst wie bisher aus dem Satz und seinen Klammern.
     eigen = (s.get("bild") or "").strip()
-    prompt = geschichte.bildprompt(eigen or text, stil, figur, zusatz)
+    prompt = geschichte.bildprompt(
+        eigen or text, stil, figur, zusatz, geschichte._platte(kanal))
     name = "gs_%s_s%s.png" % (_p90_time.strftime("%H%M%S"), re.sub(r"\W", "", str(sid))[:6])
     ziel = os.path.join(szenen.ordner(kanal), name)
 
@@ -2317,11 +2318,9 @@ def slot_bereit(key, slot, *teile):
 # das Gemaelde ist. Der Anker muss also fotorealistisch sein - und er
 # gilt fuer das HINTERGRUNDBILD, in das Kling die Avatare setzt.
 # Darum: Vordergrund frei lassen, damit die Figuren Platz haben.
-G7_ANKER = ("photorealistic cinematic action still, shot on 35mm, "
-            "the most intense second of the event, people charging firing "
-            "and riding, dust smoke fire and flags, dramatic low sunlight, "
-            "high contrast, sharp, a strip of open ground only at the lower "
-            "left, no text, no letters, no numbers")
+G7_ANKER = ("photorealistic cinematic still, shot on 35mm, "
+            "the place and the year as described, natural light, sharp, "
+            "no text, no letters, no numbers")
 
 
 def stil_vorschlag(key):
