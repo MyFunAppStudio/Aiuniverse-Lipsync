@@ -438,6 +438,11 @@ function zeichne(){
      kam erst, wenn man einmal auf einen Reiter getippt hatte. */
   var istMachen=!({darsteller:1,einst:1,kanaele:1}[S.tab]);
   el("leiste").style.display=istMachen?"flex":"none";
+  var gen=el("gen");
+  if(gen){
+    gen.disabled=istMachen&&!S.ok;
+    gen.textContent=istMachen&&!S.ok?"ERST EINSTELLUNGEN BESTÄTIGEN":"VIDEO ERZEUGEN";
+  }
   el("preis").textContent=(S.preis.gesamt!=null?S.preis.gesamt.toFixed(2).replace(".",","):"—")+" €";
   var f={machen:tMachen,darsteller:tDarstellerSeite,einst:tEinst,kanaele:tKanaele}[S.tab]||tMachen;
   /* Die Seite springt sonst bei jeder Aenderung nach oben. */
@@ -671,7 +676,8 @@ function setzViele(d){
   return api("/api/kanal?k="+S.kanal,d).then(function(){zeichne()});
 }
 function setz(feld,wert,zahlFeld){
-  S.ok=false;
+  var anfang=["format","aufloesung","sprachen_eins","podest_an","podest_art","podest_text","figur_stand","figur_sicht"];
+  if(anfang.indexOf(feld)>=0) S.ok=false;
   if(feld==="geschichte_text"||feld==="geschichte_stil")setTimeout(function(){S.gs=null;ladeGeschichte()},260);
   if(wert==="true")wert=true;else if(wert==="false")wert=false;
   else if(zahlFeld)wert=Number(wert)||0;
@@ -842,8 +848,16 @@ function tStart(){
 }
 
 function tMachen(){
-  /* Der Ablauf von oben nach unten: was gebaut wird, wer angehakt ist,
-     woraus, dann die Szenen mit ihren Clips. */
+  /* Erst die Anfangseinstellungen. Ohne Stimmt so gibt es keinen
+     nächsten Schritt, sonst wird mit der falschen Wahl erzeugt. */
+  if(!S.ok){
+    var lauf=(S.daten&&S.daten.lauf||{}).laeuft;
+    return tDiesesVideo()
+     +'<div class="karte p"><div class="hinw" style="color:#FFB454"><b>Gesperrt.</b> '
+     +'Erst oben auf Stimmt so. Danach sind Schreiben, Bilder, Clips und Video erzeugen frei. '
+     +'Änderst du danach etwas, ist wieder alles zu.</div></div>'
+     +(lauf?tLauf():'');
+  }
   return tDiesesVideo()+tWie()+tAktiv()+tStartKopf()+tPrompt()+tLauf()+tVideos();
 }
 
@@ -1030,9 +1044,9 @@ function tDiesesVideo(){
      +'</div>';
   o+='<div style="margin-top:12px">'
    +(S.ok
-      ?'<div class="hinw" style="color:#37D67A">Einstellungen bestätigt. Jetzt darf Video erzeugen starten.</div>'
-      :'<button class="knopf or" style="width:100%" onclick="stimmtSo()">Stimmt so</button>'
-       +'<div class="hinw">Erst dieser Knopf, dann Video erzeugen. Änderst du etwas, musst du ihn neu drücken.</div>')
+      ?'<div class="hinw" style="color:#37D67A">Einstellungen bestätigt. Schreiben, Bilder, Clips und Video erzeugen sind frei.</div>'
+      :'<button class="knopf gen" style="width:100%" onclick="stimmtSo()">Stimmt so</button>'
+       +'<div class="hinw">Erst dieser Knopf. Danach erst die nächsten Schritte. Änderst du etwas, musst du ihn neu drücken.</div>')
    +'</div>';
   return o+'</div>';
 }
@@ -1401,8 +1415,13 @@ function abbrechen(){api("/api/stop",{}).then(laden)}
 /* Die Abfrage sprach immer vom naechsten Thema aus der Liste - auch
    dann, wenn aus fertigen Szenen gebaut wird und gar kein Thema
    gebraucht wird. Jetzt steht da, was wirklich passiert. */
+function erstBestaetigt(){
+  if(S.ok) return true;
+  melde("Erst oben auf Stimmt so. Sonst ist dieser Schritt gesperrt.");
+  return false;
+}
 function fragGenerieren(){
-  if(!S.ok) return melde("Erst auf der Karte Stimmt so drücken. Sonst wird nichts erzeugt.");
+  if(!erstBestaetigt()) return;
   var namen=((S.ds&&S.ds.darsteller)||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"})
     .map(function(f){return f.name});
   var m=modellJetzt();
@@ -2147,6 +2166,7 @@ function nurMuender(id){
     });
 }
 function clipNeu(id,sek,schon){
+  if(!erstBestaetigt()) return;
   var js=((R6.stand||{}).je_sekunde)||0;
   var zahlt=clipStufe(sek)||sek;        /* bezahlt wird die bestellte Laenge */
   var preis=(js&&zahlt)?(js*zahlt):0;
@@ -2159,6 +2179,7 @@ function clipNeu(id,sek,schon){
     });
 }
 function clipAlle(){
+  if(!erstBestaetigt()) return;
   var d=R6.stand||{};
   /* Beim Stapel kostet ein falscher Schalter gleich mehrfach. Darum
      steht hier, was fuer Clips das werden und wo etwas fehlt. */
@@ -3114,6 +3135,7 @@ function tGeschichte(){
 }
 
 function geschichteStart(){
+  if(!erstBestaetigt()) return;
   var t=(S.einst.geschichte_text||"").trim();
   if(!t)return melde("Erst die Geschichte einfügen.");
   frage("Bilder erzeugen?","Das kostet etwa <b>"+Number((S.gs||{}).kosten||0).toFixed(2)+" €</b> und legt die bisherigen Szenen dieses Kanals neu an.","Los",
@@ -3211,6 +3233,7 @@ function ankerVorschlag(){
    samt Clips, fuer die schon bezahlt wurde. Vor dem Schreiben wird
    deshalb gefragt, und dann werden sie geleert. */
 function textSchreiben(){
+  if(!erstBestaetigt()) return;
   var weiter=function(){
     var li=((S.szenen||{}).szenen)||[];
     if(!li.length)return textSchreibenLos();
