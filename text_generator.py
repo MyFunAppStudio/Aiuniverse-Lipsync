@@ -119,7 +119,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens {_je:.0f} Sekunden gesprochen. {_zeit}Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen 400 bis 700 Zeichen, konkret, nicht ein Stichwort. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen in der Sprache des Videos, nicht in einer anderen. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Die Handlung ist in der Mitte und rechts, nicht links vorne. Nicht "wide shot" und nicht "aerial view". In jede Beschreibung gehoeren: Einstellung aus Augenhoehe, genauer Ort, wer da ist und was er gerade tut, Kleidung und Epoche, Licht, Wetter, zwei erkennbare Einzelheiten. Nicht "Soldaten im Kampf", sondern "Halbnah aus Augenhoehe, Infanterie in blauen Roecken kniet und feuert, Kavallerie sprengt rechts durch Pulverrauch, Fahnen, aufgerissener Zaun, niedriges Sonnenlicht, Staub. Unten links nur eine flache leere Steinplatte, knoechelhoch."\n\nBEWEGUNG: Was die Avatare mit den Haenden tun, und was sich im Hintergrund bewegt. Nicht die Kamera. Ein Avatar: zwei Gesten, zeigen und nicken, Arme nicht haengen lassen. Mehrere: je Person eine Zeile Name: Geste. Der Hintergrund lebt die ganze Zeit.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau das, was der Satz erzaehlt, so gross, dass man es erkennt. Zwei Schiffe stossen zusammen: beide Ruempfe, der Bug trifft den anderen Rumpf, das Hafenbecken ist zu sehen. Eine Explosion: der Feuerball, die Druckwelle, berstende Fenster und Daecher, das Schiff als Ursprung. Kein Blut, keine Leichen. Dafuer darf das Bild weit sein. Luftaufnahme bleibt verboten. Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht.\n\nBEWEGUNG: Was die Avatare mit den Haenden tun, und was sich im Hintergrund bewegt. Nicht die Kamera. Ein Avatar: zwei Gesten, zeigen und nicken, Arme nicht haengen lassen. Mehrere: je Person eine Zeile Name: Geste. Der Hintergrund lebt die ganze Zeit.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -828,11 +828,10 @@ def erzeuge_paket(kanal, eigenes_thema=None):
 # seine Gegenstaende bekommt.
 
 P88_BILD = """DIE SZENEN EINES EREIGNISSES
-Bevor du schreibst, denk wie ein Regisseur: Welche fuenf bis acht
-Momente braucht man, um dieses Ereignis zu verstehen? Nimm die, die
-eine Dokumentation zeigen wuerde, in zeitlicher Reihenfolge - die Lage
-davor, der Ausloeser, der Aufmarsch, der entscheidende Moment, die
-Wendung, der Ausgang, die Folgen.
+Bevor du schreibst, denk wie ein Regisseur. Nimm genau so viele Momente,
+wie der Auftrag Szenen verlangt, nicht eine mehr. Eine Dokumentation
+wuerde sie in dieser Reihenfolge zeigen: die Lage davor, der Ausloeser,
+der entscheidende Moment, der Ausgang.
 Jede Szene ist genau einer dieser Momente, und ihr Bild zeigt diesen
 Moment - nicht die Stimmung drumherum und nicht einen Gegenstand, der
 dazu passen koennte.
@@ -855,58 +854,29 @@ Sprache des Videos, nicht auf Englisch, ausser das Video ist englisch.
 Schreib sie AUSFUEHRLICH, 400 bis 700 Zeichen. Kurze Beschreibungen geben
 beliebige Bilder.
 
-DIE SZENE, NICHT EIN DING DANEBEN
-Jedes Bild ist der haerteste Moment der Szene, eingefroren. Cool, laut,
-in Bewegung. Geht es um Krieg, sieht man den Kampf: Leute feuern, reiten
-an, stuermen, Fahnen, Rauch, Feuer, Staub. Nicht eine ruhige Landschaft,
-nicht einen leeren Weg, nicht Soldaten die nur herumstehen.
-Jede Szene ein anderer Schlag: Attacke, Salve, Aufmarsch im Lauf,
-Verstaerkung die ins Feld bricht, Rueckzug unter Feuer.
-Halbtotale aus Augenhoehe. Die Handelnden sind gross genug, dass man
-Uniform und was sie tun erkennt. Keine Luftaufnahme, kein Panorama,
-keine Grossaufnahme von einem Gegenstand.
+DAS BILD ZEIGT DAS EREIGNIS
+Das Bild muss das zeigen, was der Satz erzaehlt, so gross, dass man es erkennt.
+Zwei Schiffe stossen zusammen: beide Ruempfe im Bild, der Bug trifft den
+anderen Rumpf, das Hafenbecken ist zu sehen. Nicht ein Schiff allein und
+nicht der Kai ohne Schiffe.
+Eine Explosion: der Feuerball, die Druckwelle, berstende Fenster und Daecher,
+das Schiff als Ursprung. Kein Blut, keine Leichen, keine Koerperteile.
+Die Zerstoerung ist sichtbar.
+Dafuer darf und muss das Bild weit sein, wenn man das Ereignis sonst nicht
+sieht. Verboten bleibt nur die Luftaufnahme.
+Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht mit Reiterei.
 
-SECHS DINGE GEHOEREN IN JEDE BESCHREIBUNG
-1. Einstellung und Ort: medium shot at eye level, und wo. Niemals
-   "wide shot", "wide view", "aerial", "bird's eye" oder "panorama".
-2. Was passiert, konkret: nicht "soldiers" und nicht "a muddy path",
-   sondern "infantry in blue coats kneeling and firing, horses charging
-   past them through smoke". Die Handlung fuellt die Mitte und die
-   rechte Seite. Unten links nur eine flache leere Steinplatte, nur
-   knoechelhoch, kein Felsblock und kein hohes Podest, niemand darauf.
-3. Tageszeit, Licht, Wetter.
-4. Epoche an Kleidung und Bauten, nie als Jahreszahl. Keine Autos,
-   Jeeps, Lastwagen, Asphalt.
-5. Blickwinkel: from eye level. In the lower left a flat stone slab,
-   empty, only ankle-high, not a boulder and not a tall pedestal,
-   nothing and nobody standing on it. The action fills the center and
-   the right side, not the lower left.
-6. Ein oder zwei Einzelheiten: broken fence, drums, a farmhouse, flags.
+WAS IN DIE BESCHREIBUNG GEHOERT
+Ort, was genau passiert, Kleidung und Bauten der Zeit, Licht und Wetter.
+Unten links nur eine kleine leere Steinplatte, wenn ein Avatar im Video steht.
+Sie darf Schiffe, den Stoss und die Explosion nicht verdecken.
+Keine Schrift, keine Zahlen, keine Karten, keine Grossaufnahme eines Gesichts.
+Kein Blut, keine Leichen.
 
-Der Avatar kommt spaeter auf diese flache Platte. Darum steht dort niemand
-und nichts. Sie ist nur knoechelhoch, damit er nicht ueber der Szene
-schwebt. Die Leute und die Handlung sind in der Mitte und rechts, nie
-auf der Platte links. Bei Krieg immer Soldaten oder Schiffe im Bild,
-nie nur Landschaft.
+BEISPIELE
+[BILD: Weit genug, im Hafenbecken stossen zwei Frachtdampfer zusammen, der Bug des einen steckt im Rumpf des anderen, Holz splittert, Wasser spritzt, Speicherhaeuser dahinter, tiefes Sonnenlicht.]
 
-WAS NIE INS BILD KOMMT
-Keine Schrift, keine Buchstaben, keine Zahlen, keine Wappen mit Text,
-keine beschrifteten Karten, keine Urkunden, keine Siegel, keine
-Buecher, keine Zeitungen. Daraus werden unleserliche Zeichen.
-Keine Sinnbilder statt der Szene: kein einzelnes Schwert auf einem
-Tisch, kein Helm im Gras, kein Brief, kein verkohltes Papier, keine
-Sanduhr, keine Kerze, keine Landkarte. Das ist Deko statt Geschichte.
-Keine Gesichter in Grossaufnahme, keine benannten echten Personen.
-Keine modernen Dinge: Autos, Strassenlaternen, Stromleitungen, Asphalt,
-Kleidung von heute.
-Kein Blut, keine Leichen, keine Verstuemmelung.
-
-DREI BEISPIELE IN DER RICHTIGEN LAENGE
-[BILD: medium shot at eye level, cavalry in dark coats charging straight at a line of infantry who are kneeling and firing, sabres raised, flags snapping, a shell burst of orange fire and black smoke on the right, low hard sunlight, dust, a flat ankle-high empty stone slab in the lower left, not a boulder]
-
-[BILD: medium shot at eye level, infantry in red coats running through waist-high wheat with bayonets leveled, drums and flags behind them, cannon smoke rolling across the field, horses breaking through on the right, dramatic backlight, a flat ankle-high empty stone slab in the lower left, not a boulder]
-
-[BILD: medium shot at eye level, sailors hauling a cannon aboard as three wooden warships fire a broadside across the water, white smoke, torn sails, orange muzzle flashes, spray, a flat ankle-high empty stone slab on the near shore in the lower left, not a boulder]
+[BILD: Weit genug, aus dem getroffenen Schiff steigt ein weisser Feuerball, die Druckwelle knickt Holzhausdacher und wirft Fenster nach aussen, keine Menschen im Vordergrund, keine Leichen.]
 
 BEWEGUNG
 Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.
@@ -1220,30 +1190,15 @@ def _clip10(paket, grenze=35):
             name = m.group(1).strip()
             roh = roh[m.end():].strip()
         woerter = roh.split()
-        if len(woerter) <= grenze:
-            s2 = dict(s)
-            s2["text"] = (name + ": " + roh).strip(": ").strip() if name else roh
-            if name:
-                s2["wer"] = [name]
-            neu.append(s2)
-            continue
-        rest = woerter
-        while rest:
-            if len(rest) <= 26:
-                stueck, rest = rest, []
-            else:
-                schnitt = max(8, grenze - 6)
-                for i in range(min(grenze - 1, len(rest)), max(8, grenze // 3), -1):
-                    if rest[i - 1][-1:] in ",;:":
-                        schnitt = i
-                        break
-                stueck, rest = rest[:schnitt], rest[schnitt:]
-            s2 = dict(s)
-            kern = " ".join(stueck)
-            s2["text"] = (name + ": " + kern) if name else kern
-            if name:
-                s2["wer"] = [name]
-            neu.append(s2)
+        if len(woerter) > grenze:
+            print("[Text] Szene hat %d Woerter, Grenze %d. Sie bleibt eine Szene, "
+                  "damit aus zwei Szenen nicht drei werden."
+                  % (len(woerter), grenze))
+        s2 = dict(s)
+        s2["text"] = (name + ": " + roh).strip(": ").strip() if name else roh
+        if name:
+            s2["wer"] = [name]
+        neu.append(s2)
     if len(neu) != len(szenen):
         print("[Text] Zu lang fuer %d Woerter: %d Szenen werden %d"
               % (grenze, len(szenen), len(neu)))

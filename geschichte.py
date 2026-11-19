@@ -148,20 +148,9 @@ def _clip_stueck(satz, grenze=36):
     anhang = "".join(" [%s]" % k for k in klammern)
     if len(rest.split()) <= grenze:
         return [(rest + anhang).strip() or ganz]
-    woerter = rest.split()
-    teile, restw = [], woerter
-    while restw:
-        if len(restw) <= grenze:
-            stueck, restw = restw, []
-        else:
-            schnitt = max(8, grenze - 6)
-            for i in range(min(grenze - 1, len(restw)), max(8, grenze // 3), -1):
-                if restw[i - 1][-1:] in ",;:":
-                    schnitt = i
-                    break
-            stueck, restw = restw[:schnitt], restw[schnitt:]
-        teile.append((" ".join(stueck) + anhang).strip())
-    return teile or [ganz]
+    # Nicht in eine weitere Szene schneiden. Sonst werden aus 2 Szenen 3,
+    # und das Bild des Ereignisses geht dabei verloren.
+    return [(rest + anhang).strip() or ganz]
 
 
 def bildprompt(satz, stil="", figur_name="", zusatz=""):
@@ -299,6 +288,10 @@ def aufbauen(kanal, text, melde=None):
         p = bilder.erzeuge(kanal, prompt, ziel,
                            referenz=referenz, seite=seite)
         if not p:
+            kurz = bildprompt(satz, stil, "", "", False)
+            print("[Bild] Szene %d noch einmal, nur das Ereignis" % (i + 1))
+            p = bilder.erzeuge(kanal, kurz, ziel, referenz=None, seite=seite)
+        if not p:
             fehlend += 1
             print("[Geschichte] Szene %d ohne Bild uebersprungen" % (i + 1))
             continue
@@ -422,10 +415,19 @@ def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
     teile.append(P84_SAUBER)
     if mit_platte:
         teile.append(
-            "lower left one flat ankle-high empty stone slab, nothing on it, "
-            "the action stays in the center and on the right")
-    kopf = ("%s in dieser Szene: %s" % (figur_name, kern)) if figur_name else kern
-    teile.append(kopf)
+            "a small empty stone slab only in the lower left corner, "
+            "it must not cover the event")
+    teile.append(
+        "historical documentary still, no blood, no corpses, no gore. "
+        "Show this event large enough to recognize. "
+        "A collision shows both sides at the moment of impact. "
+        "An explosion shows the fireball and what it breaks. "
+        "Wide shot is allowed when the event needs it. No aerial view.")
+    if (rest or "").strip():
+        teile.append("The spoken event, show exactly this: " + rest.strip())
+    kopf = ("%s. %s" % (figur_name, kern)) if figur_name else kern
+    if kopf and kopf.strip() != (rest or "").strip():
+        teile.append(kopf)
     return ", ".join(x for x in teile if x)
 
 
