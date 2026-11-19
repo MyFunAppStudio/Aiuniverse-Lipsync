@@ -1345,9 +1345,19 @@ GROK_GESTIK = (
     "Kein Winken in die Kamera.")
 
 
+def _regie_putzen(text):
+    """Alte Anweisungen haben den Mund verboten und Muell wie 'nicht zweimal'."""
+    import re as _re
+    t = " ".join(str(text or "").split())
+    t = _re.sub(
+        r"(?i)\b(der mund bleibt zu|mund bleibt zu|der mund bleibt geschlossen|nicht zweimal)\b\.?",
+        " ", t)
+    return " ".join(t.split()).strip(" ,.")
+
+
 def _grok_anweisungen(regie, personen):
     """Eine Zeile ohne Namen gilt für alle. Name: gilt nur für diese Person."""
-    text = " ".join(str(regie or "").split()).replace('"', "'")
+    text = _regie_putzen(regie).replace('"', "'")
     if not text:
         return []
     namen = []
@@ -1496,10 +1506,13 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
                 + "%s Gesicht zur Kamera. %s "
                 "Die Person sagt genau diesen Text und sonst nichts: \"%s\" "
-                "Der Mund bewegt sich zu den Woertern. "
+                "Der Mund bewegt sich zu den Woertern. Die Fuesse bleiben. "
+                "Beide Haende zeigen auf das Ereignis in der Szene, nicht ins Leere. "
                 % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'"))
                 + " " + GROK_GESTIK
-                + " Keine Untertitel, keine Schrift.")
+                + " Keine Untertitel, keine Schrift. "
+                "Die Szene hinter der Person bewegt sich: genau das Ereignis, "
+                "nicht nur Rauch.")
             extra = _grok_anweisungen(regie, personen)
             if extra and extra[0][1]:
                 prompt += " Die Person tut dabei dies: %s" % extra[0][1]

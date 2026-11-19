@@ -965,12 +965,22 @@ R13_BEWEG = _r13_re.compile(r"^BEWEGUNG\s*[:\-]\s*", _r13_re.I)
 
 
 _BILD_LOSE = _r13_re.compile(r"\bBILD\s*[:\-]\s*", _r13_re.I)
+_BEWEG_LOSE = _r13_re.compile(r"\bBEWEGUNG\s*[:\-]\s*", _r13_re.I)
 _IM_BILD_LOSE = _r13_re.compile(r"^IM\s*BILD\b", _r13_re.I)
 _MEDIUM = _r13_re.compile(
     r"^(medium shot at eye level|medium shot|halbtotale)\s*,?\s*", _r13_re.I)
 
 
+_REGIE_MUELL = _r13_re.compile(
+    r"(?i)\b(der mund bleibt zu|mund bleibt zu|der mund bleibt geschlossen|nicht zweimal)\b\.?")
+
+
+def _regie_putzen(text):
+    return " ".join(_REGIE_MUELL.sub(" ", text or "").split()).strip(" ,.")
+
+
 def _bild_putzen(text):
+    return _MEDIUM.sub("", (text or "").strip()).strip(" ,.")
     return _MEDIUM.sub("", (text or "").strip()).strip(" ,.")
 
 
@@ -1013,8 +1023,17 @@ def r13_trennen(satz):
     if lose:
         extra = _bild_putzen(rest[lose.end():])
         rest = rest[:lose.start()].strip()
+        # Eine folgende BEWEGUNG gehoert nicht in die Bildbeschreibung.
+        beweg_lose = _BEWEG_LOSE.search(extra)
+        if beweg_lose:
+            beweg.append(beweg_lose.string[beweg_lose.end():].strip(" ,."))
+            extra = extra[:beweg_lose.start()].strip(" ,.")
         if extra:
             bild.insert(0, extra)
+    sonst = _BEWEG_LOSE.search(rest)
+    if sonst:
+        beweg.append(rest[sonst.end():].strip(" ,."))
+        rest = rest[:sonst.start()].strip()
     return (rest,
             ", ".join(bild) or ", ".join(ohne),
             ", ".join(beweg))
@@ -1048,13 +1067,22 @@ _r13_laden_alt = laden
 def laden(kanal):
     d = _r13_laden_alt(kanal)
     if any("[" in (s.get("text") or "") or _BILD_LOSE.search(s.get("text") or "")
-           or _bild_ist_muell(s.get("bild")) and _BILD_LOSE.search(s.get("text") or "")
+           or _BEWEG_LOSE.search(s.get("text") or "")
            for s in d["szenen"]):
         try:
             if r13_aufteilen(kanal):
                 d = _r13_laden_alt(kanal)
         except Exception as e:
             print("[Szenen] Klammern nicht aufteilbar:", e)
+    geputzt = False
+    for s in d.get("szenen") or []:
+        alt = s.get("regie") or ""
+        neu = _regie_putzen(alt)
+        if neu != alt.strip():
+            s["regie"] = neu
+            geputzt = True
+    if geputzt:
+        speichern(kanal, d)
     return d
 
 
@@ -1148,7 +1176,7 @@ def r13_aufteilen(kanal):
     n = 0
     for s in d["szenen"]:
         satz = s.get("text") or ""
-        if "[" not in satz and not _BILD_LOSE.search(satz):
+        if "[" not in satz and not _BILD_LOSE.search(satz) and not _BEWEG_LOSE.search(satz):
             continue
         rest, bild, beweg, im_bild = r16_trennen(satz)
         if not rest.strip() and not bild:

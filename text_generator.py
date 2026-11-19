@@ -880,26 +880,20 @@ BEISPIELE
 [BILD: Weit genug, aus dem getroffenen Schiff steigt ein weisser Feuerball, die Druckwelle knickt Holzhausdacher und wirft Fenster nach aussen, keine Menschen im Vordergrund, keine Leichen.]
 
 BEWEGUNG
-Zu JEDER Szene schreibst du eine zweite Klammer mit BEWEGUNG davor.
-Sie sagt, was sich ruehrt. Auf Deutsch, hoechstens zwanzig Woerter.
-Drei Teile, immer in dieser Reihenfolge:
+Zu JEDER Szene eine Klammer [BEWEGUNG: ...]. Sie wird nicht gesprochen.
+Zwei Teile, in dieser Reihenfolge, hoechstens dreissig Woerter:
 
-1. DIE FIGUREN. Der Erklaerende steht mit beiden Fuessen auf der flachen
-   Steinplatte. Sie ist nur knoechelhoch. Nur die Haende zeigen zur
-   Handlung. Der Koerper dreht sich hoechstens ein wenig. Der Kopf bleibt
-   zur Kamera. Der Mund bleibt zu. Er laeuft nicht durch die Szene,
-   steigt nicht auf einen Felsen und winkt nicht ins Objektiv.
-2. DER HINTERGRUND. Was dort passiert, passend zum Satz. Bei Krieg:
-   die Reihen feuern, die Reiterei reitet an, Rauch zieht, Fahnen gehen
-   vor. Nicht nur Gras im Wind und nicht nur ein leerer Weg.
-   Eine Menschenmenge als Ganzes geht; einzelne Leute, die etwas
-   anfassen, werden Matsch.
-3. Die Kamera bleibt stehen. Keine Fahrt, kein Zoom, kein Schwenk.
-   Der Erklaerende bleibt von vorne im Bild.
+1. DER AVATAR. Er steht auf der flachen Platte, Fuesse bleiben.
+   Beide Haende zeigen auf das Ereignis dieser Szene: auf die Schiffe,
+   auf den Feuerball, auf die Druckwelle. Nicht ins Leere.
+   Der Kopf bleibt zur Kamera. Er laeuft nicht weg.
+   Den Mund nicht erwaehnen. Grok bewegt ihn zum Sprechen.
+2. DIE SZENE DAHINTER. Genau das Ereignis bewegt sich.
+   Schiffe stossen zusammen: der Bug faehrt in den anderen Rumpf, Wasser spritzt.
+   Explosion: der Feuerball waechst, die Druckwelle knickt die Daecher.
+   Nicht "Rauch zieht" als Ersatz. Nicht "nicht zweimal". Die Kamera bleibt stehen.
 
-Mit Figuren: [BEWEGUNG: Mara steht auf der flachen Platte, nur die Haende zeigen zum Feuer, der Mund bleibt zu, Rauch zieht, die Schiffe brennen]
-
-Ohne Figuren: [BEWEGUNG: Kamera faehrt langsam zurueck, Rauch zieht ueber das Feld]"""
+[BEWEGUNG: Mara steht auf der Platte, beide Haende zeigen zum Feuerball. Der Feuerball waechst, die Druckwelle knickt die Daecher.]"""
 
 
 _p88_prompt_alt = lade_prompt
