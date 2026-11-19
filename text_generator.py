@@ -869,8 +869,11 @@ Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht mit Reiterei.
 
 WAS IN DIE BESCHREIBUNG GEHOERT
 Ort, was genau passiert, Kleidung und Bauten der Zeit, Licht und Wetter.
-Unten links nur eine kleine leere Steinplatte, wenn ein Avatar im Video steht.
-Sie darf Schiffe, den Stoss und die Explosion nicht verdecken.
+Unten links keine Steinplatte, kein Fels und kein Block. Eine Steinplatte
+im Text wird zum Felsblock und verdeckt die Schiffe. Der Avatar kommt spaeter
+dazu, er wird nicht ins Standbild gemalt.
+Deutsche Zusammensetzungen in einem Wort: Dampfschiff, Frachtschiff,
+Einschlagstelle, nicht Dampf Schiff.
 Keine Schrift, keine Zahlen, keine Karten, keine Grossaufnahme eines Gesichts.
 Kein Blut, keine Leichen.
 

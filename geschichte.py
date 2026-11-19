@@ -399,13 +399,40 @@ def _zusatz_tauglich(zusatz):
     return z
 
 
+_STEIN = _p84_re.compile(
+    r"(?i)\b(stein\s*platte|steinplatte|podest|felsblock|fels|boulder|"
+    r"kn[oö]chel\s*hoch|unten links eine flache)[^.,]{0,40}")
+
+
+def _ohne_stein(text):
+    return " ".join(_STEIN.sub(" ", text or "").split()).strip(" ,.")
+
+
+def _flux_vorspann(text):
+    """Flux malt deutsche Nebensätze schlecht. Das Ereignis steht deshalb Englisch vorne."""
+    t = (text or "").lower()
+    if any(w in t for w in ("ramm", "bug", "zusammen", "stoss", "stoß", "kollid")):
+        return ("TWO ships colliding in a narrow harbor, the bow of one steamship "
+                "smashing into the hull of the other freighter, both hulls large "
+                "and close, sparks at the impact, brick warehouses and wooden "
+                "cranes on the quay behind, not one ship, not a distant liner")
+    if any(w in t for w in ("explod", "feuerball", "druckwelle", "blast")):
+        return ("a munitions ship exploding in a narrow harbor, a huge white "
+                "fireball rising from the ship, a shockwave snapping wooden roofs "
+                "and blowing out windows, the ship still visible as the source, "
+                "no blood, no bodies")
+    return ("the event in this description, large enough to recognize, "
+            "not a distant view and not an empty shore")
+
+
 def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
-    """Nur der Moment dieser Szene. Kein fester Kampf für alle Bilder."""
+    """Nur der Moment dieser Szene. Keine Steinplatte, die wird zum Felsblock."""
     rest, bild, _beweg, ohne = _p84_klammern(satz)
-    kern = ", ".join(bild) or ", ".join(ohne) or rest
-    if not (kern or "").strip():
-        kern = rest
-    teile = []
+    kern = _ohne_stein(", ".join(bild) or ", ".join(ohne) or rest)
+    gesprochen = _ohne_stein(rest)
+    if not kern.strip():
+        kern = gesprochen
+    teile = [_flux_vorspann(kern + " " + gesprochen)]
     st = STIL_TEXT.get((stil or "").strip().lower())
     if st:
         teile.append(st)
@@ -413,21 +440,13 @@ def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
     if extra:
         teile.append(extra)
     teile.append(P84_SAUBER)
-    if mit_platte:
-        teile.append(
-            "a small empty stone slab only in the lower left corner, "
-            "it must not cover the event")
     teile.append(
-        "historical documentary still, no blood, no corpses, no gore. "
-        "Show this event large enough to recognize. "
-        "A collision shows both sides at the moment of impact. "
-        "An explosion shows the fireball and what it breaks. "
-        "Wide shot is allowed when the event needs it. No aerial view.")
-    if (rest or "").strip():
-        teile.append("The spoken event, show exactly this: " + rest.strip())
-    kopf = ("%s. %s" % (figur_name, kern)) if figur_name else kern
-    if kopf and kopf.strip() != (rest or "").strip():
-        teile.append(kopf)
+        "No stone, no boulder, no block, no pedestal, no monument in the foreground. "
+        "The foreground is water or quay. No people in front. No text.")
+    if gesprochen and gesprochen != kern:
+        teile.append(gesprochen)
+    if kern:
+        teile.append(kern)
     return ", ".join(x for x in teile if x)
 
 
