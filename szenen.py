@@ -932,7 +932,7 @@ def aendern(kanal, sid, feld, wert):
     i = _index(d, sid)
     if i < 0:
         return {"ok": False, "fehler": "Szene unbekannt"}
-    d["szenen"][i]["bild"] = " ".join(str(wert or "").split())[:600]
+    d["szenen"][i]["bild"] = " ".join(str(wert or "").split())[:900]
     speichern(kanal, d)
     return {"ok": True}
 
@@ -1009,7 +1009,7 @@ def r13_aufteilen(kanal):
             continue
         s["text"] = rest
         if bild and not (s.get("bild") or "").strip():
-            s["bild"] = bild[:600]
+            s["bild"] = bild[:900]
         if beweg and not (s.get("regie") or "").strip():
             s["regie"] = beweg[:600]
         n += 1
@@ -1129,7 +1129,7 @@ def r13_aufteilen(kanal):
             continue
         s["text"] = rest
         if bild and not (s.get("bild") or "").strip():
-            s["bild"] = bild[:600]
+            s["bild"] = bild[:900]
         if beweg and not (s.get("regie") or "").strip():
             s["regie"] = beweg[:600]
         if im_bild is not None and not s.get("wer"):

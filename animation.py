@@ -1338,6 +1338,13 @@ def _grok_dialog(satz, personen):
     return zeilen
 
 
+GROK_GESTIK = (
+    "Die Haende arbeiten die ganze Zeit mit: zeigen, zaehlen, oeffnen, "
+    "eine Faust, ein Nicken, der Oberkoerper dreht sich leicht zur Szene. "
+    "Die Arme haengen nicht herunter. Die Fuesse bleiben stehen. "
+    "Kein Winken in die Kamera.")
+
+
 def _grok_anweisungen(regie, personen):
     """Eine Zeile ohne Namen gilt für alle. Name: gilt nur für diese Person."""
     text = " ".join(str(regie or "").split()).replace('"', "'")
@@ -1459,11 +1466,13 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                     "%s sagt %s genau diesen Satz und sonst nichts: \"%s\""
                     % (name or "Die Person", _grok_stimme(figur), zeile))
             teile.append(
-                "Sie reden nacheinander, jeder seinen eigenen Satz. "
-                "Wer gerade nicht dran ist, hoert zu, lacht oder zeigt hin, "
-                "und redet nicht gleichzeitig mit. "
+                "Sie reden nacheinander. "
+                "Wer gerade spricht, gestikuliert deutlich mit beiden Haenden. "
+                "Wer gerade nicht dran ist, hoert zu, nickt, schuettelt den Kopf oder zeigt hin, "
+                "und redet nicht gleichzeitig mit. Niemand steht regungslos. "
                 "Der Mund bewegt sich nur bei dem, der gerade spricht. "
-                "Keine Untertitel, keine Schrift.")
+                + GROK_GESTIK +
+                " Keine Untertitel, keine Schrift.")
             for name, zeile in _grok_anweisungen(regie, personen):
                 if not zeile:
                     continue
@@ -1486,10 +1495,11 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "<IMAGE_0> ist die Person. "
                 + ("<IMAGE_1> ist die Szene. " if len(bilder) > 1 else "")
                 + "%s Gesicht zur Kamera. %s "
-                "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
-                "Der Mund bewegt sich zu den Woertern und ist danach zu. "
-                "Keine Untertitel, keine Schrift."
-                % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'")))
+                "Die Person sagt genau diesen Text und sonst nichts: \"%s\" "
+                "Der Mund bewegt sich zu den Woertern. "
+                % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'"))
+                + " " + GROK_GESTIK
+                + " Keine Untertitel, keine Schrift.")
             extra = _grok_anweisungen(regie, personen)
             if extra and extra[0][1]:
                 prompt += " Die Person tut dabei dies: %s" % extra[0][1]

@@ -119,7 +119,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens {_je:.0f} Sekunden gesprochen. {_zeit}Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen je maximal 120 Zeichen. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen in der Sprache des Videos, nicht in einer anderen. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Die Handlung ist in der Mitte und rechts, nicht links vorne. Nicht "wide shot" und nicht "aerial view". Gut: "medium shot at eye level, infantry in blue coats firing through smoke, cavalry crossing behind them, a flat ankle-high empty stone slab in the lower left, not a boulder".\n\nBEWEGUNG: Zu jeder Szene gehoert ein kurzer Satz, was sich bewegt. Deutsch, hoechstens 15 Woerter. Die Handlung im Hintergrund, nicht die Kamera. Keine Schnitte.
+Bildbeschreibungen 400 bis 700 Zeichen, konkret, nicht ein Stichwort. Beschreibungen je maximal 400 Zeichen.\n\nBILDER - SEHR WICHTIG: Jedes Bild zeigt den MOMENT, von dem die Szene erzaehlt - Menschen, Ort und Handlung, nicht ein Ding davon und nicht einen leeren Weg. Geht es um Krieg, sind Soldaten im Bild und man sieht den Kampf, den Aufmarsch oder die Attacke. JEDES Bild ein anderer Moment. Bildbeschreibungen in der Sprache des Videos, nicht in einer anderen. Das Bild ist der HINTERGRUND, in den spaeter ein Avatar gestellt wird: unten links eine flache leere Steinplatte, nur knoechelhoch, kein Felsblock und kein hohes Podest, sonst niemand darauf. Die Handlung ist in der Mitte und rechts, nicht links vorne. Nicht "wide shot" und nicht "aerial view". In jede Beschreibung gehoeren: Einstellung aus Augenhoehe, genauer Ort, wer da ist und was er gerade tut, Kleidung und Epoche, Licht, Wetter, zwei erkennbare Einzelheiten. Nicht "Soldaten im Kampf", sondern "Halbnah aus Augenhoehe, Infanterie in blauen Roecken kniet und feuert, Kavallerie sprengt rechts durch Pulverrauch, Fahnen, aufgerissener Zaun, niedriges Sonnenlicht, Staub. Unten links nur eine flache leere Steinplatte, knoechelhoch."\n\nBEWEGUNG: Was die Avatare mit den Haenden tun, und was sich im Hintergrund bewegt. Nicht die Kamera. Ein Avatar: zwei Gesten, zeigen und nicken, Arme nicht haengen lassen. Mehrere: je Person eine Zeile Name: Geste. Der Hintergrund lebt die ganze Zeit.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -130,8 +130,8 @@ erzaehlt wird - nicht irgendein allgemeines Motiv.
   "titel": "...",
   "szenen": [
     {{"text": "gesprochener Text dieser Szene",
-      "bild": "Bildbeschreibung in der Sprache des Videos, passend zu diesem Text",
-      "bewegung": "ein Satz fuer alle, oder je Avatar eine Zeile Name: was diese Person tut",
+      "bild": "genaue Bildbeschreibung, 400 bis 700 Zeichen, Ort, Leute, Handlung, Kleidung, Licht",
+      "bewegung": "Gesten: ein Avatar zwei Handbewegungen, mehrere je Zeile Name: Geste",
       "wer": ["Namen der Figuren, die in diesem Bild zu sehen sind, sonst leere Liste"]}}
   ],
   "beschreibung_youtube": "...",
@@ -852,7 +852,7 @@ Hinter jeden gesprochenen Satz setzt du eine Bildbeschreibung in eckige
 Klammern, mit BILD davor. Sie wird nicht gesprochen und steht in keinem
 Untertitel. Sie ist die Anweisung an das Bildmodell. Schreib sie in der
 Sprache des Videos, nicht auf Englisch, ausser das Video ist englisch.
-Schreib sie AUSFUEHRLICH. Kurze Beschreibungen geben
+Schreib sie AUSFUEHRLICH, 400 bis 700 Zeichen. Kurze Beschreibungen geben
 beliebige Bilder.
 
 DIE SZENE, NICHT EIN DING DANEBEN
@@ -976,24 +976,29 @@ def _t4_anweisung(namen, kanal=None, sprecher=None):
         if puff != puff or puff < 0 or puff > 5:
             puff = 0.9
         mindest_worte = max(12, int((boden - puff) * _p37_wps(kanal)))
-        zeilen = "\n".join("  %s: Kurzer Satz mit einer Angabe." % n for n in namen[:3])
+        zeilen = "\n".join(
+            "  %s: Ein ganzer Satz mit einer harten Angabe." % n for n in namen[:3])
         lage = (
             "ALLE Avatare stehen in JEDER Avatar-Szene zusammen und reden "
             "NACHEINANDER IN DERSELBEN Szene. Nicht jeder in einer eigenen "
             "Szene und nicht gleichzeitig.\n"
             "Schreib alle Zeilen in den Text dieser einen Szene:\n%s\n"
+            "Jeder sagt mindestens einen ganzen Satz, nicht drei Woerter. "
             "Mindestens %d Woerter, hoechstens %d. Der Clip ist %d bis %d Sekunden%s. Nie 4 Sekunden.\n"
             "Das Feld \"wer\" enthaelt immer alle Avatar-Namen: %s.\n"
-            "Die Animationsanweisung ist EIN Satz fuer alle, oder je Avatar "
-            "eine eigene Zeile: %s: zeigt nach rechts. %s: lacht.\n"
+            "Die Animationsanweisung ist je Avatar eine Zeile mit einer deutlichen Geste, "
+            "Haende hoch, zeigen, nicken, nicht stillstehen: %s: zeigt mit beiden Haenden auf den Kampf. %s: nickt und ballt die Faust.\n"
             % (zeilen, mindest_worte, worte, boden, sek,
                ", bei Grok jede ganze Sekunde von 8 bis 15" if grok else "",
                ", ".join(namen), namen[0], namen[1]))
     elif namen:
         lage = (
-            "%s steht im Bild und redet. Das Feld \"wer\" ist [\"%s\"].\n"
-            "Die Animationsanweisung ist ein kurzer Satz, was diese Person tut.\n"
-            % (namen[0], namen[0]))
+            "%s steht im Bild und spricht in DIESER Szene zwei oder drei Saetze, "
+            "nicht nur einen. Jede Zeile beginnt mit %s:. Zusammen im Wortlimit.\n"
+            "Das Feld \"wer\" ist [\"%s\"].\n"
+            "Die Animationsanweisung nennt zwei Gesten: zeigen, zaehlen, nicken, "
+            "Oberkoerper leicht drehen. Die Arme haengen nicht herunter.\n"
+            % (namen[0], namen[0], namen[0]))
     else:
         lage = (
             "Niemand ist im Bild. Es spricht nur der Sprecher. "
