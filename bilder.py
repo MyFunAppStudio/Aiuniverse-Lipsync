@@ -255,9 +255,15 @@ def erzeuge(kanal, prompt, ziel, referenz=None, seite="9:16"):
             start = _ruf(basis, key, koerper, zeit=90)
         except urllib.error.HTTPError as f:
             letzter = "HTTP %s" % f.code
+            hinweis = ""
+            try:
+                hinweis = " ".join(f.read().decode("utf-8", "ignore").split())[:180]
+            except Exception:
+                hinweis = ""
             if f.code in (400, 422) and nr < 4:
                 continue                      # Feld passt nicht, sparsamer versuchen
-            print("[Bild] Abgelehnt (%s). Adresse oder Schluessel pruefen." % f.code)
+            print("[Bild] Abgelehnt (%s). %s" % (
+                f.code, hinweis or "Adresse oder Schluessel pruefen."))
             return None
         except Exception as f:
             print("[Bild] Keine Verbindung:", f)
