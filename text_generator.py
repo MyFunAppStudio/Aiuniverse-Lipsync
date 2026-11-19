@@ -849,7 +849,8 @@ keine Namen und keine Zitate.
 BILD UND BEWEGUNG
 Hinter jeden gesprochenen Satz setzt du eine Bildbeschreibung in eckige
 Klammern, mit BILD davor. Sie wird nicht gesprochen und steht in keinem
-Untertitel. Sie ist die Anweisung an das Bildmodell. Schreib sie in der
+Untertitel. Sie steht nur in der eckigen Klammer, niemals im gesprochenen Text.
+Der gesprochene Text enthaelt kein Wort BILD. Schreib sie in der
 Sprache des Videos, nicht auf Englisch, ausser das Video ist englisch.
 Schreib sie AUSFUEHRLICH, 400 bis 700 Zeichen. Kurze Beschreibungen geben
 beliebige Bilder.

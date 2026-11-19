@@ -964,8 +964,29 @@ R13_BILD = _r13_re.compile(r"^BILD\s*[:\-]\s*", _r13_re.I)
 R13_BEWEG = _r13_re.compile(r"^BEWEGUNG\s*[:\-]\s*", _r13_re.I)
 
 
+_BILD_LOSE = _r13_re.compile(r"\bBILD\s*[:\-]\s*", _r13_re.I)
+_IM_BILD_LOSE = _r13_re.compile(r"^IM\s*BILD\b", _r13_re.I)
+_MEDIUM = _r13_re.compile(
+    r"^(medium shot at eye level|medium shot|halbtotale)\s*,?\s*", _r13_re.I)
+
+
+def _bild_putzen(text):
+    return _MEDIUM.sub("", (text or "").strip()).strip(" ,.")
+
+
+def _bild_ist_muell(text):
+    b = (text or "").strip()
+    if not b:
+        return True
+    return bool(_IM_BILD_LOSE.match(b))
+
+
 def r13_trennen(satz):
-    """(gesprochen, bild, bewegung) aus einem Satz mit Klammern."""
+    """(gesprochen, bild, bewegung) aus einem Satz mit Klammern.
+
+    Steht BILD ohne eckige Klammern im Sprechtext, gehoert es ins Bildfeld.
+    IM BILD ist keine Bildbeschreibung.
+    """
     ganz = satz or ""
     roh = [" ".join(x.split()) for x in R13_GANZ.findall(ganz) if x and x.strip()]
     rest = R13_GANZ.sub(" ", ganz)
@@ -979,18 +1000,21 @@ def r13_trennen(satz):
     bild, beweg, ohne = [], [], []
     for x in roh:
         if R13_BILD.match(x):
-            w = R13_BILD.sub("", x).strip()
+            w = _bild_putzen(R13_BILD.sub("", x))
             if w:
                 bild.append(w)
         elif R13_BEWEG.match(x):
             w = R13_BEWEG.sub("", x).strip()
             if w:
                 beweg.append(w)
-        else:
+        elif not _IM_BILD_LOSE.match(x):
             ohne.append(x)
-    # Eine Klammer ohne Namen beschreibt ein Bild, keine Bewegung.
-    # Sie landet deshalb nur in der Bildbeschreibung; die Animation
-    # bleibt leer und wird zur ruhigen Fahrt.
+    lose = _BILD_LOSE.search(rest)
+    if lose:
+        extra = _bild_putzen(rest[lose.end():])
+        rest = rest[:lose.start()].strip()
+        if extra:
+            bild.insert(0, extra)
     return (rest,
             ", ".join(bild) or ", ".join(ohne),
             ", ".join(beweg))
@@ -1023,7 +1047,9 @@ _r13_laden_alt = laden
 
 def laden(kanal):
     d = _r13_laden_alt(kanal)
-    if any("[" in (s.get("text") or "") for s in d["szenen"]):
+    if any("[" in (s.get("text") or "") or _BILD_LOSE.search(s.get("text") or "")
+           or _bild_ist_muell(s.get("bild")) and _BILD_LOSE.search(s.get("text") or "")
+           for s in d["szenen"]):
         try:
             if r13_aufteilen(kanal):
                 d = _r13_laden_alt(kanal)
@@ -1122,13 +1148,14 @@ def r13_aufteilen(kanal):
     n = 0
     for s in d["szenen"]:
         satz = s.get("text") or ""
-        if "[" not in satz:
+        if "[" not in satz and not _BILD_LOSE.search(satz):
             continue
         rest, bild, beweg, im_bild = r16_trennen(satz)
-        if not rest.strip():
+        if not rest.strip() and not bild:
             continue
-        s["text"] = rest
-        if bild and not (s.get("bild") or "").strip():
+        if rest.strip():
+            s["text"] = rest
+        if bild and _bild_ist_muell(s.get("bild")):
             s["bild"] = bild[:900]
         if beweg and not (s.get("regie") or "").strip():
             s["regie"] = beweg[:600]
