@@ -979,6 +979,22 @@ function tModellZeile(an,sp){
     return '<div class="hinw">Modell egal. Niemand im Bild. Die Stimme kommt von fal.ai.</div>';
   return '<div class="hinw">Nichts angewählt. Nur Bild und Untertitel, Stimme von fal.ai wenn Text da ist.</div>';
 }
+function tLaengeHinweis(anZahl){
+  var m=modellJetzt();
+  var max=m.grok?15:10;
+  var min=m.grok?8:6;
+  if(anZahl>=3) min=m.grok?12:8;
+  else if(anZahl>=2) min=m.grok?10:8;
+  if(min>max) min=max;
+  var sek=Number(S.einst.laenge)||20;
+  var n=Math.max(1, Math.round(sek/max));
+  if(sek/n>max) n=Math.max(1, Math.ceil(sek/max));
+  return '<div class="hinw" style="margin-top:12px"><b>Länge, nur zur Kontrolle.</b> '
+    +'Video '+sek+' Sekunden gesprochen. '
+    +'Jede Szene mindestens '+min+' und höchstens '+max+' Sekunden. '
+    +'Daraus werden etwa '+n+' Szenen. '
+    +'Die Videolänge änderst du unter Einstellungen, Länge und Tempo.</div>';
+}
 function tDiesesVideo(){
   var w=videoWahl();
   var an=(S.ds&&(S.ds.darsteller||[]).filter(function(f){return f.dabei&&f.art!=="sprecher"}))||[];
@@ -1036,6 +1052,7 @@ function tDiesesVideo(){
   }else
     o+='<div class="hinw">Kein Abspann hochgeladen. Das Video endet mit der letzten Szene.</div>';
   o+=tModellZeile(an,sp);
+  o+=tLaengeHinweis(an.length);
   if(an.length&&sp.length)
     o+='<div style="margin-top:12px;padding:10px 12px;border:1px solid #C8364A;border-radius:12px;background:#2a1014;color:#ffb4c0">'
      +'Avatar und Sprecher sind beide an. Avatare reden in einer Szene nacheinander, Grok spricht. '
