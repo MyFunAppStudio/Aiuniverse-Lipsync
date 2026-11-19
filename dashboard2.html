@@ -993,11 +993,19 @@ function tLaengeHinweis(anZahl){
   var sek=Number(S.einst.laenge)||20;
   var n=Math.max(1, Math.round(sek/max));
   if(sek/n>max) n=Math.max(1, Math.ceil(sek/max));
-  return '<div class="hinw" style="margin-top:12px"><b>Länge, nur zur Kontrolle.</b> '
-    +'Video '+sek+' Sekunden gesprochen. '
-    +'Jede Szene mindestens '+min+' und höchstens '+max+' Sekunden. '
-    +'Daraus werden etwa '+n+' Szenen. '
-    +'Die Videolänge änderst du unter Einstellungen, Länge und Tempo.</div>';
+  return '<div style="margin-top:14px;padding:14px 12px;border:1px solid #f0c14a;border-radius:14px;background:#1a1608">'
+    +'<div style="font-size:13px;letter-spacing:.04em;color:#f0c14a;margin-bottom:10px">LÄNGE, NUR ZUR KONTROLLE</div>'
+    +'<div style="display:flex;gap:8px;text-align:center">'
+    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+sek+'</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden Video</div></div>'
+    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+min+'</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden mindestens</div></div>'
+    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+max+'</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden höchstens</div></div>'
+    +'</div>'
+    +'<div style="font-size:16px;margin-top:12px;color:#fff">Daraus werden etwa <b>'+n+'</b> Szenen.</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#bbb">Die Videolänge änderst du unter Einstellungen, Länge und Tempo.</div>'
+    +'</div>';
 }
 function tDiesesVideo(){
   var w=videoWahl();
