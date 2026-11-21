@@ -987,23 +987,24 @@ function tLaengeHinweis(anZahl){
   var m=modellJetzt();
   var max=m.grok?15:10;
   var min=m.grok?8:6;
-  if(anZahl>=3) min=m.grok?12:8;
-  else if(anZahl>=2) min=m.grok?10:8;
-  if(min>max) min=max;
   var sek=Number(S.einst.laenge)||20;
-  var n=Math.max(1, Math.round(sek/max));
-  if(sek/n>max) n=Math.max(1, Math.ceil(sek/max));
+  var n=Math.max(1, Math.ceil(sek/max));
+  var nMax=Math.max(1, Math.floor(sek/min));
+  if(nMax<n) n=1;
+  else while(n<nMax && sek/n>max-2) n++;
+  var je=Math.max(1, Math.round(sek/n));
   return '<div style="margin-top:14px;padding:14px 12px;border:1px solid #f0c14a;border-radius:14px;background:#1a1608">'
     +'<div style="font-size:13px;letter-spacing:.04em;color:#f0c14a;margin-bottom:10px">LÄNGE, NUR ZUR KONTROLLE</div>'
     +'<div style="display:flex;gap:8px;text-align:center">'
     +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+sek+'</div>'
-    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden Video</div></div>'
-    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+min+'</div>'
-    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden mindestens</div></div>'
-    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+max+'</div>'
-    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden höchstens</div></div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden zusammen</div></div>'
+    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+n+'</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Szenen</div></div>'
+    +'<div style="flex:1"><div style="font-size:32px;font-weight:700;line-height:1;color:#fff">'+je+'</div>'
+    +'<div style="font-size:13px;margin-top:6px;color:#ddd">Sekunden je Szene</div></div>'
     +'</div>'
-    +'<div style="font-size:16px;margin-top:12px;color:#fff">Daraus werden etwa <b>'+n+'</b> Szenen.</div>'
+    +'<div style="font-size:16px;margin-top:12px;color:#fff">Zusammen <b>'+sek+'</b> Sekunden, nicht '
+    + (n*max) +'. Höchstens '+max+' je Szene.</div>'
     +'<div style="font-size:13px;margin-top:6px;color:#bbb">Die Videolänge änderst du unter Einstellungen, Länge und Tempo.</div>'
     +'</div>';
 }

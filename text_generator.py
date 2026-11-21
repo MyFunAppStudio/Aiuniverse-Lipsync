@@ -1205,30 +1205,68 @@ def _clip10(paket, grenze=35):
     return raus
 
 
+def _paket_worte(paket):
+    n = 0
+    for s in (paket or {}).get("szenen") or []:
+        if isinstance(s, dict):
+            n += len(str(s.get("text") or "").split())
+    return n
+
+
+def _plan_laenge(kanal):
+    """Wie viele Szenen in die eingegebene Videolaenge passen.
+
+    20 Sekunden sind zwei Szenen zu etwa 10 Sekunden, nicht drei zu 12.
+    Die Summe ist die Videolaenge. Jede einzelne Szene darf nicht
+    auf den Deckel von 15 Sekunden aufgeblasen werden.
+    """
+    minuten = einstellungen.laenge_in_minuten(kanal or {})
+    gesamt = max(4.0, minuten * 60.0)
+    sek, _worte, grok = _clip_deckel(kanal)
+    mind = 8.0 if grok else 6.0
+    if mind > sek:
+        mind = sek
+    n_min = max(1, int((gesamt + sek - 1) // sek))
+    n_max = max(1, int(gesamt // mind))
+    if n_max < n_min:
+        n, je = 1, min(sek, gesamt)
+    else:
+        n = n_min
+        while n < n_max and gesamt / n > sek - 2:
+            n += 1
+        je = gesamt / n
+    wps = _p37_wps(kanal)
+    worte = max(8, int(gesamt * wps * 0.95))
+    return gesamt, n, je, sek, worte
+
+
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
-        minuten = einstellungen.laenge_in_minuten(k)
-        gesamt = minuten * 60.0
-        if gesamt > 0:
-            sek, worte, grok = _clip_deckel(k)
-            stufen = _t7_stufen(k)
-            if grok:
-                stufe = 15
-            else:
-                nahe = [x for x in stufen if 6 <= x <= 10]
-                stufe = min(nahe, key=lambda x: abs(x - 10)) if nahe else 10
-                stufe = min(sek, stufe)
-            szenen = max(1, int(round(gesamt / float(stufe))))
-            if gesamt / szenen > sek:
-                szenen = max(1, int((gesamt + sek - 1) // sek))
-            bisher = max(1, int(round(minuten * k.get("bilder_pro_minute", 6))))
-            k["bilder_pro_minute"] = (szenen + 0.4) / max(0.01, minuten)
-            k["woerter_pro_sekunde"] = round(_p37_wps(k) * 0.85, 3)
-            print("[Text] %d Szenen zu je hoechstens %d Sekunden "
-                  "(vorher %d Szenen, im Schnitt %.1f)"
-                  % (szenen, stufe, bisher, gesamt / max(1, bisher)))
-            return _clip10(_t7_erzeuge_alt(k, eigenes_thema), worte)
+        gesamt, szenen, je, sek, worte = _plan_laenge(k)
+        k["bilder_pro_minute"] = (szenen + 0.49) / max(0.01, gesamt / 60.0)
+        k["prompt"] = (k.get("prompt") or "") + (
+            "\n\nLAENGE, DIE GILT:\n"
+            "Das ganze Video ist %.0f Sekunden gesprochen, nicht mehr. "
+            "Genau %d Szenen, nicht eine mehr und nicht eine weniger. "
+            "Alle Szenen zusammen hoechstens %d Woerter. "
+            "Jede Szene etwa %.0f Sekunden, nie laenger als %d. "
+            "Nicht jede Szene auf 15 Sekunden auffuellen.\n"
+            % (gesamt, szenen, worte, je, sek))
+        print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
+              % (szenen, gesamt, worte))
+        paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
+        ist = _paket_worte(paket)
+        if (isinstance(paket, dict) and paket.get("szenen")
+                and (len(paket["szenen"]) != szenen or ist > int(worte * 1.15))):
+            print("[Text] %d Szenen, %d Woerter, erlaubt %d Szenen und %d Woerter. Nochmal."
+                  % (len(paket["szenen"]), ist, szenen, worte))
+            k["prompt"] += (
+                "\n\nVORIGER VERSUCH WAR ZU LANG: %d Szenen und %d Woerter. "
+                "Diesmal genau %d Szenen und zusammen hoechstens %d Woerter.\n"
+                % (len(paket["szenen"]), ist, szenen, worte))
+            paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
+        return paket
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
@@ -1236,7 +1274,6 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         except Exception:
             worte = 35
         return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte)
-    return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema))
 
 
 _lage_prompt_alt = lade_prompt
