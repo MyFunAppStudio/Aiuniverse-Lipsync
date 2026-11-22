@@ -3358,16 +3358,122 @@ def _m17_ohne_namen(text, kanal):
     return re.sub(r"\s{2,}", " ", t).strip()
 
 
-_m17_ass_alt = _ass
+def _zeilen_schneiden(text):
+    """Ein Satzteil pro Zeile, nicht zwei einzelne Woerter."""
+    worte = [w for w in (text or "").split() if w]
+    zeilen, akt = [], []
+    for w in worte:
+        probe = akt + [w]
+        if akt and (len(probe) > 7 or len(" ".join(probe)) > 38):
+            zeilen.append(" ".join(akt))
+            akt = [w]
+        else:
+            akt = probe
+        if akt and w[-1:] in ".!?;":
+            zeilen.append(" ".join(akt))
+            akt = []
+    if akt:
+        zeilen.append(" ".join(akt))
+    return zeilen
+
+
+def _halten(paare, start, ende):
+    """Die Zeile bleibt, bis die naechste kommt. Kein Flackern dazwischen."""
+    raus = []
+    for i, (text, a, e) in enumerate(paare):
+        a = max(start, a - 0.08)
+        if i + 1 < len(paare):
+            e = max(a + 0.55, paare[i + 1][1] - 0.06)
+        else:
+            e = max(a + 0.7, min(ende - 0.04, e + 0.3))
+        e = min(max(e, a + 0.45), ende - 0.02)
+        raus.append((text, a, e))
+    return raus
+
+
+def _aus_gemessen(worte, start, text):
+    flach = (text or "").split()
+    if not worte or abs(len(worte) - len(flach)) > max(2, len(flach) // 4):
+        return None
+    gruppen = _r9_gruppen(worte, max_w=7, max_z=38)
+    return [(t, start + a, start + e) for t, a, e in gruppen]
+
+
+def _aus_sprache(zeilen, s):
+    """Legt die Zeilen auf die Stellen, an denen wirklich gesprochen wird."""
+    start = float(s.get("start") or 0)
+    dauer = float(s.get("dauer") or 0)
+    pfad = s.get("ton")
+    if not pfad and s.get("typ") == "clip":
+        pfad = s.get("quelle")
+    seg = _p58_segmente(pfad, dauer) if pfad else None
+    gew = [sum(_p58_gewicht(w) for w in z.split()) or 1.0 for z in zeilen]
+    summe = sum(gew) or 1.0
+    if seg:
+        sprech = sum(b - a for a, b in seg)
+        lauf, out = 0.0, []
+        for z, g in zip(zeilen, gew):
+            a = _p58_uhr(seg, lauf)
+            lauf += sprech * g / summe
+            e = _p58_uhr(seg, min(sprech, lauf))
+            out.append((z, start + a, start + max(a + 0.35, e)))
+        return out
+    nutz = max(0.4, dauer * 0.92)
+    lauf = start + min(0.12, dauer * 0.04)
+    out = []
+    for z, g in zip(zeilen, gew):
+        d = nutz * g / summe
+        out.append((z, lauf, lauf + d))
+        lauf += d
+    return out
 
 
 def _ass(plan, ziel, b, h, kanal=None):
-    sauber = []
+    """Dunkle Leiste, eine Zeile, an der Stimme und nicht an der Szene."""
+    import video_bauen as vb
+    k = kanal or {}
+    if k.get("untertitel_an") is False:
+        with open(ziel, "w", encoding="utf-8") as f:
+            f.write("")
+        return ziel
+    schrift = vb._tt_schrift()
+    fs = max(30, int(h * 0.038))
+    ml = int(b * 0.07)
+    mv = int(h * 0.18)
+    kopf = (
+        "[Script Info]\n"
+        "ScriptType: v4.00+\n"
+        "WrapStyle: 0\n"
+        "ScaledBorderAndShadow: yes\n"
+        "YCbCr Matrix: TV.709\n"
+        "PlayResX: %d\n"
+        "PlayResY: %d\n\n"
+        "[V4+ Styles]\n"
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, "
+        "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, "
+        "ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
+        "Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        "Style: TT,%s,%d,&H00F4F1EA,&H00F4F1EA,&H00000000,&H5C101010,"
+        "-1,0,0,0,100,100,1,0,3,%d,0,2,%d,%d,%d,1\n\n"
+        "[Events]\n"
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, "
+        "Effect, Text\n"
+        % (b, h, schrift, fs, max(8, int(fs * 0.28)), ml, ml, mv))
+    zeilen = [kopf]
     for s in plan:
-        if isinstance(s, dict) and (s.get("text") or "").strip():
-            s2 = dict(s)
-            s2["text"] = _m17_ohne_namen(s["text"], kanal)
-            sauber.append(s2)
-        else:
-            sauber.append(s)
-    return _m17_ass_alt(sauber, ziel, b, h, kanal)
+        roh = _m17_ohne_namen(s.get("text") or "", kanal) if isinstance(s, dict) else ""
+        if not s.get("untertitel") or not roh.strip():
+            continue
+        start = float(s.get("start") or 0)
+        ende = start + float(s.get("dauer") or 0)
+        paare = _aus_gemessen(s.get("worte") or [], start, roh)
+        if not paare:
+            paare = _aus_sprache(_zeilen_schneiden(roh), s)
+        for text, a, e in _halten(paare, start, ende):
+            text = text.replace("{", "(").replace("}", ")").replace("\\", "")
+            zeilen.append("Dialogue: 0,%s,%s,TT,,0,0,0,,{\\fad(80,60)}%s\n"
+                          % (vb._tt_zeit(a), vb._tt_zeit(e), text))
+    with open(ziel, "w", encoding="utf-8") as f:
+        f.write("".join(zeilen))
+    return ziel
+
