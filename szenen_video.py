@@ -434,10 +434,41 @@ def _stille(ziel, dauer):
                   "-t", "%.3f" % dauer, "-c:a", "pcm_s16le", str(ziel)]).returncode == 0
 
 
-def _auf_mass(quelle, ziel, dauer):
+def _auf_mass_db(quelle, ziel, dauer, db):
+    """Wie _auf_mass, nur mit festem Lautstaerkeversatz und Begrenzer."""
     return _lauf(["ffmpeg", "-y", "-loglevel", "error", "-i", str(quelle),
-                  "-af", "aresample=48000,apad", "-ac", "2", "-t", "%.3f" % dauer,
+                  "-af", "aresample=48000,volume=%.2fdB,alimiter=limit=0.95,apad" % db,
+                  "-ac", "2", "-t", "%.3f" % dauer,
                   "-c:a", "pcm_s16le", str(ziel)]).returncode == 0
+
+
+def _stimmen_angleichen(plan, arbeit):
+    """Jede Szene auf den Pegel der lautesten Stimme. Grok bleibt, fal wird lauter."""
+    zeilen = []
+    mess = []
+    for i, s in enumerate(plan):
+        w = arbeit / ("a%02d.wav" % i)
+        quelle = s.get("ton")
+        if not quelle and s.get("typ") == "clip" and _hat_ton(s.get("quelle")):
+            quelle = s["quelle"]
+        zeilen.append((w, quelle, float(s.get("dauer") or 0)))
+        mess.append(_lautheit(quelle) if quelle else None)
+    sprach = [m for m in mess if m is not None and m > -45]
+    ziel = -16.0
+    if sprach:
+        ziel = min(-13.0, max(-18.0, max(sprach)))
+    toene = []
+    for (w, quelle, dauer), ist in zip(zeilen, mess):
+        if quelle and ist is not None and ist > -45:
+            db = max(-8.0, min(16.0, ziel - ist))
+            print("[Szenen] Szene-Ton %.1f LUFS, %+0.1f dB" % (ist, db))
+            _auf_mass_db(quelle, w, dauer, db)
+        elif quelle:
+            _auf_mass(quelle, w, dauer)
+        if not w.exists() or _dauer(w) <= 0:
+            _stille(w, dauer)
+        toene.append(w)
+    return toene
 
 
 def _liste(dateien, ziel):
@@ -1035,18 +1066,8 @@ def baue(kanal, ziel_pfad, ordner=None):
         print("[Szenen] Zusammenhaengen fehlgeschlagen")
         return None
 
-    # 2. Sprachspur
-    toene = []
-    for i, s in enumerate(plan):
-        w = arbeit / ("a%02d.wav" % i)
-        quelle = s["ton"]
-        if not quelle and s["typ"] == "clip" and _hat_ton(s["quelle"]):
-            quelle = s["quelle"]
-        if quelle:
-            _auf_mass(quelle, w, s["dauer"])
-        if not w.exists() or _dauer(w) <= 0:
-            _stille(w, s["dauer"])
-        toene.append(w)
+    # 2. Sprachspur. Grok und die Sprecherstimme auf denselben Pegel.
+    toene = _stimmen_angleichen(plan, arbeit)
     musik_bis = gesamt          # Die Musik endet mit der letzten Szene
     if abspann:
         w = arbeit / "a_abspann.wav"
