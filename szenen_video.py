@@ -170,53 +170,87 @@ def _p44_passen(quelle, b, h, wunsch="auto"):
     return "fuellen" if weit <= 0.06 else "ganz"
 
 
-def _p44_ganz_clip(b, h, fps, dauer):
+def _p44_ganz_clip(b, h, fps, pad):
     """Wie _ganz, aber fuer einen Clip: Hintergrund ist der Clip selbst."""
-    return ("[0:v]split=2[hg][vg];"
-            "[hg]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,"
-            "gblur=sigma=26,eq=brightness=-0.12,setsar=1[a];"
-            "[vg]scale=%d:%d:force_original_aspect_ratio=decrease,setsar=1[c];"
-            "[a][c]overlay=(W-w)/2:(H-h)/2,fps=%d,"
-            "tpad=stop_mode=clone:stop_duration=%.3f[v]"
-            % (b, h, b, h, b, h, fps, dauer))
+    kette = ("[0:v]split=2[hg][vg];"
+             "[hg]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,"
+             "gblur=sigma=26,eq=brightness=-0.12,setsar=1[a];"
+             "[vg]scale=%d:%d:force_original_aspect_ratio=decrease,setsar=1[c];"
+             "[a][c]overlay=(W-w)/2:(H-h)/2,fps=%d[v]"
+             % (b, h, b, h, b, h, fps))
+    return _mit_pad(kette, pad)
+
+
+def _ffmpeg(befehl):
+    """Wie _lauf, aber ein Fehlschlag steht im Log und nicht nur als Abbruch."""
+    r = _lauf(befehl)
+    if r.returncode:
+        print("[Szenen] ffmpeg:", " ".join(str(x) for x in befehl[:8]),
+              (r.stderr or "ohne Text")[-400:])
+    return r
+
+
+def _pad_sekunden(quelle, dauer):
+    """Nur die fehlenden Sekunden anhaengen, nicht die ganze Laenge noch einmal."""
+    ist = _dauer(quelle)
+    if ist <= 0.05:
+        return max(0.0, float(dauer))
+    return max(0.0, float(dauer) - ist)
+
+
+def _mit_pad(kette, pad):
+    if pad <= 0.04:
+        return kette
+    return kette.replace(
+        "[v]",
+        ",tpad=stop_mode=clone:stop_duration=%.3f[v]" % pad,
+        1)
 
 
 def _stueck_bild(quelle, ziel, bewegung, nr, dauer, b, h, fps, passen="auto", figur=None,
                  staerke="sanft"):
-    vorn = ["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", str(quelle)]
+    b, h = int(b) // 2 * 2, int(h) // 2 * 2
     passen = _p44_passen(quelle, b, h, passen)
     if passen == "ganz":
         grund = _ganz(bewegung, nr, dauer, b, h, fps)
     else:
         grund = "[0:v]" + _zoompan(bewegung, nr, dauer, b, h, fps, staerke) + "[v]"
+    # zoompan mit d=alle Rahmen darf kein -loop haben, sonst bricht ffmpeg ab.
+    vorn = ["ffmpeg", "-y", "-loglevel", "error"]
+    if "zoompan" not in grund:
+        vorn += ["-loop", "1"]
+    vorn += ["-i", str(quelle)]
     if figur and os.path.exists(figur.get("pfad") or ""):
         vorn += _figur_eingang(figur)
         stelle = grund.rfind("[v]")
         grund = (grund[:stelle] + "[v0];"
                  + _figur_filter(figur.get("platz"), figur.get("groesse", 55), b, h, "[v0]", "[v]",
                                  figur.get("wie", "statisch")))
-    return _lauf(vorn + ["-filter_complex", grund, "-map", "[v]", "-t", "%.3f" % dauer,
-                         "-r", str(fps), "-pix_fmt", "yuv420p", "-c:v", "libx264",
-                         "-preset", "veryfast", "-crf", "22", "-an", str(ziel)]).returncode == 0
+    rahmen = max(2, int(round(float(dauer) * fps)))
+    ende = ["-frames:v", str(rahmen)] if "zoompan" in grund else ["-t", "%.3f" % dauer]
+    return _ffmpeg(vorn + ["-filter_complex", grund, "-map", "[v]"] + ende + [
+        "-r", str(fps), "-pix_fmt", "yuv420p", "-c:v", "libx264",
+        "-preset", "veryfast", "-crf", "22", "-an", str(ziel)]).returncode == 0
 
 
 def _stueck_clip(quelle, ziel, dauer, b, h, fps, figur=None, passen="auto"):
+    b, h = int(b) // 2 * 2, int(h) // 2 * 2
+    pad = _pad_sekunden(quelle, dauer)
     if _p44_passen(quelle, b, h, passen) == "ganz":
-        grund = _p44_ganz_clip(b, h, fps, dauer)
+        grund = _p44_ganz_clip(b, h, fps, pad)
     else:
         grund = ("[0:v]scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d,"
-                 "setsar=1,fps=%d,tpad=stop_mode=clone:stop_duration=%.3f[v]"
-                 % (b, h, b, h, fps, dauer))
+                 "setsar=1,fps=%d[v]" % (b, h, b, h, fps))
+        grund = _mit_pad(grund, pad)
     vorn = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(quelle)]
     if figur and os.path.exists(figur.get("pfad") or ""):
         vorn += _figur_eingang(figur)
         grund = (grund[:grund.rfind("[v]")] + "[v0];"
                  + _figur_filter(figur.get("platz"), figur.get("groesse", 55), b, h, "[v0]", "[v]",
                                  figur.get("wie", "statisch")))
-    r = _lauf(vorn + ["-filter_complex", grund, "-map", "[v]", "-t", "%.3f" % dauer,
-                      "-r", str(fps), "-pix_fmt", "yuv420p", "-c:v", "libx264",
-                      "-preset", "veryfast", "-crf", "22", "-an", str(ziel)])
-    return r.returncode == 0
+    return _ffmpeg(vorn + ["-filter_complex", grund, "-map", "[v]", "-t", "%.3f" % dauer,
+                           "-r", str(fps), "-pix_fmt", "yuv420p", "-c:v", "libx264",
+                           "-preset", "veryfast", "-crf", "22", "-an", str(ziel)]).returncode == 0
 
 
 ANFUEHRUNG = '"\u201e\u201c\u201d\u00bb\u00ab'
