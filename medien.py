@@ -388,10 +388,9 @@ def _satz_milder(text):
         ("rammen", "fahren gegen"),
         ("Druckwelle", "Stoß"),
         ("Feuerball", "Feuer"),
-        ("schiessen", "geben einen Schuss ab"),
-        ("schießen", "geben einen Schuss ab"),
-        ("sterben", "kommen um"),
-        ("Putschisten", "die Gruppe"),
+        ("schiessen", "feuern"),
+        ("schießen", "feuern"),
+        ("sterben", "fallen"),
         ("getoetet", "umgekommen"),
         ("getötet", "umgekommen"),
     ):
