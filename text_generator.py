@@ -95,7 +95,10 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         return _test_paket(kanal)
 
     laenge = einstellungen.laenge_in_minuten(kanal)
-    anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
+    if kanal.get("szenen_soll"):
+        anzahl_bilder = max(1, int(kanal["szenen_soll"]))
+    else:
+        anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
     _sek, _worte, _grok = _clip_deckel(kanal)
     _je = min(float(_sek) - 1.0, (laenge * 60.0) / max(1, anzahl_bilder))
     _je = max(8.0 if _grok else 4.0, _je)
@@ -1173,15 +1176,16 @@ def _clip10(paket, grenze=35):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
-            for gruppe in _clip_gruppen(beide, grenze):
-                s2 = dict(s)
-                s2["text"] = " ".join("%s: %s." % (n, w) for n, w in gruppe)
-                namen = []
-                for n, _w in gruppe:
-                    if n not in namen:
-                        namen.append(n)
-                s2["wer"] = namen
-                neu.append(s2)
+            # Nicht in weitere Szenen schneiden. Sonst werden aus 2 Szenen 4.
+            kurz = _clip_beide_kurz(beide, grenze)
+            s2 = dict(s)
+            s2["text"] = " ".join("%s: %s." % (n, w) for n, w in kurz)
+            namen = []
+            for n, _w in kurz:
+                if n not in namen:
+                    namen.append(n)
+            s2["wer"] = namen
+            neu.append(s2)
             continue
         name = ""
         m = _CLIP_NAME.match(roh)
@@ -1241,6 +1245,46 @@ def _plan_laenge(kanal):
     return gesamt, n, je, sek, worte
 
 
+def _auf_soll(paket, n, worte_je):
+    """Mehr Szenen als die Videolaenge hergibt, werden zusammengezogen."""
+    if not isinstance(paket, dict) or n < 1:
+        return paket
+    sz = [s for s in (paket.get("szenen") or []) if isinstance(s, dict)]
+    if len(sz) <= n:
+        return paket
+    gruppen = [[] for _ in range(n)]
+    for i, s in enumerate(sz):
+        gruppen[min(n - 1, i * n // len(sz))].append(s)
+    neu = []
+    for g in gruppen:
+        s0 = dict(g[0])
+        texte, bilder = [], []
+        for x in g:
+            t = str(x.get("text") or "").strip()
+            if t:
+                texte.append(t)
+            b = str(x.get("bild") or "").strip()
+            if b and b not in bilder:
+                bilder.append(b)
+        kern = _CLIP_KLAMMER.sub(" ", " ".join(texte))
+        klammern = _CLIP_KLAMMER.findall(" ".join(texte))
+        ww = kern.split()
+        if len(ww) > worte_je:
+            kern = " ".join(ww[:worte_je])
+        else:
+            kern = " ".join(ww)
+        if klammern:
+            kern = (kern + " " + " ".join("[%s]" % k for k in klammern[:2])).strip()
+        s0["text"] = kern
+        if bilder:
+            s0["bild"] = bilder[0]
+        neu.append(s0)
+    raus = dict(paket)
+    raus["szenen"] = neu
+    print("[Text] %d Szenen waren zu viel, es bleiben %d" % (len(sz), n))
+    return raus
+
+
 def _eine_stimme(kanal, paket):
     """Steht ein Avatar in der Besetzung, spricht er jede Szene. Sonst zwei Stimmen."""
     if not isinstance(paket, dict):
@@ -1272,6 +1316,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
         gesamt, szenen, je, sek, worte = _plan_laenge(k)
+        k["szenen_soll"] = szenen
         k["bilder_pro_minute"] = (szenen + 0.49) / max(0.01, gesamt / 60.0)
         k["prompt"] = (k.get("prompt") or "") + (
             "\n\nLAENGE, DIE GILT:\n"
@@ -1294,7 +1339,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "Diesmal genau %d Szenen und zusammen hoechstens %d Woerter.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return _eine_stimme(k, paket)
+        return _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k)))))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
