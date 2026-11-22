@@ -961,21 +961,22 @@ def _t4_anweisung(namen, kanal=None, sprecher=None):
                ", ".join(namen), namen[0], namen[1]))
     elif namen:
         lage = (
-            "%s steht im Bild und spricht in DIESER Szene zwei oder drei Saetze, "
-            "nicht nur einen. Jede Zeile beginnt mit %s:. Zusammen im Wortlimit.\n"
-            "Das Feld \"wer\" ist [\"%s\"].\n"
+            "%s steht in JEDER Szene im Bild und spricht sie selbst, "
+            "zwei oder drei Saetze, nicht nur einen. Keine Szene ohne %s. "
+            "Keine Szene nur mit Sprecher. Eine Stimme, kein Wechsel.\n"
+            "Jede Zeile beginnt mit %s:. Das Feld \"wer\" ist [\"%s\"].\n"
             "Die Animationsanweisung nennt zwei Gesten: zeigen, zaehlen, nicken, "
             "Oberkoerper leicht drehen. Die Arme haengen nicht herunter.\n"
-            % (namen[0], namen[0], namen[0]))
+            % (namen[0], namen[0], namen[0], namen[0]))
     else:
         lage = (
             "Niemand ist im Bild. Es spricht nur der Sprecher. "
             "Das Feld \"wer\" ist immer [].\n")
     if namen and sprecher:
         lage += (
-            "Eine Sprecher-Szene ist getrennt: nur %s, niemand im Bild, "
-            "\"wer\": []. Den Sprecher nicht in eine Avatar-Szene schreiben.\n"
-            % ", ".join(sprecher))
+            "Der Sprecher aus dem Off wird in diesem Video nicht benutzt. "
+            "Sonst gibt es zwei Stimmen. Jede Szene gehoert %s.\n"
+            % ", ".join(namen))
     wer = namen + [n for n in sprecher if n not in namen]
     return (
         "\n\nBESETZUNG - SEHR WICHTIG:\n"
@@ -1240,6 +1241,33 @@ def _plan_laenge(kanal):
     return gesamt, n, je, sek, worte
 
 
+def _eine_stimme(kanal, paket):
+    """Steht ein Avatar in der Besetzung, spricht er jede Szene. Sonst zwei Stimmen."""
+    if not isinstance(paket, dict):
+        return paket
+    namen = _t4_besetzung(kanal)
+    if not namen:
+        return paket
+    fremd = [n for n in _t4_sprecher(kanal) if n not in namen]
+    for s in paket.get("szenen") or []:
+        if not isinstance(s, dict):
+            continue
+        text = " ".join(str(s.get("text") or "").split())
+        for n in fremd:
+            text = _clip_re.sub(
+                r"(?<![\wÄÖÜäöüß])" + _clip_re.escape(n) + r"\s*:",
+                namen[0] + ":", text)
+        if not any(_clip_re.search(
+                r"(?<![\wÄÖÜäöüß])" + _clip_re.escape(n) + r"\s*:", text)
+                for n in namen):
+            text = ("%s: %s" % (namen[0], text)).strip()
+        if "[IM BILD:" not in text.upper():
+            text = text.rstrip() + " [IM BILD: %s]" % ", ".join(namen)
+        s["text"] = text
+        s["wer"] = list(namen)
+    return paket
+
+
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
@@ -1266,14 +1294,14 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "Diesmal genau %d Szenen und zusammen hoechstens %d Woerter.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return paket
+        return _eine_stimme(k, paket)
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
             _sek, worte, _grok = _clip_deckel(kanal)
         except Exception:
             worte = 35
-        return _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte)
+        return _eine_stimme(kanal, _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte))
 
 
 _lage_prompt_alt = lade_prompt
