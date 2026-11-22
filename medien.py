@@ -3,6 +3,7 @@
 # ueber fal.ai - EIN Key fuer alles
 # ============================================
 import json
+import re
 import time
 import urllib.request
 from pathlib import Path
@@ -351,6 +352,17 @@ def _eleven_direkt(kanal, text, ziel, stimme_id, energie):
     return ziel
 
 
+def _ohne_sprecher(text):
+    """'Mara:' ist eine Anweisung, kein Wort, das gesprochen wird."""
+    t = re.sub(
+        r"(?:(?<=^)|(?<=[\s.!?]))"
+        r"[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'’-]{1,30}\s*:\s*",
+        "",
+        text or "",
+    )
+    return " ".join(t.split())
+
+
 def _inhalt_abgelehnt(fehler):
     t = str(fehler or "")
     return "content_policy" in t or "content checker" in t
@@ -376,6 +388,10 @@ def _satz_milder(text):
         ("rammen", "fahren gegen"),
         ("Druckwelle", "Stoß"),
         ("Feuerball", "Feuer"),
+        ("schiessen", "geben einen Schuss ab"),
+        ("schießen", "geben einen Schuss ab"),
+        ("sterben", "kommen um"),
+        ("Putschisten", "die Gruppe"),
         ("getoetet", "umgekommen"),
         ("getötet", "umgekommen"),
     ):
@@ -385,6 +401,9 @@ def _satz_milder(text):
 
 def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     """Wie bisher, aber mit Zeitstempeln je Wort, wenn der Anbieter sie gibt."""
+    text = _ohne_sprecher(text)
+    if not text:
+        raise RuntimeError("Nach dem Namen bleibt kein Satz zum Sprechen")
     ziel = Path(ziel)
     if config.TESTMODUS:
         return _r8_stimme_alt(kanal, text, ziel, stimme_id)

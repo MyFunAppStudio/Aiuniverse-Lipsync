@@ -1050,9 +1050,9 @@ def baue(kanal, ziel_pfad, ordner=None):
     musik_bis = gesamt          # Die Musik endet mit der letzten Szene
     if abspann:
         w = arbeit / "a_abspann.wav"
-        hat_ton = _abspann_ton(ab_quelle, w, ab_dauer)
-        print("[Szenen] Abspann %s eigenen Ton"
-              % ("hat" if hat_ton else "hat keinen"))
+        # Schlussbild ohne den Dialog, der in der Datei schon drinsteckt.
+        _stille(w, ab_dauer)
+        print("[Szenen] Abspann ohne eigenen Dialog")
         toene.append(w)
         gesamt += ab_dauer
     stimme = arbeit / "stimme.wav"
@@ -2808,8 +2808,8 @@ def _bewegungs_text(kanal, szene):
 _r9_plan_alt = plan_bauen
 _r9_ass_alt = _ass
 
-R9_WOERTER = 2          # hoechstens so viele Woerter gleichzeitig im Bild
-R9_ZEICHEN = 16         # und hoechstens so viele Zeichen
+R9_WOERTER = 8          # eine Zeile, nicht zwei einzelne Woerter
+R9_ZEICHEN = 46
 R9_WEISS = "&H00FFFFFF"
 R9_MINDEST = 0.40       # kuerzer als das steht keine Einblendung
 

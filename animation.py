@@ -1412,6 +1412,14 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
             sag("Weder Avatar noch Szenenbild")
         return None
     spruch = " ".join((satz or "").split())
+    import re as _re
+    spruch = _re.sub(
+        r"(?:(?<=^)|(?<=[\s.!?]))"
+        r"[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'’-]{1,30}\s*:\s*",
+        "",
+        spruch,
+    )
+    spruch = " ".join(spruch.split())
     if not spruch and not stumm:
         sag("Kein Sprechtext")
         return None
