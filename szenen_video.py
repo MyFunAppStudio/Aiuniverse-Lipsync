@@ -676,6 +676,9 @@ def plan_bauen(kanal, ordner):
                     medien.erzeuge_stimme(k2, wort, wohin, stimme_id=stimme)
                 except TypeError:
                     medien.erzeuge_stimme(k2, wort, wohin)
+                except Exception as e:
+                    print("[Stimme] %s" % str(e).split("\n")[0][:240])
+                    return None
                 return wohin if os.path.exists(wohin) else None
 
             # Nachtrag r15: jede Zeile kann ihre eigene Figur nennen

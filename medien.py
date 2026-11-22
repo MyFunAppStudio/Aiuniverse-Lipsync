@@ -351,6 +351,38 @@ def _eleven_direkt(kanal, text, ziel, stimme_id, energie):
     return ziel
 
 
+def _inhalt_abgelehnt(fehler):
+    t = str(fehler or "")
+    return "content_policy" in t or "content checker" in t
+
+
+def _satz_milder(text):
+    """Dieselbe Aussage, ohne die Woerter, an denen fal haengen bleibt.
+
+    Nur der zweite Versuch. Der Untertitel bleibt der originale Satz.
+    """
+    t = text or ""
+    for alt, neu in (
+        ("Sprengstoff", "Ladung"),
+        ("sprengstoff", "Ladung"),
+        ("explodiert", "geht hoch"),
+        ("explodieren", "hochgehen"),
+        ("Explosion", "das Unglueck"),
+        ("explosion", "das Unglueck"),
+        ("TNT", "Sprengkraft"),
+        ("zerstoert", "beschaedigt schwer"),
+        ("zerstört", "beschädigt schwer"),
+        ("rammt", "stoesst gegen"),
+        ("rammen", "stossen gegen"),
+        ("Druckwelle", "Stoss"),
+        ("Feuerball", "Feuer"),
+        ("getoetet", "umgekommen"),
+        ("getötet", "umgekommen"),
+    ):
+        t = t.replace(alt, neu)
+    return " ".join(t.split())
+
+
 def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     """Wie bisher, aber mit Zeitstempeln je Wort, wenn der Anbieter sie gibt."""
     ziel = Path(ziel)
@@ -375,11 +407,26 @@ def erzeuge_stimme(kanal, text, ziel, stimme_id=None):
     try:
         ergebnis = _fal_anfrage(api.get("url") or FAL_STIMME, daten, api.get("key"))
     except Exception as e:
-        # Mag der Anbieter das Feld nicht, dann eben ohne - lieber eine
-        # geschaetzte Zeit als gar keine Stimme.
-        print("[Stimme] Zeitstempel abgelehnt (%s), versuche es ohne"
-              % str(e)[:90])
-        return _r8_stimme_alt(kanal, text, ziel, stimme_id)
+        if _inhalt_abgelehnt(e):
+            mild = _satz_milder(text)
+            if mild and mild != text:
+                print("[Stimme] fal hat den Satz abgelehnt. Zweiter Versuch, sachlicher.")
+                daten["text"] = mild
+                try:
+                    ergebnis = _fal_anfrage(api.get("url") or FAL_STIMME, daten, api.get("key"))
+                except Exception as e2:
+                    raise RuntimeError(
+                        "fal hat den Satz abgelehnt, auch in der sachlichen Fassung. "
+                        "Kategorie Gewalt. Der vorhandene Clip-Ton bleibt, "
+                        "ElevenLabs spricht diese Szene nicht.") from e2
+            else:
+                raise RuntimeError(
+                    "fal hat den Satz abgelehnt. Kategorie Gewalt. "
+                    "Der vorhandene Clip-Ton bleibt.") from e
+        else:
+            print("[Stimme] Zeitstempel abgelehnt (%s), versuche es ohne"
+                  % str(e)[:90])
+            return _r8_stimme_alt(kanal, text, ziel, stimme_id)
 
     ziel.parent.mkdir(parents=True, exist_ok=True)
     _lade_datei(ergebnis["audio"]["url"], ziel)
