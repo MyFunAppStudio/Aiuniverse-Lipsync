@@ -3496,6 +3496,112 @@ def _aus_sprache(zeilen, s):
     return out
 
 
+def _fal_key(kanal):
+    """Der fal-Schluessel aus der Umgebung oder aus den Kanaleintraegen."""
+    try:
+        import schluessel
+    except Exception:
+        return ""
+    k = schluessel.aus_umgebung("fal")
+    if k:
+        return k
+    apis = (kanal or {}).get("apis") or {}
+    if isinstance(apis, dict):
+        for liste in apis.values():
+            for x in liste or []:
+                if schluessel.anbieter((x or {}).get("url")) == "fal":
+                    kk = schluessel.fuer(kanal, x)
+                    if kk:
+                        return kk
+    return ""
+
+
+def _ton_kurz(pfad, ziel):
+    """Kleine Tonspur, nur zum Mithoeren. Das Video selbst bleibt."""
+    r = _lauf(["ffmpeg", "-y", "-v", "error", "-i", str(pfad),
+               "-vn", "-ac", "1", "-ar", "16000", "-b:a", "64k", str(ziel)])
+    if r.returncode == 0 and os.path.exists(ziel) and os.path.getsize(ziel) > 800:
+        return ziel
+    return None
+
+
+def _gehoerte_gruppen(chunks, start):
+    """Wortzeiten zu lesbaren Saetzen. Die Zeiten bleiben die echten."""
+    worte = []
+    for c in chunks or []:
+        if not isinstance(c, dict):
+            continue
+        text = " ".join(str(c.get("text") or "").split())
+        ts = c.get("timestamp") or []
+        if not text or not isinstance(ts, (list, tuple)) or len(ts) < 2:
+            continue
+        if ts[0] is None:
+            continue
+        a = float(ts[0])
+        e = float(ts[1]) if ts[1] is not None else a + 0.3
+        worte.append((text, a, max(a + 0.05, e)))
+    if not worte:
+        return None
+    lang = sum(len(t.split()) for t, _a, _e in worte) / float(len(worte))
+    if lang > 3:
+        return [(t, start + a, start + e) for t, a, e in worte]
+    gruppen, akt = [], []
+    for t, a, e in worte:
+        akt.append((t, a, e))
+        if len(akt) >= 7 or (t[-1:] in ".!?" and len(akt) >= 3):
+            gruppen.append(akt)
+            akt = []
+    if akt:
+        if gruppen and len(akt) < 3:
+            gruppen[-1].extend(akt)
+        else:
+            gruppen.append(akt)
+    return [(" ".join(x[0] for x in g), start + g[0][1], start + g[-1][2])
+            for g in gruppen]
+
+
+def _hoeren(s, kanal, arbeit, nummer):
+    """Was in dieser Szene wirklich gesagt wird, mit den echten Zeiten."""
+    pfad = s.get("ton")
+    if not pfad and s.get("typ") == "clip":
+        pfad = s.get("quelle")
+    if not pfad or not os.path.exists(str(pfad)):
+        return None
+    key = _fal_key(kanal)
+    if not key:
+        print("[Untertitel] Kein fal-Schluessel, Zeiten bleiben geschaetzt")
+        return None
+    ton = _ton_kurz(pfad, Path(arbeit) / ("hoer_%02d.mp3" % nummer))
+    if not ton:
+        return None
+    try:
+        import animation
+        import medien
+        url = animation.m18_hochladen(str(ton), key)
+        if not url:
+            return None
+        sprache = ""
+        sp = (kanal or {}).get("sprachen") or []
+        if isinstance(sp, list) and sp:
+            sprache = str(sp[0] or "")
+        elif isinstance(sp, str):
+            sprache = sp
+        daten = {"audio_url": url, "task": "transcribe", "chunk_level": "word",
+                 "version": "3"}
+        if sprache and len(sprache) <= 5:
+            daten["language"] = sprache
+        antwort = medien._fal_anfrage("fal-ai/whisper", daten, key)
+    except Exception as e:
+        print("[Untertitel] Mithoeren ging nicht: %s" % str(e)[:180])
+        return None
+    start = float(s.get("start") or 0)
+    gruppen = _gehoerte_gruppen((antwort or {}).get("chunks"), start)
+    if gruppen:
+        print("[Untertitel] Szene %d gehoert, %d Zeilen an der Stimme"
+              % (nummer + 1, len(gruppen)))
+    return gruppen
+
+
 def _ass(plan, ziel, b, h, kanal=None):
     """Weiche Schrift unten, ein Satz pro Einblendung, an der Stimme."""
     import video_bauen as vb
@@ -3529,13 +3635,16 @@ def _ass(plan, ziel, b, h, kanal=None):
         "Effect, Text\n"
         % (b, h, schrift, fs, rand, ml, ml, mv))
     zeilen = [kopf]
-    for s in plan:
+    arbeit = os.path.dirname(str(ziel)) or "."
+    for nummer, s in enumerate(plan):
         roh = _m17_ohne_namen(s.get("text") or "", kanal) if isinstance(s, dict) else ""
         if not s.get("untertitel") or not roh.strip():
             continue
         start = float(s.get("start") or 0)
         ende = start + float(s.get("dauer") or 0)
-        paare = _aus_gemessen(s.get("worte") or [], start, roh)
+        paare = _hoeren(s, kanal, arbeit, nummer)
+        if not paare:
+            paare = _aus_gemessen(s.get("worte") or [], start, roh)
         if not paare:
             paare = _aus_sprache(_saetze(roh), s)
         for text, a, e in _halten(paare, start, ende):
