@@ -3548,14 +3548,11 @@ def _gehoerte_gruppen(chunks, start):
     gruppen, akt = [], []
     for t, a, e in worte:
         akt.append((t, a, e))
-        if len(akt) >= 7 or (t[-1:] in ".!?" and len(akt) >= 3):
+        if len(akt) >= 7 or t[-1:] in ".!?":
             gruppen.append(akt)
             akt = []
     if akt:
-        if gruppen and len(akt) < 3:
-            gruppen[-1].extend(akt)
-        else:
-            gruppen.append(akt)
+        gruppen.append(akt)
     return [(" ".join(x[0] for x in g), start + g[0][1], start + g[-1][2])
             for g in gruppen]
 
