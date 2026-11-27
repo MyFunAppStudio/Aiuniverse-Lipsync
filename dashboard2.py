@@ -564,6 +564,9 @@ def lauf_starten(key, thema):
     try:
         if _avatar_ohne_grok(key, (szenen.laden(key).get("szenen") or [])):
             return False, GROK_PFLICHT
+        fremd = _avatar_fremde_stimme(key, szenen.laden(key).get("szenen") or [])
+        if fremd:
+            return False, fremd
     except Exception as f:
         print("[Start] Grok-Prüfung ging nicht:", f)
     befehl = [sys.executable, "-u", os.path.join(BASIS, "lauf.py"), key]
@@ -1725,13 +1728,11 @@ def _r5_einen(k, sid):
 
     grok = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
     if grok:
-        nfig = len(figuren or [])
-        mindest = 12 if nfig >= 3 else (10 if nfig >= 2 else 8)
         bedarf = szenen.clip_bedarf(
             s.get("text") or "",
-            kanal.get("woerter_pro_sekunde") or 2.5,
+            3.1,
             kanal.get("nachlauf", 0.9),
-            mindest=mindest)
+            mindest=4)
         if not bedarf["passt"]:
             grund = ("Text zu lang: %d Wörter, etwa %.1f s plus %.1f s Puffer. "
                      "Das sind mehr als 15 s. Kürze den Satz oder teile ihn "
@@ -1871,6 +1872,23 @@ def _avatar_ohne_grok(k, liste):
         if (s.get("modus") or "") == "avatare":
             return True
     return False
+
+
+def _avatar_fremde_stimme(k, liste):
+    """Satz, wenn ein Avatar-Video eine Szene ohne Grok-Stimme hätte."""
+    import darsteller
+    if not darsteller.laden(k).get("besetzung"):
+        return ""
+    n = 0
+    for s in liste or []:
+        if (s.get("modus") or "") != "avatare":
+            n += 1
+    if not n:
+        return ""
+    return ("%d Szene%s steht nicht auf Avatare im Bild. "
+            "Dann spricht die Sprecherin dazu. Stell sie um, "
+            "sonst sind es zwei Stimmen."
+            % (n, "" if n == 1 else "n"))
 
 
 def r5_clip_start(k, b):

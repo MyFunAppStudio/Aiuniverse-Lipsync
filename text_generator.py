@@ -105,9 +105,9 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     _wps = _p37_wps(kanal)
     _unten = max(8 if _grok else 4, int(_je * _wps * 0.85))
     _oben = max(_unten + 1, min(_worte, int(_je * _wps)))
-    _zeit = ("Grok macht den Clip zwischen 8 und 15 Sekunden. "
-             "Stehen drei Avatare in der Szene, mindestens 12 Sekunden, nie 4. "
-             "Laenger als 15 Sekunden wird nicht erzeugt. "
+    _zeit = ("Der Clip wird so lang bestellt, wie der Satz braucht, plus knapp eine Sekunde. "
+             "Mindestens 4, hoechstens 15 Sekunden. Nicht auf 10 oder 15 auffuellen. "
+             "Der Satz fuellt diese Zeit, das letzte Wort kommt kurz vor dem Schluss. "
              if _grok else
              "Der Clip ist 10 Sekunden und kann nicht laenger. ")
 
@@ -119,7 +119,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind hoechstens {_je:.0f} Sekunden gesprochen. {_zeit}Was darueber liegt, bleibt als Standbild stehen. Lieber kuerzer als laenger. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind etwa {_je:.0f} Sekunden gesprochen, nicht deutlich weniger. {_zeit}Was nicht in 15 Sekunden passt, wird nicht bestellt und nicht abgeschnitten. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau das, was der Satz erzaehlt, so gross, dass man es erkennt. Zwei Schiffe stossen zusammen: beide Ruempfe, der Bug trifft den anderen Rumpf, das Hafenbecken ist zu sehen. Eine Explosion: der Feuerball, die Druckwelle, berstende Fenster und Daecher, das Schiff als Ursprung. Kein Blut, keine Leichen. Dafuer darf das Bild weit sein. Luftaufnahme bleibt verboten. Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht.\n\nBEWEGUNG: Was die Avatare mit den Haenden tun, und was sich im Hintergrund bewegt. Nicht die Kamera. Ein Avatar: zwei Gesten, zeigen und nicken, Arme nicht haengen lassen. Mehrere: je Person eine Zeile Name: Geste. Der Hintergrund lebt die ganze Zeit.
@@ -1324,7 +1324,9 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "Genau %d Szenen, nicht eine mehr und nicht eine weniger. "
             "Alle Szenen zusammen hoechstens %d Woerter. "
             "Jede Szene etwa %.0f Sekunden, nie laenger als %d. "
-            "Nicht jede Szene auf 15 Sekunden auffuellen.\n"
+            "Der Satz fuellt die Szene. Nicht auf 10 oder 15 Sekunden auffuellen "
+            "und nicht kuerzer schreiben, sonst steht der Avatar stumm, "
+            "und die leere Zeit ist trotzdem bezahlt.\n"
             % (gesamt, szenen, worte, je, sek))
         print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
               % (szenen, gesamt, worte))

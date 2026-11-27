@@ -1427,6 +1427,11 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
         dauer = int(max(4, min(15, round(float(sekunden or 10)))))
     except Exception:
         dauer = 10
+    fuellen = (
+        "Der Clip ist %d Sekunden lang. Verteile das Sprechen auf diese Zeit. "
+        "Das letzte Wort kommt erst kurz vor dem Schluss. "
+        "Danach hoechstens ein kurzes Atemholen, nicht mehrere Sekunden stumm stehen. "
+        % dauer)
     if fest:
         # Nur die Person, auf einer Farbe, die sich danach ausstanzen laesst.
         # Das Produktbild geht hier nicht mit, sonst malt Grok es neu.
@@ -1449,8 +1454,8 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "%s "
                 "Die Person sagt genau diesen Satz und sonst nichts: \"%s\" "
                 "Der Mund bewegt sich zu den Woertern und ist danach zu. "
-                "Keine Untertitel, keine Schrift."
-                % (_grok_art(figuren), spruch.replace('"', "'")))
+                "%s Keine Untertitel, keine Schrift."
+                % (_grok_art(figuren), spruch.replace('"', "'"), fuellen))
     elif len(personen) >= 2:
         teile = []
         for i, (f, _p) in enumerate(personen):
@@ -1489,7 +1494,7 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "Wer gerade nicht dran ist, hoert zu, nickt, schuettelt den Kopf oder zeigt hin, "
                 "und redet nicht gleichzeitig mit. Niemand steht regungslos. "
                 "Der Mund bewegt sich nur bei dem, der gerade spricht. "
-                + GROK_GESTIK +
+                + GROK_GESTIK + " " + fuellen +
                 " Keine Untertitel, keine Schrift.")
             for name, zeile in _grok_anweisungen(regie, personen):
                 if not zeile:
@@ -1517,8 +1522,8 @@ def erzeuge_grok(kanal, hintergrund, figuren, satz, sekunden, ziel,
                 "Der Mund bewegt sich zu den Woertern. Die Fuesse bleiben. "
                 "Beide Haende zeigen auf das Ereignis in der Szene, nicht ins Leere. "
                 % (lage_text(kanal), _grok_art(figuren), spruch.replace('"', "'"))
-                + " " + GROK_GESTIK
-                + " Keine Untertitel, keine Schrift. "
+                + " " + GROK_GESTIK + " " + fuellen +
+                " Keine Untertitel, keine Schrift. "
                 "Die Szene hinter der Person bewegt sich: genau das Ereignis, "
                 "nicht nur Rauch.")
             extra = _grok_anweisungen(regie, personen)
