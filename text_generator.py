@@ -1176,14 +1176,21 @@ def _clip10(paket, grenze=35):
         roh = " ".join(roh.split())
         beide = _clip_sprecher(roh)
         if len(beide) >= 2:
-            # Nicht in weitere Szenen schneiden. Sonst werden aus 2 Szenen 4.
-            kurz = _clip_beide_kurz(beide, grenze)
-            s2 = dict(s)
-            s2["text"] = " ".join("%s: %s." % (n, w) for n, w in kurz)
+            # Dieselbe Person steht vor jedem Satz ("Frau: ... Frau: ...").
+            # Das ist ein Erzaehler, kein Dialog. Nichts davon wird gekuerzt.
+            # Auch bei zwei echten Sprechern bleibt jeder Satz ganz.
+            # Abschneiden hat "vor der." und "weil die." erzeugt.
             namen = []
-            for n, _w in kurz:
+            for n, _w in beide:
                 if n not in namen:
                     namen.append(n)
+            woerter = roh.split()
+            if len(woerter) > grenze:
+                print("[Text] Szene hat %d Woerter, Grenze %d. "
+                      "Der Satz bleibt ganz, nichts wird abgeschnitten."
+                      % (len(woerter), grenze))
+            s2 = dict(s)
+            s2["text"] = roh
             s2["wer"] = namen
             neu.append(s2)
             continue
@@ -1245,6 +1252,24 @@ def _plan_laenge(kanal):
     return gesamt, n, je, sek, worte
 
 
+def _ganze_saetze(text, worte_je):
+    """Nur ganze Saetze. Nie 'vor der.' oder 'weil die.'."""
+    ww = (text or "").split()
+    if len(ww) <= worte_je:
+        return " ".join(ww)
+    genommen, gut = [], None
+    for w in ww:
+        genommen.append(w)
+        if w[-1:] in ".!?":
+            if len(genommen) <= worte_je:
+                gut = list(genommen)
+            else:
+                break
+    if gut:
+        return " ".join(gut)
+    return " ".join(ww)
+
+
 def _auf_soll(paket, n, worte_je):
     """Mehr Szenen als die Videolaenge hergibt, werden zusammengezogen."""
     if not isinstance(paket, dict) or n < 1:
@@ -1270,7 +1295,7 @@ def _auf_soll(paket, n, worte_je):
         klammern = _CLIP_KLAMMER.findall(" ".join(texte))
         ww = kern.split()
         if len(ww) > worte_je:
-            kern = " ".join(ww[:worte_je])
+            kern = _ganze_saetze(kern, worte_je)
         else:
             kern = " ".join(ww)
         if klammern:
@@ -1326,7 +1351,12 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "Jede Szene etwa %.0f Sekunden, nie laenger als %d. "
             "Der Satz fuellt die Szene. Nicht auf 10 oder 15 Sekunden auffuellen "
             "und nicht kuerzer schreiben, sonst steht der Avatar stumm, "
-            "und die leere Zeit ist trotzdem bezahlt.\n"
+            "und die leere Zeit ist trotzdem bezahlt. "
+            "Jeder Satz ist fertig und endet mit einem Punkt. "
+            "Hoere nie mitten im Satz auf, auch nicht um die Wortzahl zu treffen. "
+            "Lieber einen ganzen Satz weniger als 'vor der.' oder 'weil die.'. "
+            "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei "
+            "und nicht 312. Daten ebenso: achtundzwanzigsten Oktober.\n"
             % (gesamt, szenen, worte, je, sek))
         print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
               % (szenen, gesamt, worte))
