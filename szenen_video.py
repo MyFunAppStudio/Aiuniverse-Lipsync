@@ -700,7 +700,7 @@ def plan_bauen(kanal, ordner):
             if s.get("stimmung") and s["stimmung"] in szenen.ENERGIE:
                 k2["stimme_energie"] = szenen.ENERGIE[s["stimmung"]]
             figur_name = _r7_sprecher(kanal, s)
-            eigene = _stimme_fuer(kanal, figur_name)
+            eigene = _stimme_fuer(kanal, figur_name) or _gewaehlte_sprecherstimme(kanal)
 
             def _sprich(wort, stimme, wohin):
                 try:
@@ -724,6 +724,8 @@ def plan_bauen(kanal, ordner):
                 for j, (wer_name, wort) in enumerate(stuecke):
                     teil = os.path.join(ordner, "sz_%02d_%d.mp3" % (nr + 1, j))
                     stimme = _stimme_fuer(kanal, wer_name) if wer_name else None
+                    if not stimme:
+                        stimme = _gewaehlte_sprecherstimme(kanal)
                     fertig_teil = _sprich(wort, stimme, teil)
                     gemacht.append(fertig_teil)
                     if fertig_teil:
@@ -3188,6 +3190,30 @@ def _stimme_fuer(kanal, figur):
     return _r18_stimme_alt(kanal, figur)
 
 
+def _gewaehlte_sprecherstimme(kanal):
+    """Stimme der angehakten Sprecherin, wenn bei der Zeile niemand steht.
+
+    Leer heisst: bei ihr ist weiter Kanalstimme eingestellt. Dann bleibt
+    es bei der Kanalstimme, absichtlich.
+    """
+    ids = [str(x) for x in ((kanal or {}).get("sprecher_an") or [])]
+    if not ids:
+        return None
+    try:
+        import darsteller
+        for f in darsteller.laden(kanal).get("darsteller") or []:
+            if str(f.get("id") or "") not in ids:
+                continue
+            if (f.get("art") or "") != "sprecher":
+                continue
+            sid = (f.get("stimme") or "").strip()
+            if sid:
+                return sid
+    except Exception as e:
+        print("[Stimme] Sprecherin nicht lesbar:", e)
+    return None
+
+
 # Reine Sprecher sollen in Texten als Name erkannt werden, obwohl sie
 # nie im Bild stehen. _r15_namen liest schon alle Darsteller - damit
 # sind sie automatisch dabei.
@@ -3599,6 +3625,53 @@ def _hoeren(s, kanal, arbeit, nummer):
     return gruppen
 
 
+def _karten(text, zeichen):
+    """Bricht so um, dass keine Zeile ueber den Bildrand laeuft.
+
+    Hoechstens zwei Zeilen je Einblendung. Was nicht mehr passt, kommt
+    als naechste Karte, nicht abgeschnitten.
+    """
+    worte = [w for w in (text or "").split() if w]
+    if not worte:
+        return []
+    grenze = max(10, int(zeichen or 16))
+    zeilen, akt = [], []
+    for w in worte:
+        kandidat = (akt + [w]) if akt else [w]
+        if akt and len(" ".join(kandidat)) > grenze:
+            zeilen.append(" ".join(akt))
+            akt = [w]
+        else:
+            akt = kandidat
+    if akt:
+        zeilen.append(" ".join(akt))
+    karten = []
+    i = 0
+    while i < len(zeilen):
+        if i + 1 < len(zeilen):
+            karten.append(zeilen[i] + "\\N" + zeilen[i + 1])
+            i += 2
+        else:
+            karten.append(zeilen[i])
+            i += 1
+    return karten
+
+
+def _karten_zeiten(text, a, e, zeichen):
+    karten = _karten(text, zeichen)
+    if len(karten) <= 1:
+        return [(karten[0] if karten else text, a, e)]
+    gewichte = [max(1, len(k.replace("\\N", " ").split())) for k in karten]
+    summe = float(sum(gewichte)) or 1.0
+    lauf, raus = a, []
+    spanne = max(0.4, e - a)
+    for k, g in zip(karten, gewichte):
+        d = spanne * g / summe
+        raus.append((k, lauf, lauf + d))
+        lauf += d
+    return raus
+
+
 def _ass(plan, ziel, b, h, kanal=None):
     """Weiche Schrift unten, ein Satz pro Einblendung, an der Stimme."""
     import video_bauen as vb
@@ -3644,9 +3717,13 @@ def _ass(plan, ziel, b, h, kanal=None):
             paare = _aus_gemessen(s.get("worte") or [], start, roh)
         if not paare:
             paare = _aus_sprache(_saetze(roh), s)
-        for text, a, e in _halten(paare, start, ende):
+        nutz = max(80, b - 2 * ml)
+        zeichen = max(12, int(nutz / (fs * 0.62)))
+        roh_paare = []
+        for text, a, e in paare:
             text = text.replace("{", "(").replace("}", ")").replace("\\", "")
-            text = _zwei_zeilen(text)
+            roh_paare.extend(_karten_zeiten(text, a, e, zeichen))
+        for text, a, e in _halten(roh_paare, start, ende):
             anf, bis = vb._tt_zeit(a), vb._tt_zeit(e)
             zeilen.append(
                 "Dialogue: 0,%s,%s,TT,,0,0,0,,{\\blur4\\bord14\\1a&HFF&\\3c&H000000&\\3a&H58&}%s\n"
