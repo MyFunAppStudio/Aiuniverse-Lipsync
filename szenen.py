@@ -1161,10 +1161,15 @@ def r16_zuordnen(kanal, namen):
     raus = []
     for n in namen or []:
         for x in d.get("darsteller") or []:
-            if (x.get("name") or "").strip().lower() == n.strip().lower():
-                if x.get("id") not in raus:
-                    raus.append(x["id"])
-                break
+            if (x.get("name") or "").strip().lower() != n.strip().lower():
+                continue
+            if (x.get("art") or "avatar") == "sprecher":
+                continue
+            if x.get("id") not in (d.get("besetzung") or []):
+                continue
+            if x.get("id") not in raus:
+                raus.append(x["id"])
+            break
     return raus
 
 
@@ -1340,6 +1345,16 @@ _r19_aendern_alt = aendern
 
 
 def aendern(kanal, sid, feld, wert):
+    if feld == "modus" and str(wert or "") != "avatare":
+        try:
+            import darsteller
+            if darsteller.laden(kanal).get("besetzung"):
+                return {"ok": False, "fehler":
+                        "Avatar-Video: die Szene bleibt auf Avatare im Bild. "
+                        "Kamerafahrt, Standbild und Nur Bild animieren "
+                        "sprechen mit der Sprecherin. Das wäre eine zweite Stimme."}
+        except Exception as e:
+            print("[Szenen] Modus nicht pruefbar:", e)
     r = _r19_aendern_alt(kanal, sid, feld, wert)
     if feld != "text":
         return r
