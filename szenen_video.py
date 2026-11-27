@@ -3570,17 +3570,19 @@ def _gehoerte_gruppen(chunks, start):
         return None
     lang = sum(len(t.split()) for t, _a, _e in worte) / float(len(worte))
     if lang > 3:
-        return [(t, start + a, start + e) for t, a, e in worte]
-    gruppen, akt = [], []
-    for t, a, e in worte:
-        akt.append((t, a, e))
-        if len(akt) >= 7 or t[-1:] in ".!?":
-            gruppen.append(akt)
-            akt = []
-    if akt:
-        gruppen.append(akt)
-    return [(" ".join(x[0] for x in g), start + g[0][1], start + g[-1][2])
-            for g in gruppen]
+        roh = [(t, a, e) for t, a, e in worte]
+    else:
+        roh, akt = [], []
+        for t, a, e in worte:
+            akt.append((t, a, e))
+            satzende = t[-1:] in ".!?"
+            if len(akt) >= 8 or (satzende and len(akt) >= 5):
+                roh.append((" ".join(x[0] for x in akt), akt[0][1], akt[-1][2]))
+                akt = []
+        if akt:
+            roh.append((" ".join(x[0] for x in akt), akt[0][1], akt[-1][2]))
+    roh = _binden(roh)
+    return [(t, start + a, start + e) for t, a, e in roh]
 
 
 def _hoeren(s, kanal, arbeit, nummer):
@@ -3623,6 +3625,24 @@ def _hoeren(s, kanal, arbeit, nummer):
         print("[Untertitel] Szene %d gehoert, %d Zeilen an der Stimme"
               % (nummer + 1, len(gruppen)))
     return gruppen
+
+
+def _binden(paare):
+    """Kurze Fetzen an den naechsten Satz. Sonst steht 'Am 28.' allein."""
+    paare = list(paare or [])
+    raus, i = [], 0
+    while i < len(paare):
+        t, a, e = paare[i]
+        w = t.split()
+        if len(w) < 5 and i + 1 < len(paare):
+            t2, a2, e2 = paare[i + 1]
+            if a2 - e < 0.7 and len(w) + len(t2.split()) <= 16:
+                paare[i + 1] = ((t + " " + t2).strip(), a, e2)
+                i += 1
+                continue
+        raus.append((t, a, e))
+        i += 1
+    return raus
 
 
 def _karten(text, zeichen):
@@ -3673,7 +3693,7 @@ def _karten_zeiten(text, a, e, zeichen):
 
 
 def _ass(plan, ziel, b, h, kanal=None):
-    """Weiche Schrift unten, ein Satz pro Einblendung, an der Stimme."""
+    """Eine Zeile, immer dieselbe Stelle unten. Nichts wird abgeschnitten."""
     import video_bauen as vb
     k = kanal or {}
     if k.get("untertitel_an") is False:
@@ -3681,14 +3701,15 @@ def _ass(plan, ziel, b, h, kanal=None):
             f.write("")
         return ziel
     schrift = vb._tt_schrift()
-    fs = max(32, int(h * 0.044))
-    ml = int(b * 0.08)
-    mv = int(h * 0.16)
-    rand = max(2, int(fs * 0.07))
+    fs = max(36, int(h * 0.046))
+    ml = int(b * 0.09)
+    mv = int(h * 0.13)
+    rand = max(3, int(fs * 0.075))
+    schatten = max(1, int(fs * 0.03))
     kopf = (
         "[Script Info]\n"
         "ScriptType: v4.00+\n"
-        "WrapStyle: 2\n"
+        "WrapStyle: 0\n"
         "ScaledBorderAndShadow: yes\n"
         "YCbCr Matrix: TV.709\n"
         "PlayResX: %d\n"
@@ -3698,14 +3719,16 @@ def _ass(plan, ziel, b, h, kanal=None):
         "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, "
         "ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
         "Alignment, MarginL, MarginR, MarginV, Encoding\n"
-        "Style: TT,%s,%d,&H00E8F2FF,&H00E8F2FF,&H00101010,&H00000000,"
-        "-1,0,0,0,100,100,0.6,0,1,%d,0,2,%d,%d,%d,1\n\n"
+        "Style: TT,%s,%d,&H00FFFFFF,&H00FFFFFF,&H00000000,&HA0000000,"
+        "-1,0,0,0,100,100,0,0,1,%d,%d,2,%d,%d,%d,1\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, "
         "Effect, Text\n"
-        % (b, h, schrift, fs, rand, ml, ml, mv))
+        % (b, h, schrift, fs, rand, schatten, ml, ml, mv))
     zeilen = [kopf]
     arbeit = os.path.dirname(str(ziel)) or "."
+    x = b // 2
+    y = h - mv
     for nummer, s in enumerate(plan):
         roh = _m17_ohne_namen(s.get("text") or "", kanal) if isinstance(s, dict) else ""
         if not s.get("untertitel") or not roh.strip():
@@ -3717,8 +3740,9 @@ def _ass(plan, ziel, b, h, kanal=None):
             paare = _aus_gemessen(s.get("worte") or [], start, roh)
         if not paare:
             paare = _aus_sprache(_saetze(roh), s)
+        paare = _binden(paare)
         nutz = max(80, b - 2 * ml)
-        zeichen = max(12, int(nutz / (fs * 0.62)))
+        zeichen = max(14, int(nutz / (fs * 0.56)))
         roh_paare = []
         for text, a, e in paare:
             text = text.replace("{", "(").replace("}", ")").replace("\\", "")
@@ -3726,11 +3750,8 @@ def _ass(plan, ziel, b, h, kanal=None):
         for text, a, e in _halten(roh_paare, start, ende):
             anf, bis = vb._tt_zeit(a), vb._tt_zeit(e)
             zeilen.append(
-                "Dialogue: 0,%s,%s,TT,,0,0,0,,{\\blur4\\bord14\\1a&HFF&\\3c&H000000&\\3a&H58&}%s\n"
-                % (anf, bis, text))
-            zeilen.append(
-                "Dialogue: 1,%s,%s,TT,,0,0,0,,{\\fad(90,70)}%s\n"
-                % (anf, bis, text))
+                "Dialogue: 0,%s,%s,TT,,0,0,0,,{\\an2\\pos(%d,%d)\\fad(70,50)}%s\n"
+                % (anf, bis, x, y, text))
     with open(ziel, "w", encoding="utf-8") as f:
         f.write("".join(zeilen))
     return ziel
