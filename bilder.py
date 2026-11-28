@@ -65,6 +65,8 @@ def _slot(kanal, slot="bilder", braucht_vorlage=None):
 
 
 def bereit(kanal):
+    if _xai_key(kanal):
+        return True, ""
     e = _slot(kanal)
     if not e:
         return False, "Kein Bildmodell eingetragen"
@@ -86,6 +88,8 @@ def kann_figur(kanal):
 
 
 def preis_je_bild(kanal):
+    if _xai_key(kanal):
+        return 0.04
     e = _slot(kanal) or {}
     try:
         return round(float(str(e.get("preis")).replace(",", ".")), 4)
@@ -217,6 +221,107 @@ def _koerper_varianten(prompt, seite, referenz_feld, referenz_uri, modell=""):
     return [wort, verh, masse, nackt]
 
 
+def _xai_key(kanal):
+    """Der xAI-Schluessel, den auch die Videoclips benutzen."""
+    apis = (kanal or {}).get("apis") or {}
+    if isinstance(apis, dict):
+        for liste in apis.values():
+            for x in liste or []:
+                if not isinstance(x, dict):
+                    continue
+                u = (x.get("url") or "").lower()
+                if "api.x.ai" in u or "x.ai" in u or "grok" in u:
+                    k = (x.get("key") or "").strip()
+                    if k:
+                        return k
+    return schluessel.fuer(kanal, {"url": "https://api.x.ai", "key": ""})
+
+
+def _grok_seite(seite):
+    s = (seite or "9:16").strip()
+    if s in ("9:16", "16:9", "1:1", "2:3", "3:2", "3:4", "4:3"):
+        return s
+    if s == "4:5":
+        return "3:4"
+    return "9:16"
+
+
+def _grok_bild(kanal, prompt, ziel, seite):
+    """Standbild ueber Grok Imagine. Der ganze Szenentext geht mit, nichts wird gekuerzt."""
+    key = _xai_key(kanal)
+    if not key:
+        print("[Bild] Kein xAI-Schluessel, Grok malt nicht")
+        return None
+    text = " ".join((prompt or "").split())
+    if len(text) < 8:
+        print("[Bild] Keine Bildbeschreibung")
+        return None
+    letzter = ""
+    for modell in ("grok-imagine-image-2.0", "grok-imagine-image"):
+        koerper = {
+            "model": modell,
+            "prompt": text[:4000],
+            "n": 1,
+            "aspect_ratio": _grok_seite(seite),
+            "resolution": "1K",
+        }
+        daten = json.dumps(koerper).encode("utf-8")
+        anfrage = urllib.request.Request(
+            "https://api.x.ai/v1/images/generations",
+            data=daten,
+            headers={
+                "Authorization": "Bearer " + key,
+                "Content-Type": "application/json",
+            })
+        try:
+            with urllib.request.urlopen(anfrage, timeout=180) as r:
+                antwort = json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as f:
+            hinweis = ""
+            try:
+                hinweis = " ".join(f.read().decode("utf-8", "ignore").split())[:240]
+            except Exception:
+                hinweis = ""
+            letzter = "HTTP %s %s" % (f.code, hinweis)
+            print("[Bild] Grok %s abgelehnt (%s)" % (modell, letzter))
+            if f.code in (400, 404, 422):
+                continue
+            return None
+        except Exception as f:
+            print("[Bild] Grok nicht erreichbar:", f)
+            return None
+        url = ""
+        if isinstance(antwort, dict):
+            url = _bild_url(antwort) or ""
+            if not url:
+                daten_liste = antwort.get("data") or antwort.get("images") or []
+                if isinstance(daten_liste, list):
+                    for eintrag in daten_liste:
+                        if not isinstance(eintrag, dict):
+                            continue
+                        url = eintrag.get("url") or ""
+                        roh = eintrag.get("b64_json") or eintrag.get("b64") or ""
+                        if url:
+                            break
+                        if roh:
+                            try:
+                                with open(ziel, "wb") as f:
+                                    f.write(base64.b64decode(roh))
+                            except Exception as f:
+                                print("[Bild] Grok-Bild nicht lesbar:", f)
+                                return None
+                            if os.path.exists(ziel) and os.path.getsize(ziel) > 1024:
+                                print("[Bild] Grok %s" % modell)
+                                return str(ziel)
+        if url:
+            print("[Bild] Grok %s" % modell)
+            return _laden(url, ziel)
+        letzter = "keine Adresse in der Antwort"
+        print("[Bild] Grok %s ohne Bild: %s" % (modell, str(antwort)[:180]))
+    print("[Bild] Grok hat nichts geliefert (%s)" % letzter)
+    return None
+
+
 def erzeuge(kanal, prompt, ziel, referenz=None, seite="9:16"):
     """Erzeugt ein Bild. Gibt den Pfad zurueck oder None."""
     ok, grund = bereit(kanal)
@@ -228,6 +333,9 @@ def erzeuge(kanal, prompt, ziel, referenz=None, seite="9:16"):
     basis = _basis_url(e.get("url"))
     key = schluessel.fuer(kanal, e)
     print("[Bild] Modell: %s" % (e.get("name") or e.get("url")))
+
+    if _xai_key(kanal):
+        return _grok_bild(kanal, prompt, ziel, seite)
 
     feld = ""
     uri = None

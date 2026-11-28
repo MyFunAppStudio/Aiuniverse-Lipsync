@@ -1337,6 +1337,81 @@ def _eine_stimme(kanal, paket):
     return paket
 
 
+_HAENGER = frozenset(
+    "der die das den dem des ein eine einer einem eines "
+    "und oder aber denn weil dass "
+    "für fuer vor mit von zu zur zum an auf aus in im am bei nach "
+    "über ueber ohne als vom beim ins ans durch fürs fuers".split())
+
+
+def _satz_kaputt(text):
+    """True, wenn ein Satz auf einem Artikel endet oder eine Zahl ziffernweise steht."""
+    roh = _clip_re.sub(r"\[[^\]]*\]", " ", text or "")
+    roh = _clip_re.sub(r"\b[A-ZÄÖÜ][\wÄÖÜäöüß'’-]{0,24}\s*:", " ", roh)
+    if _clip_re.search(
+            r"\b(null|eins|zwei|drei|vier|fünf|funf|sechs|sieben|acht|neun)\s+"
+            r"(null|eins|zwei|drei|vier|fünf|funf|sechs|sieben|acht|neun)\b",
+            roh.lower()):
+        return True
+    for satz in _clip_re.split(r"(?<=[.!?])\s+", roh.strip()):
+        worte = _clip_re.findall(r"[A-Za-zÄÖÜäöüß0-9]+", satz)
+        if worte and worte[-1].lower() in _HAENGER:
+            return True
+    return False
+
+
+def _sprechtext_heilen(kanal, paket):
+    """Abgeschnittene Sätze werden zu Ende geschrieben. Fertige Sätze bleiben."""
+    if not isinstance(paket, dict):
+        return paket
+    szenen = [s for s in (paket.get("szenen") or []) if isinstance(s, dict)]
+    idx = [i for i, s in enumerate(szenen) if _satz_kaputt(s.get("text") or "")]
+    if not idx:
+        return paket
+    bloecke = []
+    for n, i in enumerate(idx, 1):
+        s = szenen[i]
+        bloecke.append("SZENE %d\nTEXT: %s\nBILD: %s" % (
+            n, " ".join(str(s.get("text") or "").split()),
+            " ".join(str(s.get("bild") or "").split())[:700]))
+    auftrag = (
+        "Diese Sprechtexte sind abgeschnitten oder eine Jahreszahl steht als einzelne Ziffern. "
+        "Ergaenze nur das fehlende Satzende, anhand der Bildzeile. "
+        "Streiche kein Wort. Schreibe keinen Satz um. Erfinde keine neue Handlung. "
+        "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei. "
+        "Der Name vor dem Doppelpunkt bleibt stehen.\n"
+        "Antworte NUR mit JSON {\"texte\": [\"...\", ...]} mit genau %d Eintraegen, "
+        "in derselben Reihenfolge.\n\n%s"
+        % (len(idx), "\n\n".join(bloecke)))
+    try:
+        roh = _claude_anfrage(auftrag, max_tokens=2500, kanal=kanal)
+    except Exception as e:
+        print("[Text] Sprechtext nicht heilbar:", e)
+        return paket
+    m = _clip_re.search(r"\{.*\}", roh or "", _clip_re.S)
+    texte = []
+    if m:
+        try:
+            texte = json.loads(m.group(0)).get("texte") or []
+        except Exception:
+            texte = []
+    if len(texte) != len(idx):
+        print("[Text] Heilung unbrauchbar, Texte bleiben")
+        return paket
+    for n, i in enumerate(idx):
+        neu = " ".join(str(texte[n] or "").split())
+        alt = " ".join(str(szenen[i].get("text") or "").split())
+        if len(neu.split()) + 1 < len(alt.split()):
+            print("[Text] Szene %d wurde kuerzer, bleibt" % (i + 1))
+            continue
+        if _satz_kaputt(neu):
+            print("[Text] Szene %d immer noch abgeschnitten, bleibt" % (i + 1))
+            continue
+        szenen[i]["text"] = neu
+        print("[Text] Szene %d Sprechtext ergaenzt" % (i + 1))
+    return paket
+
+
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
@@ -1368,17 +1443,20 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                   % (len(paket["szenen"]), ist, szenen, worte))
             k["prompt"] += (
                 "\n\nVORIGER VERSUCH WAR ZU LANG: %d Szenen und %d Woerter. "
-                "Diesmal genau %d Szenen und zusammen hoechstens %d Woerter.\n"
+                "Diesmal genau %d Szenen. Streiche ganze Saetze, bis zusammen "
+                "hoechstens %d Woerter bleiben. Schneide nie mitten im Satz ab.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k)))))
+        return _sprechtext_heilen(
+            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k))))))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
             _sek, worte, _grok = _clip_deckel(kanal)
         except Exception:
             worte = 35
-        return _eine_stimme(kanal, _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte))
+        return _sprechtext_heilen(
+            kanal, _eine_stimme(kanal, _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte)))
 
 
 _lage_prompt_alt = lade_prompt

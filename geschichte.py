@@ -288,9 +288,8 @@ def aufbauen(kanal, text, melde=None):
         p = bilder.erzeuge(kanal, prompt, ziel,
                            referenz=referenz, seite=seite)
         if not p:
-            kurz = " ".join(prompt.split()[:40])
-            print("[Bild] Szene %d noch einmal, kuerzer" % (i + 1))
-            p = bilder.erzeuge(kanal, kurz, ziel, referenz=None, seite=seite)
+            print("[Bild] Szene %d noch einmal, gleiche Beschreibung" % (i + 1))
+            p = bilder.erzeuge(kanal, prompt, ziel, referenz=None, seite=seite)
         if not p:
             fehlend += 1
             print("[Geschichte] Szene %d ohne Bild uebersprungen" % (i + 1))
@@ -450,45 +449,39 @@ def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
     return ", ".join(x for x in teile if x)
 
 
-def flux_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
-    """Macht aus dem deutschen Satz eine englische Malanweisung.
+_MEDIUM = _p84_re.compile(
+    r"^(medium shot at eye level|medium shot|halbtotale|wide shot|establishing shot)\s*,?\s*",
+    _p84_re.I)
 
-    Flux folgt dem deutschen Text nicht. Eine kurze Uebersetzung nennt
-    genau die Dinge, die im Satz stehen, und sonst nichts.
-    """
+
+def grok_bild_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
+    """Die volle Szenenbeschreibung. Nichts wird auf 80 Woerter gekuerzt."""
     rest, bild, _beweg, ohne = _p84_klammern(satz or "")
     kern = _ohne_stein(", ".join(bild) or ", ".join(ohne) or "")
     rede = _ohne_stein(gesprochen or rest)
+    kern = _MEDIUM.sub("", kern).strip(" ,.")
+    if not kern:
+        kern = _MEDIUM.sub("", rede).strip(" ,.")
     if not kern:
         kern = rede
-    if not kern and not rede:
-        return bildprompt(satz, stil, "", zusatz, False)
-    look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic"
-    auftrag = (
-        "Schreibe EINE englische Bildanweisung fuer ein Bildmodell. "
-        "Nur was hier steht, nichts dazu erfinden.\n"
-        "Stehen zwei Schiffe, sind beide gross im Bild und man sieht den Stoss. "
-        "Nicht ein Schiff allein und nicht weit weg.\n"
-        "Eine Explosion zeigt den Feuerball und was er zerbricht. Kein Blut, keine Leichen.\n"
-        "Kein Stein, kein Fels, kein Podest, kein Block im Vordergrund.\n"
-        "Keine Schrift. Kein Gefecht, wenn keins im Text steht.\n"
-        "Ein Absatz, 40 bis 80 Woerter, ohne Anfuehrungszeichen.\n"
-        "Stil: %s\n"
-        "GESPROCHEN: %s\n"
-        "BILD: %s"
-        % (look, rede or "—", kern or "—"))
-    try:
-        import text_generator
-        roh = text_generator._claude_anfrage(auftrag, max_tokens=300, kanal=kanal)
-        text = " ".join((roh or "").replace("```", " ").split())
-        if len(text) < 30:
-            raise RuntimeError("zu kurz")
-        text += (" No stone, no boulder, no pedestal, no text, no people in the "
-                 "foreground unless the text is about a person.")
-        return text[:1100]
-    except Exception as e:
-        print("[Bild] Englische Anweisung nicht bekommen: %s" % e)
-        return bildprompt(satz, stil, "", zusatz, False)
+    look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic cinematic still"
+    extra = _zusatz_tauglich(zusatz)
+    teile = [
+        "Photorealistic cinematic still. Show this exact moment, large and recognizable. "
+        "Every object named below is in the frame and big enough to see. "
+        "Not a distant view, not an empty landscape, not a mood without the event. "
+        "No text, no letters, no numbers, no logo, no watermark.",
+        look,
+    ]
+    if extra:
+        teile.append(extra)
+    teile.append(kern)
+    return " ".join(x for x in teile if x)
+
+
+def flux_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
+    """Bildauftrag. Frueher hat ein zweiter Claude-Aufruf auf 40 bis 80 Woerter gekuerzt."""
+    return grok_bild_anweisung(kanal, satz, gesprochen, stil, zusatz)
 
 
 # ---------- Nachtrag g2: Thema abhaken ----------
