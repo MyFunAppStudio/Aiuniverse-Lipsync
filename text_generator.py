@@ -122,7 +122,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der gesprochene Text sagt nur, was auf diesem einen Bild zu sehen ist. Kein Danach, kein Dann, keine zweite Handlung. Die naechste Handlung ist die naechste Szene. Nicht stapeln und nicht weglassen, wenn noch eine Szene frei ist. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der Sprechtext sagt nur, was die Bildbeschreibung zeigt. Kein Wort ueber etwas, das im Bild nicht vorkommt. 'Gruben sich aus der Zelle und verschwanden im Nebel' ist verboten, wenn das Bild nur die Zelle zeigt. Das ist dann eine Szene ueber das Graben oder eine Szene ueber den Nebel, nie beides. Kein Danach, kein Dann. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Die Bildbeschreibung zeigt genau dieselbe eine Handlung wie der Sprechtext, mit denselben Leuten. Sagt der Satz, zehn Maenner verschwinden im Nebel, zeigt das Bild zehn Maenner im Nebel, nicht die leere Zelle davor. Kein leeres Zimmer, wenn der Satz Menschen nennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
@@ -1506,14 +1506,22 @@ def _bild_angleichen(kanal, paket):
                " ".join(str(s.get("text") or "").split()),
                " ".join(str(s.get("bild") or "").split())[:700]))
     auftrag = (
-        "Jede Szene hat einen Sprechtext und eine Bildbeschreibung. "
-        "Beides muss genau dieselbe eine Handlung zeigen.\n"
-        "Hat der Satz zwei Handlungen, streiche die zweite aus dem Satz. "
-        "Die Bildbeschreibung zeigt nur die uebrige Handlung, gross, "
-        "mit den Menschen, die der Satz nennt. Kein leeres Zimmer, "
-        "wenn Menschen handeln. Keine andere Zeit, kein anderer Ort.\n"
-        "Streiche kein Wort aus einer Handlung, die bleibt. "
-        "Erfinde keine neue Geschichte. Normales Deutsch, ganze Woerter.\n"
+        "Der Sprechtext muss sagen, was man auf dem Bild sieht. Nichts anderes.\n"
+        "Kommt im Satz etwas vor, das in der Bildbeschreibung nicht zu sehen ist, "
+        "streiche es. Zwei Handlungen in einem Satz sind verboten.\n"
+        "Beispiel, so ist es falsch: Satz 'Zehn Maenner gruben sich aus einer Zelle "
+        "und verschwanden im Nebel.' Bild 'eine leere Zelle mit einem Loch'. "
+        "Der Satz redet vom Nebel, das Bild zeigt keinen Nebel.\n"
+        "Richtig ist nur eins von beiden, nicht beides: "
+        "Satz 'Zwei Haeflinge graben in der Zelle ein Loch in den Boden.' "
+        "und das Bild zeigt genau diese zwei Maenner, das Loch, die Zelle. "
+        "Oder Satz 'Zehn Maenner gehen im Nebel ueber das Feld.' "
+        "und das Bild zeigt genau diese Maenner im Nebel.\n"
+        "Ist das Bild nur ein leerer Raum, obwohl der Satz Menschen bei einer "
+        "Handlung nennt, schreibe das Bild auf genau diese eine Handlung um "
+        "und den Satz nur darauf. Kein leeres Zimmer, wenn Menschen handeln.\n"
+        "Erfinde keine neue Geschichte. Normales Deutsch, ganze Woerter. "
+        "Jeder Satz ist fertig und endet mit einem Punkt.\n"
         "Antworte NUR mit JSON {\"szenen\": [{\"text\": \"...\", \"bild\": \"...\"}]} "
         "mit genau %d Eintraegen, gleiche Reihenfolge.\n\n%s"
         % (len(szenen), "\n\n".join(bloecke)))
