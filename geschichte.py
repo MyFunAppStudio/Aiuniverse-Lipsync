@@ -440,8 +440,10 @@ def bildprompt(satz, stil="", figur_name="", zusatz="", mit_platte=False):
         teile.append(extra)
     teile.append(P84_SAUBER)
     teile.append(
-        "No stone, no boulder, no block, no pedestal, no monument in the foreground. "
-        "The foreground is water or quay. No people in front. No text.")
+        "Only the one action named below. No second event in the same frame. "
+        "No person standing in the foreground looking at the camera. "
+        "No pedestal, no stone slab, no boulder. "
+        "No text, no letters, no numbers, no logo, no watermark.")
     if gesprochen and gesprochen != kern:
         teile.append(gesprochen)
     if kern:
@@ -467,9 +469,10 @@ def grok_bild_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
     look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic cinematic still"
     extra = _zusatz_tauglich(zusatz)
     teile = [
-        "Photorealistic cinematic still. Show this exact moment, large and recognizable. "
-        "Every object named below is in the frame and big enough to see. "
-        "Not a distant view, not an empty landscape, not a mood without the event. "
+        "Photorealistic cinematic still. Show only the one action in the description, large and recognizable. "
+        "Do not add a second event. No person standing idle in the foreground. "
+        "No pedestal, no stone slab, no boulder. "
+        "Not a distant view and not a mood without the event. "
         "No text, no letters, no numbers, no logo, no watermark.",
         look,
     ]

@@ -119,10 +119,10 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein bis drei Saetzen. Das sind etwa {_je:.0f} Sekunden gesprochen, nicht deutlich weniger. {_zeit}Was nicht in 15 Sekunden passt, wird nicht bestellt und nicht abgeschnitten. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein oder zwei Saetzen, und beide Saetze beschreiben denselben Augenblick. Das sind etwa {_je:.0f} Sekunden gesprochen, nicht deutlich weniger. {_zeit}Was nicht in 15 Sekunden passt, wird nicht bestellt und nicht abgeschnitten. EINE SZENE IST EIN AUGENBLICK: Der gesprochene Text sagt nur, was auf diesem einen Bild zu sehen ist. Kein Danach, kein Dann, keine zweite Handlung. Die naechste Handlung ist die naechste Szene. Passen mehr Handlungen nicht in die Szenenzahl, lass die unwichtigeren weg. Stapel sie nicht in einen Satz. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau das, was der Satz erzaehlt, so gross, dass man es erkennt. Zwei Schiffe stossen zusammen: beide Ruempfe, der Bug trifft den anderen Rumpf, das Hafenbecken ist zu sehen. Eine Explosion: der Feuerball, die Druckwelle, berstende Fenster und Daecher, das Schiff als Ursprung. Kein Blut, keine Leichen. Dafuer darf das Bild weit sein. Luftaufnahme bleibt verboten. Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht.\n\nBEWEGUNG: Was die Avatare mit den Haenden tun, und was sich im Hintergrund bewegt. Nicht die Kamera. Ein Avatar: zwei Gesten, zeigen und nicken, Arme nicht haengen lassen. Mehrere: je Person eine Zeile Name: Geste. Der Hintergrund lebt die ganze Zeit.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau den einen Augenblick, den der Satz sagt, so gross, dass man die Handlung erkennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht und in die Kamera schaut. Kein Podest, keine Steinplatte, kein Felsblock. Kein Blut, keine Leichen. Jede Szene ein anderer Moment.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -858,17 +858,11 @@ Sprache des Videos, nicht auf Englisch, ausser das Video ist englisch.
 Schreib sie AUSFUEHRLICH, 400 bis 700 Zeichen. Kurze Beschreibungen geben
 beliebige Bilder.
 
-DAS BILD ZEIGT DAS EREIGNIS
-Das Bild muss das zeigen, was der Satz erzaehlt, so gross, dass man es erkennt.
-Zwei Schiffe stossen zusammen: beide Ruempfe im Bild, der Bug trifft den
-anderen Rumpf, das Hafenbecken ist zu sehen. Nicht ein Schiff allein und
-nicht der Kai ohne Schiffe.
-Eine Explosion: der Feuerball, die Druckwelle, berstende Fenster und Daecher,
-das Schiff als Ursprung. Kein Blut, keine Leichen, keine Koerperteile.
-Die Zerstoerung ist sichtbar.
-Dafuer darf und muss das Bild weit sein, wenn man das Ereignis sonst nicht
-sieht. Verboten bleibt nur die Luftaufnahme.
-Jede Szene ein anderer Moment. Nicht jedes Bild ein Gefecht mit Reiterei.
+DAS BILD ZEIGT NUR DIESEN AUGENBLICK
+Der gesprochene Satz und das Bild sind dasselbe. Sagt der Satz, sie kratzen mit Loeffeln Beton, sieht man genau das: zwei Maenner, Loeffel, Wand, Loch. Sagt der Satz, ein Foto liegt auf dem Tisch, sieht man das Foto, nicht gleichzeitig eine Blume, ein Begräbnis und ein anderes Jahr.
+Keine zweite Handlung im selben Bild und kein Satz, der etwas erzaehlt, das auf dem Bild nicht vorkommt.
+Keine Person im Vordergrund, die nur steht und in die Kamera schaut. Kein Podest, keine Steinplatte, kein Fels.
+Kein Blut, keine Leichen. Luftaufnahme bleibt verboten. Das Bild darf weit sein, wenn man die Handlung sonst nicht sieht.
 
 WAS IN DIE BESCHREIBUNG GEHOERT
 Ort, was genau passiert, Kleidung und Bauten der Zeit, Licht und Wetter.
