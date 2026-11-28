@@ -172,7 +172,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. JEDE SZENE IST EINE HANDLUNG VON MENSCHEN: Der Satz erzaehlt, was die Leute in diesem Moment tun, mit Namen. Das Bild zeigt genau diese Leute bei genau dieser einen Sache, gross, mit den Haenden an der Arbeit. Verboten ist ein Satz, der nur einen Gegenstand beschreibt: 'Ein Loeffel liegt neben einem Loch', 'Drei Attrappen liegen in den Betten', 'Ein Schild liegt vor dem Eingang'. Richtig: 'Frank Morris schabt in der Nacht mit einem verbogenen Loeffel ein Loch in die Zellenwand.' Nicht zwei Handlungen in einem Satz. Keine Szene ohne die Leute, die die Sache tun. Keine Vermutung, kein Ob-sie-tot-sind, kein Brief, kein Foto aus spaeteren Jahren, kein verlassenes Gefaengnis Jahrzehnte danach. Steht eine Quelle unten, nimm nur was darin geschehen ist. Erfinde nichts. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. SPRECHTEXT IST DIE GESCHICHTE: Ein Erzaehler sagt, was geschehen ist, warum, und was daraus folgt. Keine Bildunterschrift und keine Pose. Verboten: 'Christoph Kolumbus stuetzt beide Haende auf eine Karte und blickt aufs Meer.' Richtig: 'Im Februar fuenfzehnhundertvier lag Kolumbus vor Jamaika fest, die Nahrung war alle, und sein Almanach sagte fuer diese Nacht eine Mondfinsternis voraus.' Das BILD zeigt genau diesen Moment, die Leute gross, Haende an der Sache. Kein leeres Stillleben. Keine zweite Geschichte im selben Satz. Keine Vermutung, kein Brief, kein Foto aus spaeteren Jahren. Steht eine Quelle unten, nimm nur was darin geschehen ist. Erfinde nichts. Normales Deutsch, ganze Woerter. Nie ein Wort zerhacken und nie ein erfundenes Wort.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild hat 400 bis 700 Zeichen. Die Leute aus dem Satz sind gross im Bild und tun genau diese eine Sache. Haende, Werkzeug, Ort, Kleidung, Licht. Kein leeres Stillleben, kein Gegenstand ohne die Menschen, die ihn benutzen. Beispiel: 'Frank Morris und die beiden Anglin-Brueder knien nachts in der engen Zelle, einer drueckt einen verbogenen Loeffel in ein Loch in der Betonwand, Staub auf den Haenden, eine Gluehbirne, das Gitter der Zellentuer im Hintergrund.' Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was die Leute in diesem Augenblick tun. Nicht die Kamera. Nicht 'IM BILD'.
@@ -1654,9 +1654,9 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "und nicht kuerzer schreiben, sonst steht der Avatar stumm, "
             "und die leere Zeit ist trotzdem bezahlt. "
             if avatar else
-            "Genau ein Satz, genau eine Handlung, etwa %.0f Sekunden. "
-            "Keine zweite Handlung im selben Satz. Die naechste Handlung "
-            "ist die naechste Szene. Nicht auf 10 oder 15 Sekunden auffuellen. "
+            "Genau ein Satz der Geschichte, etwa %.0f Sekunden. "
+            "Der Satz sagt, was geschehen ist. Nicht, wie jemand im Bild steht. "
+            "Nicht auf 10 oder 15 Sekunden auffuellen. "
             % je)
         k["prompt"] = (k.get("prompt") or "") + (
             "\n\nLAENGE, DIE GILT:\n"
@@ -1670,11 +1670,12 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "Lieber einen ganzen Satz weniger als 'vor der.' oder 'weil die.'. "
             "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei "
             "und nicht 312. Daten ebenso: achtundzwanzigsten Oktober.\n"
-            "WAS GEZEIGT WIRD: Jede Szene ist eine Handlung. Die Leute tun etwas, "
-            "der Satz sagt das, das Bild zeigt sie dabei. "
-            "Verboten: 'liegt', 'liegen', 'haengt' als ganzer Satz ueber einen Gegenstand. "
-            "Keine Szene ohne Menschen. Keine Vermutung, kein Brief, "
-            "kein Foto aus spaeteren Jahren, kein Schild vom verlassenen Gefaengnis.\n"
+            "WAS GEZEIGT WIRD: Der Sprechtext bleibt die Geschichte. "
+            "Schreibe ihn nicht zur Bildunterschrift um und nicht zu einer Pose. "
+            "Verboten als Sprechtext: 'stuetzt beide Haende', 'blickt sorgenvoll', "
+            "'hebt beide Haende', 'zeigt mit dem Finger'. "
+            "Das Bild zeigt den Moment, von dem der Satz handelt, die Leute gross. "
+            "Kein leeres Stillleben, kein Gegenstand ohne die Menschen.\n"
             "BILD: 400 bis 700 Zeichen. Die genannten Leute gross, bei der Arbeit, "
             "Haende am Werkzeug. Kein leeres Stillleben.\n"
             % (gesamt, szenen, worte, je, sek, fuellen))
@@ -1693,14 +1694,14 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
         if _zu_viele_bildunterschriften(paket):
-            print("[Text] Szenen sind Bildunterschriften, nochmal als Handlung")
+            print("[Text] Szenen sind nur Posen, nochmal als Geschichte")
             k["prompt"] += (
-                "\n\nVORIGER VERSUCH WAR NUR BILDBESCHRIFTUNG. "
-                "Jeder Satz nennt die Leute und das Verb, was sie tun. "
-                "Kein Satz darf nur sagen, dass ein Gegenstand irgendwo liegt.\n")
+                "\n\nVORIGER VERSUCH BESCHREIBT NUR, WAS JEMAND IM BILD TUT. "
+                "Der Sprechtext erzaehlt die Geschichte: was geschehen ist und warum. "
+                "Nicht die Pose. Nicht 'legt die Haende auf die Karte'.\n")
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return _bilder_aus_saetzen(_bild_angleichen(k, _sprechtext_heilen(
-            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k))))))))
+        return _bilder_aus_saetzen(_sprechtext_heilen(
+            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k)))))))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
