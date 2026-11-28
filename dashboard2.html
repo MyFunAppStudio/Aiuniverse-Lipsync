@@ -375,7 +375,10 @@ function laden(){
     zeigeKopf();
     if(!S.kanal)return;
     return Promise.all([
-      api("/api/kanal?k="+S.kanal).then(function(x){S.einst=x}),
+      api("/api/kanal?k="+S.kanal).then(function(x){
+        S.einst=x;
+        if(S.schreibt)S.einst.geschichte_text="";
+      }),
       api("/api/themen?k="+S.kanal).then(function(x){S.themen=x}),
       api("/api/videos?k="+S.kanal).then(function(x){S.videos=x}),
       api("/api/preis?k="+S.kanal).then(function(x){S.preis=x}),
@@ -3120,9 +3123,17 @@ function suchZeigen(){
 
 
 /* ---------- Geschichte (Patch P9) ---------- */
-function ladeGeschichte(){return api("/api/geschichte?k="+S.kanal).then(function(d){S.gs=d;zeichne()})}
+function ladeGeschichte(){return api("/api/geschichte?k="+S.kanal).then(function(d){
+  if(S.schreibt){d.drehbuch=[];d.saetze=0;d.kosten=0;d.drehbuch_mehr=0}
+  S.gs=d;zeichne()})}
 
 function drehbuchKarte(g){
+  if(S.schreibt){
+    return '<div class="karte p" style="border:1px solid #E39B45">'
+      +'<h2 class="kt">Claude schreibt</h2>'
+      +'<div class="hinw">Die alten Szenen sind geleert. Der neue Text erscheint hier, '
+      +'sobald er fertig ist. Das dauert bis zu zwei Minuten. Die Seite nicht schließen.</div></div>';
+  }
   /* Zeigt je Szene, was der Bau daraus macht. Zerlegt wird auf dem
      Server mit demselben Code, der spaeter wirklich baut - was hier
      steht, wird also so gebaut. */
@@ -3152,7 +3163,8 @@ function tGeschichte(){
    +'<div style="display:flex;gap:7px;margin-bottom:9px">'
    +'<input type="text" id="gsthema" class="breit" placeholder="Thema — leer nimmt das nächste aus der Liste" value="'
    +h(S.einst.geschichte_thema||"")+'" onchange="themaFeld(this.value)">'
-   +'<button class="knopf or" id="gsknopf" onclick="textSchreiben()">Schreiben</button></div>'
+   +'<button class="knopf or" id="gsknopf" onclick="textSchreiben()"'
+   +(S.schreibt?' disabled':'')+'>'+(S.schreibt?'schreibt…':'Schreiben')+'</button></div>'
    +'<textarea id="gsquelle" style="min-height:120px;margin-bottom:9px" '
    +'placeholder="Quelle nur zum jetzigen Thema. Ein neues Thema leert dieses Feld."'
    +' onchange="quelleFeld(this.value)">'+h(S.einst.geschichte_quelle||"")+'</textarea>'
@@ -3321,26 +3333,37 @@ function textSchreiben(){
   else weiter();
 }
 function textSchreibenLos(){
-  var b=el("gsknopf"); if(!b)return;
   var thema=(el("gsthema")||{}).value||"";
   var bisher=(el("gstext")||{}).value||"";
   var quelle=(el("gsquelle")||{}).value||"";
-  b.disabled=true; b.textContent="schreibt…";
+  S.schreibt={thema:thema,bisher:bisher};
+  S.einst.geschichte_text="";
+  if(S.gs){S.gs.drehbuch=[];S.gs.saetze=0;S.gs.kosten=0;S.gs.drehbuch_mehr=0}
+  if(S.szenen)S.szenen.szenen=[];
+  zeichne();
+  api("/api/kanal?k="+S.kanal,{geschichte_text:""});
+  api("/api/szenen?k="+S.kanal,{aktion:"alle_weg"});
   api("/api/vorschlag?k="+S.kanal,{thema:thema,bisher:bisher,quelle:quelle}).then(function(r){
-    b.disabled=false; b.textContent="Schreiben";
-    if(!r||!r.ok)return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
+    S.schreibt=null;
+    if(!r||!r.ok){
+      if(bisher){S.einst.geschichte_text=bisher;setz("geschichte_text",bisher)}
+      else zeichne();
+      return melde((r&&r.fehler)||"Die Text-KI hat nicht geantwortet");
+    }
     var d={geschichte_teil:0,geschichte_quelle:quelle,
       geschichte_quelle_thema:thema||(S.einst.geschichte_thema||"")};
     if(r.thema&&r.thema_aus_liste)d.geschichte_thema=r.thema;
     d.geschichte_serie="";
     d.geschichte_text=r.text;
-    var f=el("gstext"); if(f)f.value=d.geschichte_text;
+    S.einst.geschichte_text=r.text;
     setzViele(d).then(function(){
       if(typeof ladeSzenen==="function")ladeSzenen();
       melde((r.titel?r.titel+" · ":"")+r.szenen+" Szenen geschrieben. Lies drüber, dann erzeugen.");
     });
   }).catch(function(){
-    b.disabled=false; b.textContent="Schreiben";
+    S.schreibt=null;
+    if(bisher){S.einst.geschichte_text=bisher;setz("geschichte_text",bisher)}
+    else zeichne();
     melde("Verbindung abgebrochen. Das Schreiben dauert bis zu zwei Minuten.");
   });
 }
