@@ -3132,15 +3132,7 @@ function ladeGeschichte(){return api("/api/geschichte?k="+S.kanal).then(function
   S.gs=d;zeichne()})}
 
 function drehbuchKarte(g){
-  if(S.schreibt){
-    return '<div class="karte p" style="border:1px solid #E39B45">'
-      +'<h2 class="kt">Claude schreibt</h2>'
-      +'<div class="hinw">Die alten Szenen sind geleert. Der neue Text erscheint hier, '
-      +'sobald er fertig ist. Das dauert bis zu zwei Minuten. Die Seite nicht schließen.</div></div>';
-  }
-  /* Zeigt je Szene, was der Bau daraus macht. Zerlegt wird auf dem
-     Server mit demselben Code, der spaeter wirklich baut - was hier
-     steht, wird also so gebaut. */
+  if(S.schreibt) return '';
   var li=(g&&g.drehbuch)||[];
   if(!li.length)return '';
   var o='<div class="karte p">'+kartenKopf("Drehbuch · "+li.length+" Szenen","drehbuch");
@@ -3150,12 +3142,11 @@ function drehbuchKarte(g){
     if(s.avatar)o+='<div class="dzz av"><span>Avatar sagt</span>'+h(s.avatar)+'</div>';
     if(s.bild)o+='<div class="dzz bi"><span>Bild</span>'+h(s.bild)+'</div>';
     if(s.bewegung&&s.bewegung!==s.bild)o+='<div class="dzz be"><span>Bewegung</span>'+h(s.bewegung)+'</div>';
-    if(!s.erzaehler&&!s.avatar)o+='<div class="dzz"><span>kein Text</span>die Szene bleibt stumm</div>';
+    if(!s.erzaehler&&!s.avatar)o+='<div class="dzz"><span>kein Text</span></div>';
     o+='</div>';
   });
   if(g.drehbuch_mehr)o+='<div class="hinw">… und '+g.drehbuch_mehr+' weitere</div>';
-  o+='<div class="hinw">Stimmt etwas nicht, ändere es oben im Textfeld — hier unten '
-   +'ändert sich es sofort mit. Erst der Knopf darunter kostet Geld.</div></div>';
+  o+='</div>';
   return o;
 }
 
@@ -3172,18 +3163,10 @@ function tGeschichte(){
    +'<textarea id="gsquelle" style="min-height:120px;margin-bottom:9px" '
    +'placeholder="Quelle nur zum jetzigen Thema. Ein neues Thema leert dieses Feld."'
    +' onchange="quelleFeld(this.value)">'+h(S.einst.geschichte_quelle||"")+'</textarea>'
-   +'<textarea id="gstext" style="min-height:190px" placeholder="Hier landet das Drehbuch. Schreiben füllt es. Du kannst es danach ändern."'
+   +'<textarea id="gstext" style="min-height:190px" placeholder="Drehbuch"'
    +' onchange="setz(\'geschichte_text\',this.value)">'+h(S.einst.geschichte_text||"")+'</textarea>'
-   +'<div class="hinw" style="margin-top:8px">'
-   +(g.saetze?('Ergibt <b>'+g.saetze+' Szenen</b> · etwa '+Number(g.kosten||0).toFixed(2)+' € für die Bilder')
-            :'Noch kein Text. Schreib oder füg ihn oben ein und tipp daneben, dann wird gezählt.')
-   +'</div>'
-   +'<div class="hinw" style="padding-top:0">Klammern bestimmen die Szenen: alles zwischen ( und ) wird ein Bild. '
-   +'Ohne Klammern trennt eine Leerzeile, ohne beides wird Satz für Satz zerlegt.<br><br>'
-   +'<b>Schreiben</b> nimmt das Thema und die Quelle und lässt die Text-KI daraus die Szenen machen. '
-   +'Sie hat dabei kein Internet: sie nimmt den eingefügten Text und was sie schon weiß. '
-   +'Lies das Drehbuch danach durch.<br><br>'
-   +'In Anführungszeichen spricht die Figur. In eckigen Klammern steht die Regie: was zu sehen sein soll. Sie wird nicht gesprochen.</div>'
+   +(g.saetze?('<div class="hinw" style="margin-top:8px">'+g.saetze+' Szenen · etwa '
+     +Number(g.kosten||0).toFixed(2)+' € für die Bilder</div>'):'')
    +'</div>';
 
   o+=drehbuchKarte(g);
