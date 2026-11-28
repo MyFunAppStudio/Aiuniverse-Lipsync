@@ -150,12 +150,19 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     else:
         anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
     _sek, _worte, _grok = _clip_deckel(kanal)
-    _je = min(float(_sek) - 1.0, (laenge * 60.0) / max(1, anzahl_bilder))
     _avatar = _grok and _hat_avatar(kanal)
+    _spanne = (laenge * 60.0) / max(1, anzahl_bilder)
+    # Bei einem festen Animationsclip muss der Satz in den Clip passen.
+    # Ein Standbild dauert so lange wie der Satz, deshalb wird hier nichts abgezogen.
+    _je = min(float(_sek) - 1.0, _spanne) if _avatar else _spanne
     _je = max(8.0 if _avatar else 4.0, _je)
     _wps = _p37_wps(kanal)
-    _unten = max(8 if _avatar else 6, int(_je * _wps * 0.75))
-    _oben = max(_unten + 1, min(_worte, int(_je * _wps)))
+    if _avatar:
+        _unten = max(8, int(_je * _wps * 0.75))
+        _oben = max(_unten + 1, min(_worte, int(_je * _wps)))
+    else:
+        _unten = max(8, int(_je * _wps * 0.9))
+        _oben = max(_unten + 1, int(_je * _wps * 1.1))
     _saetze = ("ein oder zwei Saetzen ueber denselben Moment"
                if _avatar else "genau einem Satz")
     _zeit = ("Der Clip wird so lang bestellt, wie der Satz braucht, plus knapp eine Sekunde. "
@@ -1307,7 +1314,7 @@ def _plan_laenge(kanal):
         n = max(n_min, min(n_max, int(round(gesamt / ziel))))
         je = gesamt / n
     wps = _p37_wps(kanal)
-    worte = max(8, int(gesamt * wps * 0.95))
+    worte = max(8, int(round(gesamt * wps)))
     return gesamt, n, je, sek, worte
 
 
@@ -1660,7 +1667,8 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             % je)
         k["prompt"] = (k.get("prompt") or "") + (
             "\n\nLAENGE, DIE GILT:\n"
-            "Das ganze Video ist %.0f Sekunden gesprochen, nicht mehr. "
+            "Die gesprochene Geschichte ist ungefaehr %.0f Sekunden. Nicht kuerzer. "
+            "Der Abspann haengt danach dran und zaehlt nicht zu diesen Sekunden. "
             "Genau %d Szenen, nicht eine mehr und nicht eine weniger. "
             "Alle Szenen zusammen hoechstens %d Woerter. "
             "Jede Szene etwa %.0f Sekunden, nie laenger als %d. "
@@ -1680,7 +1688,7 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "BILD: 400 bis 700 Zeichen. Die genannten Leute gross, bei der Arbeit, "
             "Haende am Werkzeug. Kein leeres Stillleben.\n"
             % (gesamt, szenen, worte, je, sek, fuellen))
-        print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
+        print("[Text] %d Szenen, zusammen %.0f Sekunden, etwa %d Woerter"
               % (szenen, gesamt, worte))
         paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
         ist = _paket_worte(paket)
@@ -1694,6 +1702,17 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "hoechstens %d Woerter bleiben. Schneide nie mitten im Satz ab.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
+            ist = _paket_worte(paket)
+        if isinstance(paket, dict) and paket.get("szenen") and ist < int(worte * 0.85):
+            print("[Text] %d Woerter, fuer %.0f Sekunden brauchen es %d. Nochmal."
+                  % (ist, gesamt, worte))
+            k["prompt"] += (
+                "\n\nVORIGER VERSUCH WAR ZU KURZ: %d Woerter. "
+                "Die Geschichte muss ungefaehr %d Woerter haben, sonst ist das Video "
+                "kuerzer als eingestellt. Ergaenze fehlende Schritte des Ereignisses. "
+                "Schneide nichts ab. Der Abspann zaehlt nicht mit.\n"
+                % (ist, worte))
+            paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k) * 1.1)))
         if _zu_viele_bildunterschriften(paket):
             print("[Text] Szenen sind nur Posen, nochmal als Geschichte")
             k["prompt"] += (
