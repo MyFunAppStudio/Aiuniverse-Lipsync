@@ -467,18 +467,19 @@ def grok_bild_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
         kern = _MEDIUM.sub("", _ohne_stein(rest)).strip(" ,.")
     if not kern:
         kern = _MEDIUM.sub("", _ohne_stein(gesprochen or "")).strip(" ,.")
-    look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic cinematic still"
+    look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic, natural light, sharp detail"
     extra = _zusatz_tauglich(zusatz)
+    aktion = " ".join((gesprochen or rest or "").split())
+    if kern and _p84_re.search(r"\b(liegt|liegen|hängt|haengt)\b", kern, _p84_re.I):
+        if aktion and aktion not in kern:
+            kern = aktion + ". " + kern
     teile = [
-        "Photorealistic cinematic still. Paint only the description below, exactly that place and that action. "
-        "If it names people, those people are in the frame doing that action, large enough to recognize. "
-        "Do not replace it with a different event from any other sentence. "
-        "No still life of an object lying by itself. "
-        "No empty room when the description names people. "
-        "No person standing idle in the foreground. "
-        "No pedestal, no stone slab, no boulder. "
-        "Not a distant view and not a mood without the event. "
-        "No text, no letters, no numbers, no logo, no watermark.",
+        "Vertical 9:16 photograph, eye level. "
+        "The people doing this fill the frame, large, hands and faces clear. "
+        "No empty floor in the foreground. No tiny figures far away. "
+        "No still life of an object lying alone. If a tool is named, a person is using it. "
+        "Natural color, not a dark green horror grade. One action only. "
+        "No readable text, no signs, no letters, no numbers, no logo, no watermark.",
         look,
     ]
     if extra:
