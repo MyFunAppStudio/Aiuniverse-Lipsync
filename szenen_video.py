@@ -3648,32 +3648,21 @@ def _binden(paare):
 def _karten(text, zeichen):
     """Bricht so um, dass keine Zeile ueber den Bildrand laeuft.
 
-    Hoechstens zwei Zeilen je Einblendung. Was nicht mehr passt, kommt
-    als naechste Karte, nicht abgeschnitten.
+    Hoechstens eine Zeile, hoechstens vier Woerter. Das naechste Wort
+    kommt auf die naechste Karte, nie abgeschnitten.
     """
     worte = [w for w in (text or "").split() if w]
     if not worte:
         return []
-    grenze = max(10, int(zeichen or 16))
-    zeilen, akt = [], []
+    karten, akt = [], []
     for w in worte:
-        kandidat = (akt + [w]) if akt else [w]
-        if akt and len(" ".join(kandidat)) > grenze:
-            zeilen.append(" ".join(akt))
+        if akt and len(akt) >= 4:
+            karten.append(" ".join(akt))
             akt = [w]
         else:
-            akt = kandidat
+            akt.append(w)
     if akt:
-        zeilen.append(" ".join(akt))
-    karten = []
-    i = 0
-    while i < len(zeilen):
-        if i + 1 < len(zeilen):
-            karten.append(zeilen[i] + "\\N" + zeilen[i + 1])
-            i += 2
-        else:
-            karten.append(zeilen[i])
-            i += 1
+        karten.append(" ".join(akt))
     return karten
 
 
@@ -3701,11 +3690,11 @@ def _ass(plan, ziel, b, h, kanal=None):
             f.write("")
         return ziel
     schrift = vb._tt_schrift()
-    fs = max(36, int(h * 0.046))
-    ml = int(b * 0.09)
-    mv = int(h * 0.13)
-    rand = max(3, int(fs * 0.075))
-    schatten = max(1, int(fs * 0.03))
+    fs = max(44, int(h * 0.058))
+    ml = int(b * 0.08)
+    mv = int(h * 0.16)
+    rand = max(8, int(fs * 0.18))
+    schatten = 0
     kopf = (
         "[Script Info]\n"
         "ScriptType: v4.00+\n"
@@ -3750,7 +3739,7 @@ def _ass(plan, ziel, b, h, kanal=None):
         for text, a, e in _halten(roh_paare, start, ende):
             anf, bis = vb._tt_zeit(a), vb._tt_zeit(e)
             zeilen.append(
-                "Dialogue: 0,%s,%s,TT,,0,0,0,,{\\an2\\pos(%d,%d)\\fad(70,50)}%s\n"
+                "Dialogue: 0,%s,%s,TT,,0,0,0,,{\\an2\\pos(%d,%d)}%s\n"
                 % (anf, bis, x, y, text))
     with open(ziel, "w", encoding="utf-8") as f:
         f.write("".join(zeilen))

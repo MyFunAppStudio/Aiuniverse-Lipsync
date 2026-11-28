@@ -172,10 +172,10 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der Sprechtext sagt nur, was die Bildbeschreibung zeigt. Kein Wort ueber etwas, das im Bild nicht vorkommt. 'Gruben sich aus der Zelle und verschwanden im Nebel' ist verboten, wenn das Bild nur die Zelle zeigt. Das ist dann eine Szene ueber das Graben oder eine Szene ueber den Nebel, nie beides. Kein Danach, kein Dann. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der Sprechtext sagt nur, was die Bildbeschreibung zeigt. Kein Wort ueber etwas, das im Bild nicht vorkommt. 'Gruben sich aus der Zelle und verschwanden im Nebel' ist verboten, wenn das Bild nur die Zelle zeigt. Das ist dann eine Szene ueber das Graben oder eine Szene ueber den Nebel, nie beides. Kein Danach, kein Dann. WAS GEZEIGT WIRD: Nur die Schritte des Ereignisses selbst, in der Reihenfolge, wie sie passiert sind. Keine Vermutung, kein Ob-sie-tot-sind, kein Brief, kein Foto aus spaeteren Jahren. Steht eine Quelle unten, nimm nur was darin geschehen ist. Erfinde nichts. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild ist eine kurze Beschreibung dessen, was die Kamera sieht. Ein oder zwei Saetze, dieselbe Handlung wie der Sprechtext, dieselben Leute. Keine Anweisung, kein 'nichts davor', kein 'Augenblick'. Beispiel: 'Drei Haeflinge hinter einem vergitterten Fenster, draussen die stuermische Bucht, Regen an der Scheibe.' Nicht drei Handlungen. Kein leeres Zimmer, wenn der Satz Menschen nennt. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was sich in diesem Augenblick bewegt. Nicht die Kamera. Nicht 'IM BILD'.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild hat 400 bis 700 Zeichen und beschreibt nur, was die Kamera in diesem einen Augenblick sieht: Ort, Anzahl der Leute, was sie tun, was sie in den Haenden haben, Kleidung, Licht, Wetter. Dieselbe Handlung wie der Sprechtext, kein anderer Moment. Beispiel: 'Drei Haeflinge in gestreifter Kleidung stehen dicht am vergitterten Zellenfenster, Haende an den Staebe, draussen schwarzes Wasser und weisse Gischt, Regen laeuft an der Scheibe, kaltes graues Licht.' Kein leeres Zimmer, wenn der Satz Menschen nennt. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was sich in diesem Augenblick bewegt. Nicht die Kamera. Nicht 'IM BILD'.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -1620,9 +1620,12 @@ def _bilder_aus_saetzen(paket):
         if not isinstance(s, dict):
             continue
         b = " ".join(str(s.get("bild") or "").split())
-        if (not b or "nichts davor" in b or "Personen aus diesem Satz" in b
+        duenn = len(b) < 80
+        if (not b or duenn or "nichts davor" in b or "Personen aus diesem Satz" in b
                 or "eine Augenblick" in b or "dieser eine Augenblick" in b):
-            s["bild"] = _bild_aus_satz(s.get("text"))
+            # Nur der Notnagel. Eine richtige Beschreibung bleibt stehen.
+            if not b or "nichts davor" in b or "Personen aus diesem Satz" in b:
+                s["bild"] = _bild_aus_satz(s.get("text"))
     return paket
 
 
@@ -1654,6 +1657,16 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "Lieber einen ganzen Satz weniger als 'vor der.' oder 'weil die.'. "
             "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei "
             "und nicht 312. Daten ebenso: achtundzwanzigsten Oktober.\n"
+            "WAS GEZEIGT WIRD: Nur die Schritte des Ereignisses, in der Reihenfolge, "
+            "wie sie passiert sind. Jede Szene ist etwas, das man an dem Tag "
+            "haette filmen koennen. Keine Szene ueber Vermutungen, kein "
+            "'ob sie tot sind', kein Brief, kein Foto aus spaeteren Jahren, "
+            "nichts was nur behauptet wurde. Steht unten eine Quelle, nimm nur, "
+            "was darin als geschehen beschrieben ist. Was du nicht sicher weisst, "
+            "lässt du weg. Du erfindest keine Einzelheit.\n"
+            "BILD: 400 bis 700 Zeichen, was die Kamera sieht. Ort, wie viele Leute, "
+            "was sie in den Haenden haben, Kleidung, Licht. Genau die eine Handlung "
+            "aus dem Sprechtext, kein anderer Moment.\n"
             % (gesamt, szenen, worte, je, sek, fuellen))
         print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
               % (szenen, gesamt, worte))
