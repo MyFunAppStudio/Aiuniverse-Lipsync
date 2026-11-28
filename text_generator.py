@@ -1344,6 +1344,70 @@ _HAENGER = frozenset(
     "über ueber ohne als vom beim ins ans durch fürs fuers".split())
 
 
+_ZIFFERWORT = {
+    "null": 0, "eins": 1, "ein": 1, "zwei": 2, "drei": 3, "vier": 4,
+    "fünf": 5, "funf": 5, "sechs": 6, "sieben": 7, "acht": 8, "neun": 9,
+}
+_KLEIN = ["", "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun"]
+_ZEHN = ["zehn", "elf", "zwölf", "dreizehn", "vierzehn", "fünfzehn",
+         "sechzehn", "siebzehn", "achtzehn", "neunzehn"]
+_ZEHNER = ["", "", "zwanzig", "dreißig", "vierzig", "fünfzig",
+           "sechzig", "siebzig", "achtzig", "neunzig"]
+
+
+def _bis100(n):
+    if n < 10:
+        return _KLEIN[n]
+    if n < 20:
+        return _ZEHN[n - 10]
+    z, e = divmod(n, 10)
+    if not e:
+        return _ZEHNER[z]
+    return _KLEIN[e] + "und" + _ZEHNER[z]
+
+
+def _bis1000(n):
+    if n < 100:
+        return _bis100(n)
+    h, r = divmod(n, 100)
+    return _KLEIN[h] + "hundert" + (_bis100(r) if r else "")
+
+
+def _jahrwort(n):
+    if n < 1000:
+        return _bis1000(n)
+    t, r = divmod(n, 1000)
+    kopf = "eintausend" if t == 1 else _KLEIN[t] + "tausend"
+    return kopf + (_bis1000(r) if r else "")
+
+
+def _jahre_im_text(text):
+    """'drei eins zwei' wird dreihundertzwölf. Drei Ziffernwörter hintereinander."""
+    teile = (text or "").split()
+    raus, i = [], 0
+    while i < len(teile):
+        lauf, j = [], i
+        while j < len(teile):
+            nackt = teile[j].strip(".,;:!?\"'“”").lower()
+            if nackt not in _ZIFFERWORT:
+                break
+            lauf.append(_ZIFFERWORT[nackt])
+            j += 1
+        if len(lauf) >= 3:
+            zahl = 0
+            for z in lauf:
+                zahl = zahl * 10 + z
+            ende = ""
+            if teile[j - 1][-1:] in ".!?,;:":
+                ende = teile[j - 1][-1]
+            raus.append(_jahrwort(zahl) + ende)
+            i = j
+        else:
+            raus.append(teile[i])
+            i += 1
+    return " ".join(raus)
+
+
 def _satz_kaputt(text):
     """True, wenn ein Satz auf einem Artikel endet oder eine Zahl ziffernweise steht."""
     roh = _clip_re.sub(r"\[[^\]]*\]", " ", text or "")
@@ -1365,6 +1429,12 @@ def _sprechtext_heilen(kanal, paket):
     if not isinstance(paket, dict):
         return paket
     szenen = [s for s in (paket.get("szenen") or []) if isinstance(s, dict)]
+    for s in szenen:
+        alt = " ".join(str(s.get("text") or "").split())
+        neu = _jahre_im_text(alt)
+        if neu != alt:
+            s["text"] = neu
+            print("[Text] Jahreszahl ausgeschrieben")
     idx = [i for i, s in enumerate(szenen) if _satz_kaputt(s.get("text") or "")]
     if not idx:
         return paket
@@ -1401,7 +1471,7 @@ def _sprechtext_heilen(kanal, paket):
     for n, i in enumerate(idx):
         neu = " ".join(str(texte[n] or "").split())
         alt = " ".join(str(szenen[i].get("text") or "").split())
-        if len(neu.split()) + 1 < len(alt.split()):
+        if len(neu.split()) * 2 < len(alt.split()):
             print("[Text] Szene %d wurde kuerzer, bleibt" % (i + 1))
             continue
         if _satz_kaputt(neu):
