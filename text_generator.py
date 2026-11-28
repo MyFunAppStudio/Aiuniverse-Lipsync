@@ -10,8 +10,58 @@ import einstellungen
 ZEICHEN_PRO_SEKUNDE = 9.0  # ZPS_KORRIGIERT (vorher 15.0)  # gesprochene Zeichen pro Sekunde
 
 
+def _grok_text(prompt, max_tokens, kanal):
+    """Geschichten schreibt Grok. Claude erfindet zur selben Szene ein anderes Bild."""
+    try:
+        import bilder
+        key = bilder._xai_key(kanal or {})
+    except Exception as e:
+        print("[Text] Grok nicht erreichbar:", e)
+        key = ""
+    if not key:
+        return None
+    modelle = ["grok-4.20", "grok-4.1-fast", "grok-4-1-fast-non-reasoning"]
+    letzter = None
+    for modell in modelle:
+        daten = json.dumps({
+            "model": modell,
+            "temperature": 0.4,
+            "max_tokens": max_tokens,
+            "messages": [{"role": "user", "content": prompt}],
+        }).encode()
+        anfrage = urllib.request.Request(
+            "https://api.x.ai/v1/chat/completions",
+            data=daten,
+            headers={
+                "Authorization": "Bearer " + key,
+                "content-type": "application/json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(anfrage, timeout=600) as antwort:
+                ergebnis = json.loads(antwort.read().decode())
+            text = (((ergebnis.get("choices") or [{}])[0].get("message") or {}).get("content") or "")
+            if text.strip():
+                print("[Text] Modell: %s" % modell)
+                return text
+        except urllib.error.HTTPError as f:
+            letzter = "%s: %s" % (f.code, f.read().decode()[:160])
+            print("[Text] %s %s" % (modell, letzter))
+            if f.code in (400, 404, 422):
+                continue
+            break
+        except Exception as e:
+            print("[Text] Grok:", e)
+            break
+    print("[Text] Grok ausgefallen, Claude springt ein. %s" % (letzter or ""))
+    return None
+
+
 def _claude_anfrage(prompt, max_tokens=20000, kanal=None):
-    """Fragt Claude ueber die API. Key kommt aus dem Dashboard."""
+    """Fragt zuerst Grok, sonst Claude. Key kommt aus dem Dashboard."""
+    grok = _grok_text(prompt, max_tokens, kanal)
+    if grok:
+        return grok
     api = einstellungen.aktive_api(kanal, "text") if kanal else None
     schluessel = ((api or {}).get("key") or config.ANTHROPIC_KEY or "").strip()
     basis = ((api or {}).get("url") or "https://api.anthropic.com").strip()
@@ -1551,7 +1601,29 @@ def _bild_angleichen(kanal, paket):
         if b and len(b) > 40:
             s["bild"] = b
         print("[Text] Szene %d Bild an den Satz angeglichen" % (i + 1))
-    paket["szenen"] = szenen
+    _bilder_aus_saetzen(paket)
+    return paket
+
+
+def _bild_aus_satz(text):
+    """Die Bildbeschreibung ist der Satz. Sie kann kein anderes Ereignis erfinden."""
+    import re
+    t = " ".join(str(text or "").split())
+    t = re.sub(r"^[^:]{1,24}:\s+", "", t).strip()
+    if not t:
+        return ""
+    return (
+        "Genau dieser eine Augenblick, nichts davor und nichts danach: " + t
+        + " Die Personen aus diesem Satz sind gross im Bild und tun genau das. "
+        "Nicht der Ort vorher, nicht was danach passiert.")
+
+
+def _bilder_aus_saetzen(paket):
+    if not isinstance(paket, dict):
+        return paket
+    for s in paket.get("szenen") or []:
+        if isinstance(s, dict) and (s.get("text") or "").strip():
+            s["bild"] = _bild_aus_satz(s.get("text"))
     return paket
 
 
@@ -1598,16 +1670,16 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "hoechstens %d Woerter bleiben. Schneide nie mitten im Satz ab.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return _bild_angleichen(k, _sprechtext_heilen(
-            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k)))))))
+        return _bilder_aus_saetzen(_bild_angleichen(k, _sprechtext_heilen(
+            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k))))))))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
             _sek, worte, _grok = _clip_deckel(kanal)
         except Exception:
             worte = 35
-        return _sprechtext_heilen(
-            kanal, _eine_stimme(kanal, _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte)))
+        return _bilder_aus_saetzen(_sprechtext_heilen(
+            kanal, _eine_stimme(kanal, _clip10(_t7_erzeuge_alt(kanal, eigenes_thema), worte))))
 
 
 _lage_prompt_alt = lade_prompt
