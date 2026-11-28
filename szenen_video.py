@@ -39,9 +39,9 @@ def _masse(kanal):
 # ---------- Bewegung ----------
 # (Zoomhub, Schwenk seitlich, Schwenk hoch/runter)
 # Die Schwenkwerte sind die Auslenkung um die Bildmitte, nicht von Rand zu Rand.
-STAERKE = {"sanft":  (0.08, 0.25, 0.15),
-           "mittel": (0.13, 0.35, 0.22),
-           "stark":  (0.20, 0.45, 0.30)}
+STAERKE = {"sanft":  (0.12, 0.40, 0.28),
+           "mittel": (0.28, 0.42, 0.34),
+           "stark":  (0.42, 0.46, 0.40)}
 
 
 def _zoompan(bewegung, nr, dauer, b, h, fps, staerke="sanft"):
@@ -69,7 +69,7 @@ def _zoompan(bewegung, nr, dauer, b, h, fps, staerke="sanft"):
     else:
         # Schwenk mit leichter Zoomfahrt. Die Mitte bleibt die Mitte, damit
         # bei einer stehenden Figur der Kopf nicht aus dem Bild wandert.
-        zo = "1.03+%.3f*%s" % (hub * 0.45, e)
+        zo = "%.3f+%.3f*%s" % (1.12 + hub * 0.55, hub * 0.2, e)
         if bewegung == "links":
             x, y = "%s*(0.5-%.3f*%s)" % (rand_x, weit_x, pendel), mitte_y
         elif bewegung == "rechts":

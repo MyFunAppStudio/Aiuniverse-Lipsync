@@ -482,7 +482,7 @@ woerter_pro_sekunde:"Wie schnell gesprochen wird — 2,2 / 2,5 / 2,8 Wörter je 
 
 bewegung_an:"Betrifft nur Standbilder. Ist er an, bekommt jedes Standbild eine langsame Fahrt oder einen Zoom, damit das Bild nicht tot wirkt. Aus heißt: das Bild steht wirklich still. Echte Clips aus Kling bewegen sich sowieso, die ändert der Schalter nicht.",
 
-bewegung_staerke:"Wie weit das Standbild dabei zoomt oder fährt. <i>sanft</i> ist kaum zu merken und sieht nach Kamera aus, <i>stark</i> fährt deutlich sichtbar ins Bild. Bei stark gehen die Bildränder verloren, weil hineingezoomt wird — steht am Rand etwas Wichtiges, ist es weg. sanft reicht fast immer.",
+bewegung_staerke:"Wie weit das Standbild zoomt oder fährt. <i>sanft</i> ist eine ruhige Dokumentarkamera. <i>mittel</i> sieht man auf dem Handy. <i>stark</i> fährt deutlich ins Bild, die Ränder gehen dabei verloren.",
 
 bildstimmung:"Eine Farbkorrektur, die über jedes Bild im Video gelegt wird. Sie macht aus einzeln gemalten KI-Bildern einen Film, der zusammenpasst: ohne sie ist das eine Bild bläulicher, das nächste gelber, und man sieht bei jedem Schnitt, dass sie aus verschiedenen Durchläufen stammen. Außerdem werden die Ränder leicht abgedunkelt, das zieht am Handy den Blick zur Mitte. Körnung und Tiefen stellen sich passend mit ein.",
 
@@ -1173,7 +1173,7 @@ function tVideo(){
      Drehbuch selbst. */
   o+='<div class="karte">'
    +reihe("Bewegung im Bild",schalter("bewegung_an",S.einst.bewegung_an!==false),"aus = Standbilder stehen still, nur echte Clips bewegen sich")
-   +reihe("Stärke",knoepfe("bewegung_staerke",S.einst.bewegung_staerke||"sanft",[["sanft","sanft"],["mittel","mittel"],["stark","stark"]]),"sanft reicht fast immer")
+   +reihe("Stärke",knoepfe("bewegung_staerke",S.einst.bewegung_staerke||"sanft",[["sanft","sanft"],["mittel","mittel"],["stark","stark"]]),"sanft ist ruhig, mittel sieht man")
    +'</div>';
   o+='<div class="karte p"><h2 class="kt">Bildstimmung</h2>'
    +reihe("Stimmung",knoepfe("bildstimmung",stimmungJetzt(),
@@ -1457,6 +1457,10 @@ function fragGenerieren(){
   var m=modellJetzt();
   if(namen.length&&!m.grok)
     return melde("Avatar ist an, aber nicht Grok. Unter Einstellungen bei Referenzclip Grok anmachen.");
+  var fremd=namen.length?szenen.filter(function(x){return (x.modus||"still")!=="avatare"}):[];
+  if(fremd.length)
+    return melde(fremd.length+" Szene"+(fremd.length===1?"":"n")
+      +" steht nicht auf Avatare im Bild. Dann spricht die Sprecherin dazu. Stell sie um.");
   var t=(el("thema")&&el("thema").value||"").trim();
   var k=kanalDaten(), p=S.preis||{};
   var szenen=(((S.szenen||{}).szenen)||[]);
@@ -1903,19 +1907,27 @@ function schalterZeile(s,d){
                          ["bewegt","Kamerafahrt"],
                          ["still","Standbild"]];
   var jetzt=s.modus||"still";
+  if(!S.ds) ladeDarsteller();
+  var avatar=((S.ds||{}).darsteller||[]).some(function(f){return f.dabei});
   var o='<div class="schalt">';
   modi.forEach(function(m){
+    if(avatar&&m[0]!=="avatare") return;
     o+='<button class="st'+(m[0]===jetzt?" an":"")+'" '
      +'onclick="szeneSetz(\''+s.id+'\',\'modus\',\''+m[0]+'\')">'+h(m[1])+'</button>';
   });
   o+='</div>';
-  o+='<div class="szh" style="margin-top:5px">Der Schalter sagt nur, was man <b>sieht</b> — '
-   +'geredet wird in allen vieren, wer redet steht im Sprechtext vor der Zeile.<br>'
-   +'<b>Avatare im Bild</b>: KI-Clip, sie sind drin und gestikulieren. '
-   +'<b>Nur Bild animieren</b>: KI-Clip vom Hintergrund, niemand zu sehen, sie reden aus dem Off. '
-   +'Diese beiden kosten. '
-   +'<b>Kamerafahrt</b>: Standbild, das langsam wandert. <b>Standbild</b>: es steht. '
-   +'Die zwei sind gratis.</div>';
+  if(avatar){
+    o+='<div class="szh" style="margin-top:5px;color:#FFB454">Avatar-Video: jede Szene bleibt auf <b>Avatare im Bild</b>. '
+     +'Kamerafahrt, Standbild und Nur Bild animieren sprechen mit der Sprecherin. Das wäre eine zweite Stimme.</div>';
+    if(jetzt!=="avatare")
+      o+='<div class="szh" style="margin-top:5px;color:#ff6b6b">Diese Szene steht noch falsch. '
+       +'Stell sie auf <b>Avatare im Bild</b> und erzeuge den Clip neu.</div>';
+  }else{
+    o+='<div class="szh" style="margin-top:5px">Ohne Avatar. Der Schalter sagt, was man <b>sieht</b>. '
+     +'Es spricht die Sprecherin.<br>'
+     +'<b>Nur Bild animieren</b> kostet. <b>Kamerafahrt</b> wandert über das Standbild. '
+     +'<b>Standbild</b> steht. Die zwei sind gratis.</div>';
+  }
   if(s.eigener_clip)
     o+='<div class="szh" style="margin-top:5px;color:#E39B45">'
      +'Eigener Clip hochgeladen — Bild und Videomodell werden übersprungen.</div>';
@@ -2133,7 +2145,7 @@ function clipKarte(){
    +'Dort kommen Untertitel, Musik und Abspann dazu. '
    +'Bei einer Sprecher-Szene auch die Stimme von fal.ai. '
    +'Eine Avatar-Szene hat die Stimme schon im Clip. '
-   +'Szenen auf <b>Kamerafahrt</b> oder <b>Standbild</b> gehen auch ohne Clip ins Video.</div></div>';
+   +'Ohne Avatar gehen Kamerafahrt und Standbild auch ohne Clip ins Video.</div></div>';
   return o;
 }
 
