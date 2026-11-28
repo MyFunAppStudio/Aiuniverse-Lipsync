@@ -473,6 +473,7 @@ def grok_bild_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
         "Photorealistic cinematic still. Paint only the description below, exactly that place and that action. "
         "If it names people, those people are in the frame doing that action, large enough to recognize. "
         "Do not replace it with a different event from any other sentence. "
+        "No still life of an object lying by itself. "
         "No empty room when the description names people. "
         "No person standing idle in the foreground. "
         "No pedestal, no stone slab, no boulder. "

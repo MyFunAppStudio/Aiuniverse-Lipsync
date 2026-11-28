@@ -3462,16 +3462,19 @@ def _gewichte_deckel(zeilen):
 
 
 def _halten(paare, start, ende):
-    """Die Zeile bleibt, bis der naechste Satz kommt."""
+    """Eine Zeile nach der anderen. Nie zwei Texte gleichzeitig."""
     raus = []
     for i, (text, a, e) in enumerate(paare):
-        a = max(start, a - 0.12)
+        a = max(start, float(a))
         if i + 1 < len(paare):
-            e = max(a + 0.8, paare[i + 1][1] - 0.05)
+            e = min(float(e), float(paare[i + 1][1]) - 0.04)
         else:
-            e = max(a + 0.9, min(ende - 0.04, e + 0.35))
-        e = min(max(e, a + 0.6), ende - 0.02)
-        raus.append((text, a, e))
+            e = min(ende - 0.02, max(float(e), a + 0.45))
+        if e < a + 0.28:
+            e = a + 0.28
+        e = min(e, ende - 0.02)
+        if e > a:
+            raus.append((text, a, e))
     return raus
 
 

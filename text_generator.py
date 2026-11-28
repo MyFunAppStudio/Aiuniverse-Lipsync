@@ -172,10 +172,10 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der Sprechtext sagt nur, was die Bildbeschreibung zeigt. Kein Wort ueber etwas, das im Bild nicht vorkommt. 'Gruben sich aus der Zelle und verschwanden im Nebel' ist verboten, wenn das Bild nur die Zelle zeigt. Das ist dann eine Szene ueber das Graben oder eine Szene ueber den Nebel, nie beides. Kein Danach, kein Dann. WAS GEZEIGT WIRD: Nur die Schritte des Ereignisses selbst, in der Reihenfolge, wie sie passiert sind. Keine Vermutung, kein Ob-sie-tot-sind, kein Brief, kein Foto aus spaeteren Jahren. Steht eine Quelle unten, nimm nur was darin geschehen ist. Erfinde nichts. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. JEDE SZENE IST EINE HANDLUNG VON MENSCHEN: Der Satz erzaehlt, was die Leute in diesem Moment tun, mit Namen. Das Bild zeigt genau diese Leute bei genau dieser einen Sache, gross, mit den Haenden an der Arbeit. Verboten ist ein Satz, der nur einen Gegenstand beschreibt: 'Ein Loeffel liegt neben einem Loch', 'Drei Attrappen liegen in den Betten', 'Ein Schild liegt vor dem Eingang'. Richtig: 'Frank Morris schabt in der Nacht mit einem verbogenen Loeffel ein Loch in die Zellenwand.' Nicht zwei Handlungen in einem Satz. Keine Szene ohne die Leute, die die Sache tun. Keine Vermutung, kein Ob-sie-tot-sind, kein Brief, kein Foto aus spaeteren Jahren, kein verlassenes Gefaengnis Jahrzehnte danach. Steht eine Quelle unten, nimm nur was darin geschehen ist. Erfinde nichts. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild hat 400 bis 700 Zeichen und beschreibt nur, was die Kamera in diesem einen Augenblick sieht: Ort, Anzahl der Leute, was sie tun, was sie in den Haenden haben, Kleidung, Licht, Wetter. Dieselbe Handlung wie der Sprechtext, kein anderer Moment. Beispiel: 'Drei Haeflinge in gestreifter Kleidung stehen dicht am vergitterten Zellenfenster, Haende an den Staebe, draussen schwarzes Wasser und weisse Gischt, Regen laeuft an der Scheibe, kaltes graues Licht.' Kein leeres Zimmer, wenn der Satz Menschen nennt. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was sich in diesem Augenblick bewegt. Nicht die Kamera. Nicht 'IM BILD'.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild hat 400 bis 700 Zeichen. Die Leute aus dem Satz sind gross im Bild und tun genau diese eine Sache. Haende, Werkzeug, Ort, Kleidung, Licht. Kein leeres Stillleben, kein Gegenstand ohne die Menschen, die ihn benutzen. Beispiel: 'Frank Morris und die beiden Anglin-Brueder knien nachts in der engen Zelle, einer drueckt einen verbogenen Loeffel in ein Loch in der Betonwand, Staub auf den Haenden, eine Gluehbirne, das Gitter der Zellentuer im Hintergrund.' Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was die Leute in diesem Augenblick tun. Nicht die Kamera. Nicht 'IM BILD'.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -1556,21 +1556,16 @@ def _bild_angleichen(kanal, paket):
                " ".join(str(s.get("text") or "").split()),
                " ".join(str(s.get("bild") or "").split())[:700]))
     auftrag = (
-        "Der Sprechtext muss sagen, was man auf dem Bild sieht. Nichts anderes.\n"
-        "Kommt im Satz etwas vor, das in der Bildbeschreibung nicht zu sehen ist, "
-        "streiche es. Zwei Handlungen in einem Satz sind verboten.\n"
-        "Beispiel, so ist es falsch: Satz 'Zehn Maenner gruben sich aus einer Zelle "
-        "und verschwanden im Nebel.' Bild 'eine leere Zelle mit einem Loch'. "
-        "Der Satz redet vom Nebel, das Bild zeigt keinen Nebel.\n"
-        "Richtig ist nur eins von beiden, nicht beides: "
-        "Satz 'Zwei Haeflinge graben in der Zelle ein Loch in den Boden.' "
-        "und das Bild zeigt genau diese zwei Maenner, das Loch, die Zelle. "
-        "Oder Satz 'Zehn Maenner gehen im Nebel ueber das Feld.' "
-        "und das Bild zeigt genau diese Maenner im Nebel.\n"
-        "Ist das Bild nur ein leerer Raum, obwohl der Satz Menschen bei einer "
-        "Handlung nennt, schreibe das Bild auf genau diese eine Handlung um "
-        "und den Satz nur darauf. Kein leeres Zimmer, wenn Menschen handeln.\n"
-        "Erfinde keine neue Geschichte. Normales Deutsch, ganze Woerter. "
+        "Satz und Bild sind dieselbe Handlung von Menschen.\n"
+        "Der Satz erzaehlt, was die Leute tun. Das Bild zeigt diese Leute dabei, gross.\n"
+        "Ist der Satz nur eine Bildunterschrift, ist er falsch und wird umgeschrieben. "
+        "Falsch: 'Ein Loeffel liegt neben einem Loch.' 'Drei Koepfe liegen auf einem Tisch.' "
+        "'Ein Schild liegt vor dem Eingang.'\n"
+        "Richtig: 'Frank Morris schabt mit dem Loeffel das Loch in die Wand.' "
+        "Das Bild zeigt Frank Morris, den Loeffel, das Loch, die Wand.\n"
+        "Zwei Handlungen in einem Satz sind verboten. Die zweite wird die naechste Szene, "
+        "hier wird sie gestrichen.\n"
+        "Erfinde keine neue Geschichte und keine Vermutung. Normales Deutsch, ganze Woerter. "
         "Jeder Satz ist fertig und endet mit einem Punkt.\n"
         "Antworte NUR mit JSON {\"szenen\": [{\"text\": \"...\", \"bild\": \"...\"}]} "
         "mit genau %d Eintraegen, gleiche Reihenfolge.\n\n%s"
@@ -1629,6 +1624,24 @@ def _bilder_aus_saetzen(paket):
     return paket
 
 
+def _zu_viele_bildunterschriften(paket):
+    """Mehr als die Haelfte sagt nur, dass ein Gegenstand irgendwo liegt."""
+    import re
+    liegt = re.compile(r"\b(liegt|liegen|hängt|haengt)\b", re.I)
+    tut = re.compile(
+        r"\b(schab|gräb|graeb|grub|kletter|steig|bau|kriech|paddel|zieh|"
+        r"bind|höhl|hoehl|schneid|nimmt|nehm|hält|haelt|drück|drueck|"
+        r"stemm|öffn|oeffn|werf|schwimm|renn|kniet|arbeit|steck|schieb|"
+        r"heb|form|kleb|wickel|knot)\w*", re.I)
+    texte = [s.get("text") or "" for s in (paket or {}).get("szenen") or []
+             if isinstance(s, dict)]
+    texte = [t for t in texte if t.strip()]
+    if len(texte) < 3:
+        return False
+    schlecht = sum(1 for t in texte if liegt.search(t) and not tut.search(t))
+    return schlecht >= max(3, len(texte) // 2)
+
+
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
@@ -1657,16 +1670,13 @@ def erzeuge_paket(kanal, eigenes_thema=None):
             "Lieber einen ganzen Satz weniger als 'vor der.' oder 'weil die.'. "
             "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei "
             "und nicht 312. Daten ebenso: achtundzwanzigsten Oktober.\n"
-            "WAS GEZEIGT WIRD: Nur die Schritte des Ereignisses, in der Reihenfolge, "
-            "wie sie passiert sind. Jede Szene ist etwas, das man an dem Tag "
-            "haette filmen koennen. Keine Szene ueber Vermutungen, kein "
-            "'ob sie tot sind', kein Brief, kein Foto aus spaeteren Jahren, "
-            "nichts was nur behauptet wurde. Steht unten eine Quelle, nimm nur, "
-            "was darin als geschehen beschrieben ist. Was du nicht sicher weisst, "
-            "lässt du weg. Du erfindest keine Einzelheit.\n"
-            "BILD: 400 bis 700 Zeichen, was die Kamera sieht. Ort, wie viele Leute, "
-            "was sie in den Haenden haben, Kleidung, Licht. Genau die eine Handlung "
-            "aus dem Sprechtext, kein anderer Moment.\n"
+            "WAS GEZEIGT WIRD: Jede Szene ist eine Handlung. Die Leute tun etwas, "
+            "der Satz sagt das, das Bild zeigt sie dabei. "
+            "Verboten: 'liegt', 'liegen', 'haengt' als ganzer Satz ueber einen Gegenstand. "
+            "Keine Szene ohne Menschen. Keine Vermutung, kein Brief, "
+            "kein Foto aus spaeteren Jahren, kein Schild vom verlassenen Gefaengnis.\n"
+            "BILD: 400 bis 700 Zeichen. Die genannten Leute gross, bei der Arbeit, "
+            "Haende am Werkzeug. Kein leeres Stillleben.\n"
             % (gesamt, szenen, worte, je, sek, fuellen))
         print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
               % (szenen, gesamt, worte))
@@ -1681,6 +1691,13 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "Diesmal genau %d Szenen. Streiche ganze Saetze, bis zusammen "
                 "hoechstens %d Woerter bleiben. Schneide nie mitten im Satz ab.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
+            paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
+        if _zu_viele_bildunterschriften(paket):
+            print("[Text] Szenen sind Bildunterschriften, nochmal als Handlung")
+            k["prompt"] += (
+                "\n\nVORIGER VERSUCH WAR NUR BILDBESCHRIFTUNG. "
+                "Jeder Satz nennt die Leute und das Verb, was sie tun. "
+                "Kein Satz darf nur sagen, dass ein Gegenstand irgendwo liegt.\n")
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
         return _bilder_aus_saetzen(_bild_angleichen(k, _sprechtext_heilen(
             k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k))))))))
