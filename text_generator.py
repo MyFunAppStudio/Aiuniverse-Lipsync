@@ -101,10 +101,13 @@ def erzeuge_paket(kanal, eigenes_thema=None):
         anzahl_bilder = max(1, int(round(laenge * kanal["bilder_pro_minute"])))
     _sek, _worte, _grok = _clip_deckel(kanal)
     _je = min(float(_sek) - 1.0, (laenge * 60.0) / max(1, anzahl_bilder))
-    _je = max(8.0 if _grok else 4.0, _je)
+    _avatar = _grok and _hat_avatar(kanal)
+    _je = max(8.0 if _avatar else 4.0, _je)
     _wps = _p37_wps(kanal)
-    _unten = max(8 if _grok else 4, int(_je * _wps * 0.85))
+    _unten = max(8 if _avatar else 6, int(_je * _wps * 0.75))
     _oben = max(_unten + 1, min(_worte, int(_je * _wps)))
+    _saetze = ("ein oder zwei Saetzen, beide ueber denselben Augenblick"
+               if _avatar else "genau einem Satz, genau einer Handlung")
     _zeit = ("Der Clip wird so lang bestellt, wie der Satz braucht, plus knapp eine Sekunde. "
              "Mindestens 4, hoechstens 15 Sekunden. Nicht auf 10 oder 15 auffuellen. "
              "Der Satz fuellt diese Zeit, das letzte Wort kommt kurz vor dem Schluss. "
@@ -119,7 +122,7 @@ REGELN:
 AUFGABE:
 Erstelle EIN komplettes Video-Paket.
 Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
-Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in ein oder zwei Saetzen, und beide Saetze beschreiben denselben Augenblick. Das sind etwa {_je:.0f} Sekunden gesprochen, nicht deutlich weniger. {_zeit}Was nicht in 15 Sekunden passt, wird nicht bestellt und nicht abgeschnitten. EINE SZENE IST EIN AUGENBLICK: Der gesprochene Text sagt nur, was auf diesem einen Bild zu sehen ist. Kein Danach, kein Dann, keine zweite Handlung. Die naechste Handlung ist die naechste Szene. Passen mehr Handlungen nicht in die Szenenzahl, lass die unwichtigeren weg. Stapel sie nicht in einen Satz. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
+Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der gesprochene Text sagt nur, was auf diesem einen Bild zu sehen ist. Kein Danach, kein Dann, keine zweite Handlung. Die naechste Handlung ist die naechste Szene. Nicht stapeln und nicht weglassen, wenn noch eine Szene frei ist. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
 Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau den einen Augenblick, den der Satz sagt, so gross, dass man die Handlung erkennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht und in die Kamera schaut. Kein Podest, keine Steinplatte, kein Felsblock. Kein Blut, keine Leichen. Jede Szene ein anderer Moment.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
@@ -1219,27 +1222,39 @@ def _paket_worte(paket):
     return n
 
 
-def _plan_laenge(kanal):
-    """Wie viele Szenen in die eingegebene Videolaenge passen.
+def _hat_avatar(kanal):
+    try:
+        import darsteller
+        return bool(darsteller.besetzung(kanal))
+    except Exception:
+        return False
 
-    20 Sekunden sind zwei Szenen zu etwa 10 Sekunden, nicht drei zu 12.
-    Die Summe ist die Videolaenge. Jede einzelne Szene darf nicht
-    auf den Deckel von 15 Sekunden aufgeblasen werden.
+
+def _plan_laenge(kanal):
+    """Wie viele Szenen in die Videolaenge passen.
+
+    Ohne Avatar etwa alle 6 Sekunden eine Szene, eine Handlung pro Bild.
+    Mit Avatar bleiben die Szenen laenger, sonst steht die Figur stumm.
     """
     minuten = einstellungen.laenge_in_minuten(kanal or {})
     gesamt = max(4.0, minuten * 60.0)
     sek, _worte, grok = _clip_deckel(kanal)
-    mind = 8.0 if grok else 6.0
+    avatar = grok and _hat_avatar(kanal)
+    mind = 8.0 if avatar else 5.0
+    ziel = 12.0 if avatar else 6.0
     if mind > sek:
         mind = sek
     n_min = max(1, int((gesamt + sek - 1) // sek))
     n_max = max(1, int(gesamt // mind))
     if n_max < n_min:
         n, je = 1, min(sek, gesamt)
-    else:
+    elif avatar:
         n = n_min
         while n < n_max and gesamt / n > sek - 2:
             n += 1
+        je = gesamt / n
+    else:
+        n = max(n_min, min(n_max, int(round(gesamt / ziel))))
         je = gesamt / n
     wps = _p37_wps(kanal)
     worte = max(8, int(gesamt * wps * 0.95))
@@ -1480,23 +1495,31 @@ def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
         gesamt, szenen, je, sek, worte = _plan_laenge(k)
+        avatar = _hat_avatar(k)
         k["szenen_soll"] = szenen
         k["bilder_pro_minute"] = (szenen + 0.49) / max(0.01, gesamt / 60.0)
+        fuellen = (
+            "Der Satz fuellt die Szene. Nicht auf 15 Sekunden auffuellen "
+            "und nicht kuerzer schreiben, sonst steht der Avatar stumm, "
+            "und die leere Zeit ist trotzdem bezahlt. "
+            if avatar else
+            "Genau ein Satz, genau eine Handlung, etwa %.0f Sekunden. "
+            "Keine zweite Handlung im selben Satz. Die naechste Handlung "
+            "ist die naechste Szene. Nicht auf 10 oder 15 Sekunden auffuellen. "
+            % je)
         k["prompt"] = (k.get("prompt") or "") + (
             "\n\nLAENGE, DIE GILT:\n"
             "Das ganze Video ist %.0f Sekunden gesprochen, nicht mehr. "
             "Genau %d Szenen, nicht eine mehr und nicht eine weniger. "
             "Alle Szenen zusammen hoechstens %d Woerter. "
             "Jede Szene etwa %.0f Sekunden, nie laenger als %d. "
-            "Der Satz fuellt die Szene. Nicht auf 10 oder 15 Sekunden auffuellen "
-            "und nicht kuerzer schreiben, sonst steht der Avatar stumm, "
-            "und die leere Zeit ist trotzdem bezahlt. "
+            "%s"
             "Jeder Satz ist fertig und endet mit einem Punkt. "
             "Hoere nie mitten im Satz auf, auch nicht um die Wortzahl zu treffen. "
             "Lieber einen ganzen Satz weniger als 'vor der.' oder 'weil die.'. "
             "Jahreszahlen als ein Wort: dreihundertzwoelf, nicht drei eins zwei "
             "und nicht 312. Daten ebenso: achtundzwanzigsten Oktober.\n"
-            % (gesamt, szenen, worte, je, sek))
+            % (gesamt, szenen, worte, je, sek, fuellen))
         print("[Text] %d Szenen, zusammen %.0f Sekunden, hoechstens %d Woerter"
               % (szenen, gesamt, worte))
         paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
