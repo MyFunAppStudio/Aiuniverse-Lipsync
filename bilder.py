@@ -263,7 +263,7 @@ def _grok_bild(kanal, prompt, ziel, seite):
             "prompt": text[:4000],
             "n": 1,
             "aspect_ratio": _grok_seite(seite),
-            "resolution": "1K",
+            "resolution": "1k",
         }
         daten = json.dumps(koerper).encode("utf-8")
         anfrage = urllib.request.Request(
