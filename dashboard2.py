@@ -2097,6 +2097,18 @@ def _g3_zitate(text):
         return [(False, text or "")]
 
 
+def _g3_bild_klar(bild):
+    """Die Anweisung an die KI gehoert nicht ins Drehbuch."""
+    t = " ".join(str(bild or "").split())
+    mark = "nichts davor und nichts danach:"
+    if mark in t:
+        t = t.split(mark, 1)[1]
+    for cut in ("Die Personen aus diesem Satz", "Nicht der Ort vorher"):
+        if cut in t:
+            t = t.split(cut, 1)[0]
+    return " ".join(t.split()).strip()
+
+
 def drehbuch_lesen(key):
     d = einstellungen.laden().get(key) or {}
     try:
@@ -2111,11 +2123,13 @@ def drehbuch_lesen(key):
         except Exception:
             rest, bild, beweg, ohne = s, [], [], []
         stuecke = _g3_zitate(rest)
+        bild_txt = ", ".join(bild)
+        beweg_txt = ", ".join(x for x in beweg if not x.upper().startswith("IM BILD"))
         raus.append({
             "erzaehler": " ".join(x for ist, x in stuecke if not ist).strip(),
             "avatar": " ".join(x for ist, x in stuecke if ist).strip(),
-            "bild": ", ".join(bild) or ", ".join(ohne),
-            "bewegung": ", ".join(beweg) or ", ".join(ohne),
+            "bild": _g3_bild_klar(bild_txt),
+            "bewegung": beweg_txt,
         })
     return {"ok": True, "szenen": raus, "mehr": max(0, len(roh) - G3_MAX)}
 

@@ -175,7 +175,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der Sprechtext sagt nur, was die Bildbeschreibung zeigt. Kein Wort ueber etwas, das im Bild nicht vorkommt. 'Gruben sich aus der Zelle und verschwanden im Nebel' ist verboten, wenn das Bild nur die Zelle zeigt. Das ist dann eine Szene ueber das Graben oder eine Szene ueber den Nebel, nie beides. Kein Danach, kein Dann. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Die Bildbeschreibung zeigt genau dieselbe eine Handlung wie der Sprechtext, mit denselben Leuten. Sagt der Satz, zehn Maenner verschwinden im Nebel, zeigt das Bild zehn Maenner im Nebel, nicht die leere Zelle davor. Kein leeres Zimmer, wenn der Satz Menschen nennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: bild ist eine kurze Beschreibung dessen, was die Kamera sieht. Ein oder zwei Saetze, dieselbe Handlung wie der Sprechtext, dieselben Leute. Keine Anweisung, kein 'nichts davor', kein 'Augenblich'. Beispiel: 'Drei Haeflinge hinter einem vergitterten Fenster, draussen die stuermische Bucht, Regen an der Scheibe.' Nicht drei Handlungen. Kein leeres Zimmer, wenn der Satz Menschen nennt. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Ein kurzer Satz, was sich in diesem Augenblick bewegt. Nicht die Kamera. Nicht 'IM BILD'.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -1606,23 +1606,22 @@ def _bild_angleichen(kanal, paket):
 
 
 def _bild_aus_satz(text):
-    """Die Bildbeschreibung ist der Satz. Sie kann kein anderes Ereignis erfinden."""
+    """Eine normale Bildzeile: genau der Satz, ohne Anweisung an die KI."""
     import re
     t = " ".join(str(text or "").split())
     t = re.sub(r"^[^:]{1,24}:\s+", "", t).strip()
-    if not t:
-        return ""
-    return (
-        "Genau dieser eine Augenblick, nichts davor und nichts danach: " + t
-        + " Die Personen aus diesem Satz sind gross im Bild und tun genau das. "
-        "Nicht der Ort vorher, nicht was danach passiert.")
+    return t
 
 
 def _bilder_aus_saetzen(paket):
     if not isinstance(paket, dict):
         return paket
     for s in paket.get("szenen") or []:
-        if isinstance(s, dict) and (s.get("text") or "").strip():
+        if not isinstance(s, dict):
+            continue
+        b = " ".join(str(s.get("bild") or "").split())
+        if (not b or "nichts davor" in b or "Personen aus diesem Satz" in b
+                or "eine Augenblick" in b or "dieser eine Augenblick" in b):
             s["bild"] = _bild_aus_satz(s.get("text"))
     return paket
 
