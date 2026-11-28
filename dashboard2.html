@@ -1800,7 +1800,11 @@ function hochladen(zweck,sid,nur){
   i.click();
 }
 
-function szeneNeu(id,hatClip){
+function szeneNeu(id,hatClip,knopf){
+  var karte=knopf&&knopf.closest?knopf.closest(".szn"):null;
+  var ta=karte?karte.querySelectorAll("textarea"):[];
+  var text=ta[0]?ta[0].value:"";
+  var bild=ta[1]?ta[1].value:"";
   var warn=hatClip
     ? "<br><br><b>Achtung:</b> der vorhandene Clip ist dann noch vom alten Bild. "
       +"Er wird als veraltet markiert und muss neu erzeugt werden — das kostet noch einmal."
@@ -1810,7 +1814,7 @@ function szeneNeu(id,hatClip){
     +"<br><br>Das jetzige Bild rutscht in den Verlauf, du kannst es zur\u00fcckholen."+warn,
     "Neu erzeugen",function(){
       el("dialog").innerHTML='<div class="dim"><div class="dlg"><h2>Wird erzeugt</h2><p>Einen Moment, das Bildmodell braucht ein paar Sekunden.</p></div></div>';
-      api("/api/szene_neu?k="+encodeURIComponent(S.kanal),{sid:id}).then(function(r){
+      api("/api/szene_neu?k="+encodeURIComponent(S.kanal),{sid:id,text:text,bild:bild}).then(function(r){
         zu();
         if(!r||!r.ok)return melde((r&&r.fehler)||"Das hat nicht geklappt");
         ladeSzenen();
@@ -2344,7 +2348,7 @@ function tSzenen(){
       +(d.stimmungen||[]).map(function(x){return '<option value="'+x[0]+'"'+(s.stimmung===x[0]?" selected":"")+'>'+h(x[1])+'</option>'}).join("")
       +'</select></div>';
     o+='<div class="szz p90" style="gap:7px;flex-wrap:wrap">'
-      +'<button class="knopf" onclick="szeneNeu(\''+s.id+'\','+(s.clip?"true":"false")+')">Bild neu</button>'
+      +'<button class="knopf" onclick="szeneNeu(\''+s.id+'\','+(s.clip?"true":"false")+',this)">Bild neu</button>'
       +'<button class="knopf" onclick="hochladen(\'szene\',\''+s.id+'\',\'bild\')">Eigenes Bild</button>'
       +'<button class="knopf" onclick="hochladen(\'szene\',\''+s.id+'\',\'video\')">Eigener Clip</button>'
       +'</div>';

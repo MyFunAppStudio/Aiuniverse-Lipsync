@@ -1028,7 +1028,7 @@ class Griff(BaseHTTPRequestHandler):
             return self.hochladen(k, q)
 
         if w == "/api/szene_neu":
-            return self.sende(_p90_neu(k, (self.koerper() or {}).get("sid")))
+            return self.sende(_p90_neu(k, self.koerper() or {}))
 
         b = self.koerper()
 
@@ -1565,11 +1565,13 @@ def _p90_szene(dd, sid):
     return None
 
 
-def _p90_neu(k, sid):
+def _p90_neu(k, b):
     """Erzeugt das Bild genau einer Szene neu. Alle anderen bleiben unberuehrt."""
     import geschichte
     import bilder
-    sid = str(sid or "").strip()
+    if not isinstance(b, dict):
+        b = {"sid": b}
+    sid = str((b or {}).get("sid") or "").strip()
     if not sid:
         return {"ok": False, "fehler": "Keine Szene genannt"}
     kanal = einstellungen.laden().get(k) or {}
@@ -1580,6 +1582,15 @@ def _p90_neu(k, sid):
     s = _p90_szene(dd, sid)
     if s is None:
         return {"ok": False, "fehler": "Szene unbekannt"}
+
+    # Das Feld im Browser gilt, auch wenn es noch nicht gespeichert war.
+    # Gemalt wird die Bildbeschreibung, nicht der Sprechtext.
+    if str(b.get("bild") or "").strip():
+        szenen.aendern(kanal, sid, "bild", b.get("bild"))
+    if str(b.get("text") or "").strip():
+        szenen.aendern(kanal, sid, "text", b.get("text"))
+    dd = szenen.laden(kanal)
+    s = _p90_szene(dd, sid) or s
 
     text = (s.get("text") or "").strip()
     if not text:

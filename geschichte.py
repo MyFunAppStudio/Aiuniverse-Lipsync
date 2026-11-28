@@ -460,17 +460,21 @@ def grok_bild_anweisung(kanal, satz, gesprochen="", stil="", zusatz=""):
     """Die volle Szenenbeschreibung. Nichts wird auf 80 Woerter gekuerzt."""
     rest, bild, _beweg, ohne = _p84_klammern(satz or "")
     kern = _ohne_stein(", ".join(bild) or ", ".join(ohne) or "")
-    rede = _ohne_stein(gesprochen or rest)
     kern = _MEDIUM.sub("", kern).strip(" ,.")
     if not kern:
-        kern = _MEDIUM.sub("", rede).strip(" ,.")
+        # Die Bildbeschreibung steht oft ohne [BILD:]-Klammer im Feld.
+        # Dann ist sie der ganze Text, nicht der gesprochene Satz.
+        kern = _MEDIUM.sub("", _ohne_stein(rest)).strip(" ,.")
     if not kern:
-        kern = rede
+        kern = _MEDIUM.sub("", _ohne_stein(gesprochen or "")).strip(" ,.")
     look = STIL_TEXT.get((stil or "").strip().lower()) or "photorealistic cinematic still"
     extra = _zusatz_tauglich(zusatz)
     teile = [
-        "Photorealistic cinematic still. Show only the one action in the description, large and recognizable. "
-        "Do not add a second event. No person standing idle in the foreground. "
+        "Photorealistic cinematic still. Paint only the description below, exactly that place and that action. "
+        "If it names people, those people are in the frame doing that action, large enough to recognize. "
+        "Do not replace it with a different event from any other sentence. "
+        "No empty room when the description names people. "
+        "No person standing idle in the foreground. "
         "No pedestal, no stone slab, no boulder. "
         "Not a distant view and not a mood without the event. "
         "No text, no letters, no numbers, no logo, no watermark.",

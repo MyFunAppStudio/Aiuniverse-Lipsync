@@ -125,7 +125,7 @@ Sprache: {', '.join(kanal.get('sprachen', ['Deutsch']))}
 Laenge: ca. {laenge*60:.0f} Sekunden gesprochen\n{_tl_hinweis(kanal)}Das SKRIPT hat genau {anzahl_bilder} Szenen. Jede Szene hat {_unten} bis {_oben} Woerter, in {_saetze}. Das sind etwa {_je:.0f} Sekunden gesprochen. {_zeit}Was nicht in 15 Sekunden passt, wird die naechste Szene, nicht derselbe Satz. EINE SZENE IST EIN AUGENBLICK: Der gesprochene Text sagt nur, was auf diesem einen Bild zu sehen ist. Kein Danach, kein Dann, keine zweite Handlung. Die naechste Handlung ist die naechste Szene. Nicht stapeln und nicht weglassen, wenn noch eine Szene frei ist. SUBSTANZ: In JEDER Szene steht mindestens eine harte Angabe - ein Name, ein Ort, ein Datum, eine Zahl, ein Ergebnis. Keine Szene, die nur Stimmung macht, etwas ankuendigt oder wiederholt, was schon gesagt wurde. Am Ende muss jemand, der das Video gesehen hat, das Ereignis erklaeren koennen: wer, wo, wann, warum, wie es ausging und was danach anders war. Normales Deutsch, ganze Woerter: Attrappenkoepfe, Regenmaentel, Ruderrest. Nie ein Wort zerhacken und nie ein erfundenes Wort wie Ertrappen.
 {P49_THEMA % eigenes_thema if eigenes_thema else "Waehle selbst ein passendes Thema."}
 
-Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Jedes Bild zeigt genau den einen Augenblick, den der Satz sagt, so gross, dass man die Handlung erkennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht und in die Kamera schaut. Kein Podest, keine Steinplatte, kein Felsblock. Kein Blut, keine Leichen. Jede Szene ein anderer Moment.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
+Bildbeschreibungen konkret, nicht ein Stichwort.\n\nBILDER: Die Bildbeschreibung zeigt genau dieselbe eine Handlung wie der Sprechtext, mit denselben Leuten. Sagt der Satz, zehn Maenner verschwinden im Nebel, zeigt das Bild zehn Maenner im Nebel, nicht die leere Zelle davor. Kein leeres Zimmer, wenn der Satz Menschen nennt. Nicht drei Handlungen in einem Bild. Keine Person, die nur im Vordergrund steht. Kein Podest, keine Steinplatte. Kein Blut, keine Leichen.\n\nBEWEGUNG: Was in diesem einen Augenblick passiert. Nicht die Kamera. Der Hintergrund lebt genau diese Handlung, nichts daneben.
 
 Antworte NUR mit JSON, ohne Erklaerung, ohne Markdown.
 Teile die Geschichte in {anzahl_bilder} SZENEN. Jede Szene hat ihren eigenen
@@ -1491,6 +1491,62 @@ def _sprechtext_heilen(kanal, paket):
     return paket
 
 
+def _bild_angleichen(kanal, paket):
+    """Sprechtext und Bildbeschreibung muessen dieselbe Handlung zeigen."""
+    if not isinstance(paket, dict):
+        return paket
+    szenen = [s for s in (paket.get("szenen") or []) if isinstance(s, dict)]
+    if not szenen:
+        return paket
+    bloecke = []
+    for i, s in enumerate(szenen):
+        bloecke.append(
+            "SZENE %d\nSATZ: %s\nBILD: %s"
+            % (i + 1,
+               " ".join(str(s.get("text") or "").split()),
+               " ".join(str(s.get("bild") or "").split())[:700]))
+    auftrag = (
+        "Jede Szene hat einen Sprechtext und eine Bildbeschreibung. "
+        "Beides muss genau dieselbe eine Handlung zeigen.\n"
+        "Hat der Satz zwei Handlungen, streiche die zweite aus dem Satz. "
+        "Die Bildbeschreibung zeigt nur die uebrige Handlung, gross, "
+        "mit den Menschen, die der Satz nennt. Kein leeres Zimmer, "
+        "wenn Menschen handeln. Keine andere Zeit, kein anderer Ort.\n"
+        "Streiche kein Wort aus einer Handlung, die bleibt. "
+        "Erfinde keine neue Geschichte. Normales Deutsch, ganze Woerter.\n"
+        "Antworte NUR mit JSON {\"szenen\": [{\"text\": \"...\", \"bild\": \"...\"}]} "
+        "mit genau %d Eintraegen, gleiche Reihenfolge.\n\n%s"
+        % (len(szenen), "\n\n".join(bloecke)))
+    try:
+        roh = _claude_anfrage(auftrag, max_tokens=4000, kanal=kanal)
+    except Exception as e:
+        print("[Text] Bild und Satz nicht angeglichen:", e)
+        return paket
+    m = _clip_re.search(r"\{.*\}", roh or "", _clip_re.S)
+    neu = []
+    if m:
+        try:
+            neu = json.loads(m.group(0)).get("szenen") or []
+        except Exception:
+            neu = []
+    if len(neu) != len(szenen):
+        print("[Text] Angleich unbrauchbar, Szenen bleiben")
+        return paket
+    for i, s in enumerate(szenen):
+        ein = neu[i] if isinstance(neu[i], dict) else {}
+        t = " ".join(str(ein.get("text") or "").split())
+        b = " ".join(str(ein.get("bild") or "").split())
+        if not t or len(t.split()) < 4 or _satz_kaputt(t):
+            print("[Text] Szene %d Satz nicht uebernommen" % (i + 1))
+            continue
+        s["text"] = t
+        if b and len(b) > 40:
+            s["bild"] = b
+        print("[Text] Szene %d Bild an den Satz angeglichen" % (i + 1))
+    paket["szenen"] = szenen
+    return paket
+
+
 def erzeuge_paket(kanal, eigenes_thema=None):
     try:
         k = dict(kanal or {})
@@ -1534,8 +1590,8 @@ def erzeuge_paket(kanal, eigenes_thema=None):
                 "hoechstens %d Woerter bleiben. Schneide nie mitten im Satz ab.\n"
                 % (len(paket["szenen"]), ist, szenen, worte))
             paket = _clip10(_t7_erzeuge_alt(k, eigenes_thema), max(12, int(je * _p37_wps(k))))
-        return _sprechtext_heilen(
-            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k))))))
+        return _bild_angleichen(k, _sprechtext_heilen(
+            k, _eine_stimme(k, _auf_soll(paket, szenen, max(12, int(je * _p37_wps(k)))))))
     except Exception as e:
         print("[Text] Szenenlaenge nicht anpassbar:", e)
         try:
