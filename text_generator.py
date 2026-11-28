@@ -26,7 +26,7 @@ def _grok_text(prompt, max_tokens, kanal):
         daten = json.dumps({
             "model": modell,
             "temperature": 0.4,
-            "max_tokens": max_tokens,
+            "max_tokens": min(int(max_tokens or 4000), 16000),
             "messages": [{"role": "user", "content": prompt}],
         }).encode()
         anfrage = urllib.request.Request(
