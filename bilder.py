@@ -315,7 +315,16 @@ def _grok_bild(kanal, prompt, ziel, seite):
                                 return str(ziel)
         if url:
             print("[Bild] Grok %s" % modell)
-            return _laden(url, ziel)
+            pfad = _laden(url, ziel, {
+                "Authorization": "Bearer " + key,
+                "User-Agent": "Mozilla/5.0",
+            })
+            if not pfad:
+                pfad = _laden(url, ziel, {"User-Agent": "Mozilla/5.0"})
+            if pfad:
+                return pfad
+            print("[Bild] Grok hat das Bild gemacht, die Datei bleibt gesperrt")
+            return None
         letzter = "keine Adresse in der Antwort"
         print("[Bild] Grok %s ohne Bild: %s" % (modell, str(antwort)[:180]))
     print("[Bild] Grok hat nichts geliefert (%s)" % letzter)
@@ -449,9 +458,14 @@ def _abwarten(start, basis, key, ziel, grenze=None):
     return _laden(url, ziel) if url else None
 
 
-def _laden(url, ziel):
+def _laden(url, ziel, kopf=None):
     try:
-        with urllib.request.urlopen(url, timeout=120) as r, open(ziel, "wb") as f:
+        if kopf:
+            anfrage = urllib.request.Request(url, headers=kopf)
+            leser = urllib.request.urlopen(anfrage, timeout=120)
+        else:
+            leser = urllib.request.urlopen(url, timeout=120)
+        with leser as r, open(ziel, "wb") as f:
             while True:
                 stueck = r.read(262144)
                 if not stueck:
