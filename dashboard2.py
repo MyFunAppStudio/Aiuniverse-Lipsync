@@ -1713,15 +1713,16 @@ def _r5_einen(k, sid):
     ok, grund = animation.ref_bereit(kanal)
     if not ok:
         return False, grund
-    ok, grund = darsteller.bereit(k)
-    if not ok:
-        return False, grund
 
     hintergrund = ""
     if szenen.art(s.get("datei") or "") == "bild":
         p = szenen.datei_pfad(k, s["datei"])
         if os.path.exists(p):
             hintergrund = p
+    if (s.get("modus") or "") == "avatare":
+        ok, grund = darsteller.bereit(k)
+        if not ok:
+            return False, grund
     figuren = _r5_figuren(k, s)
     if not figuren and not hintergrund:
         return False, "Diese Szene hat weder Hintergrundbild noch Besetzung"
@@ -1909,9 +1910,6 @@ def r5_clip_start(k, b):
         ok, grund = animation.ref_bereit(kanal)
         if not ok:
             return {"ok": False, "fehler": grund}
-        ok, grund = darsteller.bereit(k)
-        if not ok:
-            return {"ok": False, "fehler": grund}
 
     alle = bool(b.get("alle"))
     d = szenen.laden(k)
@@ -1927,7 +1925,12 @@ def r5_clip_start(k, b):
         sids = [sid]
 
     byid = {s["id"]: s for s in d["szenen"]}
-    if _avatar_ohne_grok(k, [byid[i] for i in sids if i in byid]):
+    liste = [byid[i] for i in sids if i in byid]
+    if any((s.get("modus") or "") == "avatare" for s in liste):
+        ok, grund = darsteller.bereit(k)
+        if not ok:
+            return {"ok": False, "fehler": grund}
+    if _avatar_ohne_grok(k, liste):
         return {"ok": False, "fehler": GROK_PFLICHT}
 
     with _R5_SPERRE:
@@ -1981,13 +1984,17 @@ def r5_clip_stand(k):
             "stand": s.get("clip_stand", ""), "text": s.get("clip_text", "")}
            for s in d["szenen"]]
     bereit, grund = animation.ref_bereit(kanal)
-    dsok, dsgrund = darsteller.bereit(k)
+    avatar_dran = any((s.get("modus") or "") == "avatare" for s in d["szenen"])
+    if avatar_dran:
+        dsok, dsgrund = darsteller.bereit(k)
+        if not dsok:
+            bereit, grund = False, dsgrund
     offen = [s for s in d["szenen"] if _r6_offen(s)]
     frei = animation.grok_ist((animation.ref_slot(kanal) or {}).get("url"))
     sek = sum(szenen.r3_clip_dauer(s, frei) for s in offen)
     return {"laeuft": laeuft, "lauf": e, "szenen": szn,
-            "bereit": bool(bereit and dsok),
-            "grund": grund if not bereit else ("" if dsok else dsgrund),
+            "bereit": bool(bereit),
+            "grund": "" if bereit else grund,
             "offen": len(offen), "offen_sekunden": sek,
             "offen_preis": animation.ref_preis(kanal, sek) if sek else 0.0,
             "je_sekunde": animation.ref_preis(kanal, 1)}
